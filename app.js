@@ -16,6 +16,18 @@ const SUBMENU_HOVER_ICON = "https://www.figma.com/api/mcp/asset/96d9c4ed-aae2-4a
 const ADD_BOOKMARK_ICON = "https://www.figma.com/api/mcp/asset/a317d3cb-5629-470e-8eaf-f209811de574.svg";
 const IMPORT_BOOKMARKS_ICON = "https://www.figma.com/api/mcp/asset/99ddd7df-8b30-4b0b-97c5-16695869139a.svg";
 const SEARCH_ICON = "https://www.figma.com/api/mcp/asset/20f159d6-507d-4b16-af4f-4a36737483f6.svg";
+const BOOKMARK_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/176b819c-7c13-4077-85bb-b143172eebac.svg";
+const BOOKMARK_CHEVRON_ICON = "https://www.figma.com/api/mcp/asset/adcfb519-287c-4b72-ba76-bb401c73e37a.svg";
+const BOOKMARK_LOCKED_ICON = "https://www.figma.com/api/mcp/asset/1eec1291-ba1f-4919-bc85-73517f3f1ecc.svg";
+const BOOKMARK_TRASH_ICON = "https://www.figma.com/api/mcp/asset/11520fd7-7461-48a2-af73-d13b36b73ecd.svg";
+const BOOKMARK_STAR_ICON = "https://www.figma.com/api/mcp/asset/3260432c-abe9-466d-8f6f-e67a15be0255.svg";
+const BOOKMARK_LINK_ICON = "https://www.figma.com/api/mcp/asset/28e4c662-783e-47e6-a3d5-8229a6c23020.svg";
+const BOOKMARK_DOCUMENTS_ICON = "https://www.figma.com/api/mcp/asset/59103a71-f384-478f-b511-a1c0d2e514c4.svg";
+const BOOKMARK_AUDIO_ICON = "https://www.figma.com/api/mcp/asset/45ce4d75-5b95-49b5-9c60-fe9b53edb3ec.svg";
+const BOOKMARK_VIDEO_ICON = "https://www.figma.com/api/mcp/asset/37e8ebc8-9fd8-4d8d-b340-d3d16e39a051.svg";
+const BOOKMARK_UNTAGGED_ICON = "https://www.figma.com/api/mcp/asset/cc60a370-1a30-406c-b299-08360a3f8f26.svg";
+const BOOKMARK_ADD_CATEGORY_ICON = "https://www.figma.com/api/mcp/asset/8d438e45-6706-469d-b423-0ebd6eef1681.svg";
+const BOOKMARK_ADD_CATEGORY_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/bd9f8cc2-a797-4c09-b87a-69ac123194f0.svg";
 
 const SIDEBAR_SECTIONS = [
   { title: "Main Menu", icon: MENU_ICON, links: [] },
@@ -29,8 +41,36 @@ const SIDEBAR_SECTIONS = [
 
 const appState = {
   newBookmarkExpanded: false,
-  bookmarkUrl: ""
+  bookmarkUrl: "",
+  createCategoryState: "default",
+  isCreatingCategory: false,
+  newCategoryName: "New Category",
+  createdCategoryName: null
 };
+
+const BOOKMARK_PRIMARY_LINKS = [
+  { label: "All Bookmarks", count: "462", state: "active", icon: BOOKMARK_FOLDER_ICON },
+  { label: "Uncategorized", count: "4", state: "default", icon: BOOKMARK_FOLDER_ICON },
+  { label: "Deleted Items", count: "0", state: "default", icon: BOOKMARK_TRASH_ICON, iconClass: "bookmark-trash-icon" }
+];
+
+const BOOKMARK_CATEGORY_LINKS = [
+  { label: "Books", count: "57", state: "default", icon: BOOKMARK_FOLDER_ICON },
+  { label: "WP Resources", count: "41", state: "default", icon: BOOKMARK_FOLDER_ICON, chevron: true },
+  { label: "YouTube Channels", count: "77", state: "default", icon: BOOKMARK_FOLDER_ICON },
+  { label: "Arts and Culture", count: "172", state: "default", icon: BOOKMARK_LOCKED_ICON, iconClass: "bookmark-locked-icon" },
+  { label: "Sports", count: "47", state: "default", icon: BOOKMARK_FOLDER_ICON },
+  { label: "Design Resources", count: "64", state: "default", icon: BOOKMARK_FOLDER_ICON }
+];
+
+const BOOKMARK_FILTER_LINKS = [
+  { label: "Favourites", count: "52", icon: BOOKMARK_STAR_ICON },
+  { label: "Links", count: "71", icon: BOOKMARK_LINK_ICON },
+  { label: "Articles", count: "44", icon: BOOKMARK_DOCUMENTS_ICON },
+  { label: "Audio", count: "113", icon: BOOKMARK_AUDIO_ICON, iconClass: "bookmark-audio-icon", iconFrameClass: "bookmark-audio-frame" },
+  { label: "Videos", count: "168", icon: BOOKMARK_VIDEO_ICON, iconClass: "bookmark-video-icon", iconFrameClass: "bookmark-video-frame" },
+  { label: "Untagged", count: "56", icon: BOOKMARK_UNTAGGED_ICON, iconClass: "bookmark-untagged-icon", iconFrameClass: "bookmark-untagged-frame" }
+];
 
 function getByPath(object, path) {
   return path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), object);
@@ -148,6 +188,98 @@ function renderNewBookmarkControl() {
   `;
 }
 
+function renderBookmarkSidebarLink(link) {
+  const stateClass = link.state === "active" ? " is-active" : "";
+  const chevronMarkup = link.chevron
+    ? `<span class="bookmark-sidebar-link-chevron"><img src="${BOOKMARK_CHEVRON_ICON}" alt="" width="8.249" height="4.448" /></span>`
+    : "";
+
+  return `
+    <button class="bookmark-sidebar-link${stateClass}" type="button">
+      <span class="bookmark-sidebar-link-main">
+        <span class="bookmark-sidebar-link-icon ${link.iconClass || ""}">
+          <span class="bookmark-sidebar-link-icon-frame ${link.iconFrameClass || ""}">
+            <img src="${link.icon}" alt="" width="20" height="20" />
+          </span>
+        </span>
+        <span class="bookmark-sidebar-link-label">${link.label}</span>
+        ${chevronMarkup}
+      </span>
+      <span class="bookmark-sidebar-link-count">${link.count}</span>
+    </button>
+  `;
+}
+
+function renderNewCategoryDraftRow() {
+  return `
+    <div class="bookmark-sidebar-link bookmark-sidebar-link-draft">
+      <span class="bookmark-sidebar-link-main">
+        <span class="bookmark-sidebar-link-icon">
+          <span class="bookmark-sidebar-link-icon-frame">
+            <img src="${BOOKMARK_FOLDER_ICON}" alt="" width="20" height="20" />
+          </span>
+        </span>
+        <input
+          class="bookmark-sidebar-draft-input"
+          type="text"
+          value="${appState.newCategoryName.replace(/"/g, "&quot;")}"
+          data-role="new-category-input"
+        />
+      </span>
+      <span class="bookmark-sidebar-link-count">0</span>
+    </div>
+  `;
+}
+
+function renderBookmarkSidebar() {
+  const primaryLinks = BOOKMARK_PRIMARY_LINKS.map(renderBookmarkSidebarLink).join("");
+  const categoryItems = [...BOOKMARK_CATEGORY_LINKS];
+  if (appState.createdCategoryName) {
+    categoryItems.push({
+      label: appState.createdCategoryName,
+      count: "0",
+      state: "default",
+      icon: BOOKMARK_FOLDER_ICON
+    });
+  }
+  const categoryLinks = categoryItems.map(renderBookmarkSidebarLink).join("");
+  const filterLinks = BOOKMARK_FILTER_LINKS.map(renderBookmarkSidebarLink).join("");
+  const createCategoryClass = appState.createCategoryState === "active" ? " is-active" : "";
+  const categoryContent = appState.isCreatingCategory
+    ? `${categoryLinks}${renderNewCategoryDraftRow()}`
+    : categoryLinks;
+  const categoryCount = String(BOOKMARK_CATEGORY_LINKS.length + (appState.createdCategoryName ? 1 : 0));
+
+  return `
+    <div class="bookmark-sidebar-panel">
+      <div class="bookmark-sidebar-group bookmark-sidebar-group-primary">
+        ${primaryLinks}
+      </div>
+
+      <div class="bookmark-sidebar-section-title">
+        <span>Categories</span>
+        <span>${categoryCount}</span>
+      </div>
+
+      <button class="bookmark-sidebar-create-category${createCategoryClass}" type="button" data-action="create-category">
+        <span>Create a new category</span>
+        <img src="${BOOKMARK_ADD_CATEGORY_ICON}" alt="" width="20" height="20" />
+      </button>
+
+      <div class="bookmark-sidebar-group bookmark-sidebar-group-categories">
+        ${categoryContent}
+      </div>
+
+      <div class="bookmark-sidebar-filter-wrapper">
+        <div class="bookmark-sidebar-filter-title">Filter by</div>
+        <div class="bookmark-sidebar-group bookmark-sidebar-group-filter">
+          ${filterLinks}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderShell() {
   const sidebarMarkup = SIDEBAR_SECTIONS.map(renderSidebarSection).join("");
 
@@ -202,9 +334,7 @@ function renderShell() {
 
             <div class="workspace">
               <aside class="panel bookmark-sidebar">
-                <div class="scaffold-block">
-                  <span class="scaffold-label">Bookmark Sidebar</span>
-                </div>
+                ${renderBookmarkSidebar()}
               </aside>
 
               <section class="content-panel">
@@ -231,11 +361,22 @@ function renderShell() {
     const valueLength = newBookmarkInput.value.length;
     newBookmarkInput.setSelectionRange(valueLength, valueLength);
   }
+
+  const newCategoryInput = app.querySelector("[data-role='new-category-input']");
+  if (appState.isCreatingCategory && newCategoryInput) {
+    newCategoryInput.focus();
+    const valueLength = newCategoryInput.value.length;
+    newCategoryInput.setSelectionRange(valueLength, valueLength);
+  }
 }
 
 function handleAppClick(event) {
   const actionTarget = event.target.closest("[data-action]");
   if (!actionTarget) {
+    if (appState.isCreatingCategory && !event.target.closest("[data-role='new-category-input']")) {
+      finalizeNewCategory();
+    }
+
     if (appState.newBookmarkExpanded && !event.target.closest(".new-bookmark-control")) {
       appState.newBookmarkExpanded = false;
       renderShell();
@@ -259,7 +400,25 @@ function handleAppClick(event) {
     appState.bookmarkUrl = "";
     appState.newBookmarkExpanded = false;
     renderShell();
+    return;
   }
+
+  if (action === "create-category") {
+    appState.createCategoryState = "active";
+    appState.isCreatingCategory = true;
+    appState.newCategoryName = "New Category";
+    renderShell();
+    return;
+  }
+}
+
+function finalizeNewCategory() {
+  const trimmedName = appState.newCategoryName.trim();
+  appState.createdCategoryName = trimmedName || "New Category";
+  appState.createCategoryState = "default";
+  appState.isCreatingCategory = false;
+  appState.newCategoryName = appState.createdCategoryName;
+  renderShell();
 }
 
 function handleAppInput(event) {
@@ -269,11 +428,31 @@ function handleAppInput(event) {
     if (saveButton) {
       saveButton.classList.toggle("is-disabled", !appState.bookmarkUrl.trim());
     }
+    return;
+  }
+
+  if (event.target.matches("[data-role='new-category-input']")) {
+    appState.newCategoryName = event.target.value;
   }
 }
 
 function handleAppKeydown(event) {
   if (!event.target.matches("[data-role='new-bookmark-input']")) {
+    if (event.target.matches("[data-role='new-category-input']")) {
+      if (event.key === "Enter") {
+        finalizeNewCategory();
+      }
+
+      if (event.key === "Escape") {
+        appState.createCategoryState = "default";
+        appState.isCreatingCategory = false;
+        appState.newCategoryName = "New Category";
+        appState.createdCategoryName = null;
+        renderShell();
+      }
+      return;
+    }
+
     if (event.key === "Escape" && appState.newBookmarkExpanded) {
       appState.newBookmarkExpanded = false;
       renderShell();
