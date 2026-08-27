@@ -13,6 +13,9 @@ const DOWNLOAD_ICON = "https://www.figma.com/api/mcp/asset/b67e6ab5-b7fe-4f88-a8
 const SIDEBAR_FOOTER_IMAGE = "https://www.figma.com/api/mcp/asset/852e9ec6-8bda-45bd-8cab-7ede875208d9.png";
 const SUBMENU_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/19230374-707a-4a80-8bff-f772da09df6b.svg";
 const SUBMENU_HOVER_ICON = "https://www.figma.com/api/mcp/asset/96d9c4ed-aae2-4a83-aba7-995add61699c.svg";
+const ADD_BOOKMARK_ICON = "https://www.figma.com/api/mcp/asset/a317d3cb-5629-470e-8eaf-f209811de574.svg";
+const IMPORT_BOOKMARKS_ICON = "https://www.figma.com/api/mcp/asset/99ddd7df-8b30-4b0b-97c5-16695869139a.svg";
+const SEARCH_ICON = "https://www.figma.com/api/mcp/asset/20f159d6-507d-4b16-af4f-4a36737483f6.svg";
 
 const SIDEBAR_SECTIONS = [
   { title: "Main Menu", icon: MENU_ICON, links: [] },
@@ -23,6 +26,11 @@ const SIDEBAR_SECTIONS = [
   { title: "Create", icon: { src: CREATE_ICON, className: "is-create", frameClassName: "frame-create" }, links: [{ label: "Design Suite", state: "default" }, { label: "Backgrounds", state: "default" }] },
   { title: "Download", icon: DOWNLOAD_ICON, links: [{ label: "Web Browser", state: "default" }, { label: "Bookmarks", state: "active" }, { label: "Free Media", state: "default" }] }
 ];
+
+const appState = {
+  newBookmarkExpanded: false,
+  bookmarkUrl: ""
+};
 
 function getByPath(object, path) {
   return path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), object);
@@ -49,6 +57,7 @@ function setCssVars(tokens) {
   const vars = {
     "--bg-app": resolveValue(mapped.bg.app, tokens),
     "--bg-panel": resolveValue(mapped.bg.panel, tokens),
+    "--bg-panel-alt": resolveValue(mapped.bg["panel-alt"], tokens),
     "--bg-input": resolveValue(mapped.bg.input, tokens),
     "--bg-nav-selected": resolveValue(mapped.bg.nav-selected, tokens),
     "--bg-row-hover": resolveValue(mapped.bg.row-hover, tokens),
@@ -81,7 +90,7 @@ function setCssVars(tokens) {
 }
 
 function renderSidebarSection(section, index) {
-  const icon = typeof section.icon === "string" ? { src: section.icon, className: "" } : section.icon;
+  const icon = typeof section.icon === "string" ? { src: section.icon, className: "", frameClassName: "" } : section.icon;
   const sectionLinks = section.links
     .map(
       (link) => `
@@ -109,6 +118,33 @@ function renderSidebarSection(section, index) {
       ${section.links.length ? `<div class="sidebar-section-links">${sectionLinks}</div>` : ""}
     </section>
     ${index < SIDEBAR_SECTIONS.length - 1 ? `<img class="sidebar-divider" src="${DIVIDER_ICON}" alt="" />` : ""}
+  `;
+}
+
+function renderNewBookmarkControl() {
+  const expandedClass = appState.newBookmarkExpanded ? " is-expanded" : "";
+  const inputValue = appState.bookmarkUrl.replace(/"/g, "&quot;");
+  const saveDisabled = appState.bookmarkUrl.trim() ? "" : " is-disabled";
+
+  return `
+    <div class="new-bookmark-control${expandedClass}">
+      <button class="new-bookmark-trigger" type="button" data-action="toggle-new-bookmark" aria-expanded="${appState.newBookmarkExpanded}">
+        <span class="new-bookmark-trigger-main">
+          <img class="new-bookmark-icon" src="${ADD_BOOKMARK_ICON}" alt="" width="20" height="20" />
+          <span class="new-bookmark-label">New bookmark</span>
+        </span>
+      </button>
+      <div class="new-bookmark-expand-shell">
+        <input
+          class="new-bookmark-url-input"
+          type="text"
+          placeholder="Type or paste a URL, then hit Enter or Save"
+          value="${inputValue}"
+          data-role="new-bookmark-input"
+        />
+        <button class="new-bookmark-save${saveDisabled}" type="button" data-action="save-bookmark">Save bookmark</button>
+      </div>
+    </div>
   `;
 }
 
@@ -142,39 +178,119 @@ function renderShell() {
             </div>
             <span class="sidebar-toggle-label">Keep Sidebar Open</span>
           </div>
-          <img class="sidebar-footer-image" src="${SIDEBAR_FOOTER_IMAGE}" alt="" />
         </aside>
 
         <section class="main-frame">
-          <header class="top-bar">
-            <div class="scaffold-block">
-              <span class="scaffold-label">Top Bar</span>
+          <div class="main-frame-wrapper">
+            <header class="top-bar">
+              <div class="nav-bar">
+                ${renderNewBookmarkControl()}
+
+                <label class="search-wrapper" aria-label="Search bookmarks">
+                  <input class="search-input" type="text" placeholder="Search for your bookmark" />
+                  <span class="search-icon-wrapper">
+                    <img class="search-icon" src="${SEARCH_ICON}" alt="" width="16" height="16" />
+                  </span>
+                </label>
+
+                <button class="import-bookmarks-button" type="button">
+                  <img class="import-bookmarks-icon" src="${IMPORT_BOOKMARKS_ICON}" alt="" width="20" height="20" />
+                  <span>Import bookmarks</span>
+                </button>
+              </div>
+            </header>
+
+            <div class="workspace">
+              <aside class="panel bookmark-sidebar">
+                <div class="scaffold-block">
+                  <span class="scaffold-label">Bookmark Sidebar</span>
+                </div>
+              </aside>
+
+              <section class="content-panel">
+                <div class="scaffold-block">
+                  <span class="scaffold-label">Bookmark Card Area</span>
+                </div>
+              </section>
+
+              <aside class="panel inspector-host">
+                <div class="scaffold-block">
+                  <span class="scaffold-label">Right Details Panel</span>
+                </div>
+              </aside>
             </div>
-          </header>
-
-          <div class="workspace">
-            <aside class="panel bookmark-sidebar">
-              <div class="scaffold-block">
-                <span class="scaffold-label">Bookmark Sidebar</span>
-              </div>
-            </aside>
-
-            <section class="content-panel">
-              <div class="scaffold-block">
-                <span class="scaffold-label">Bookmark Card Area</span>
-              </div>
-            </section>
-
-            <aside class="panel inspector-host">
-              <div class="scaffold-block">
-                <span class="scaffold-label">Right Details Panel</span>
-              </div>
-            </aside>
           </div>
         </section>
       </main>
     </div>
   `;
+
+  const newBookmarkInput = app.querySelector("[data-role='new-bookmark-input']");
+  if (appState.newBookmarkExpanded && newBookmarkInput) {
+    newBookmarkInput.focus();
+    const valueLength = newBookmarkInput.value.length;
+    newBookmarkInput.setSelectionRange(valueLength, valueLength);
+  }
+}
+
+function handleAppClick(event) {
+  const actionTarget = event.target.closest("[data-action]");
+  if (!actionTarget) {
+    if (appState.newBookmarkExpanded && !event.target.closest(".new-bookmark-control")) {
+      appState.newBookmarkExpanded = false;
+      renderShell();
+    }
+    return;
+  }
+
+  const action = actionTarget.getAttribute("data-action");
+
+  if (action === "toggle-new-bookmark") {
+    appState.newBookmarkExpanded = !appState.newBookmarkExpanded;
+    renderShell();
+    return;
+  }
+
+  if (action === "save-bookmark") {
+    if (!appState.bookmarkUrl.trim()) {
+      return;
+    }
+
+    appState.bookmarkUrl = "";
+    appState.newBookmarkExpanded = false;
+    renderShell();
+  }
+}
+
+function handleAppInput(event) {
+  if (event.target.matches("[data-role='new-bookmark-input']")) {
+    appState.bookmarkUrl = event.target.value;
+    const saveButton = app.querySelector(".new-bookmark-save");
+    if (saveButton) {
+      saveButton.classList.toggle("is-disabled", !appState.bookmarkUrl.trim());
+    }
+  }
+}
+
+function handleAppKeydown(event) {
+  if (!event.target.matches("[data-role='new-bookmark-input']")) {
+    if (event.key === "Escape" && appState.newBookmarkExpanded) {
+      appState.newBookmarkExpanded = false;
+      renderShell();
+    }
+    return;
+  }
+
+  if (event.key === "Enter" && appState.bookmarkUrl.trim()) {
+    appState.bookmarkUrl = "";
+    appState.newBookmarkExpanded = false;
+    renderShell();
+  }
+
+  if (event.key === "Escape") {
+    appState.newBookmarkExpanded = false;
+    renderShell();
+  }
 }
 
 async function init() {
@@ -187,6 +303,9 @@ async function init() {
   }
 
   renderShell();
+  app.addEventListener("click", handleAppClick);
+  app.addEventListener("input", handleAppInput);
+  app.addEventListener("keydown", handleAppKeydown);
 }
 
 init();
