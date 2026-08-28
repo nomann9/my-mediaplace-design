@@ -41,6 +41,16 @@ const PREVIEW_OPEN_BROWSER_ICON = "https://www.figma.com/api/mcp/asset/051a2ab3-
 const PREVIEW_EXPORT_ICON = "https://www.figma.com/api/mcp/asset/5f26ce51-9981-4171-97b7-07cf7a229dc3.svg";
 const PREVIEW_CANCEL_ICON = "https://www.figma.com/api/mcp/asset/25da3f51-5df0-4680-9765-cd8656a883ec.svg";
 const PREVIEW_SAMPLE_IMAGE = "https://www.figma.com/api/mcp/asset/53e379e3-fe1d-47b7-aeb1-8c6d5a809aeb.png";
+const CONTENT_HEADING_GRID_ICON = "https://www.figma.com/api/mcp/asset/5c9dc650-53bb-473b-a9d1-b2804de33879.svg";
+const CONTENT_HEADING_LIST_ICON = "https://www.figma.com/api/mcp/asset/f4508592-039f-4d47-84b2-b594eb27090f.svg";
+const CONTENT_HEADING_SORT_ICON = "https://www.figma.com/api/mcp/asset/1fa760cb-50df-4cfc-bd2c-9a3d7eb3489a.svg";
+const CONTENT_HEADING_FILTER_ICON = "https://www.figma.com/api/mcp/asset/dff6dc00-bc20-4d9b-bf8a-74341a971939.svg";
+const CONTENT_HEADING_ZOOM_IN_ICON = "https://www.figma.com/api/mcp/asset/b86f0e45-17a3-445a-bdb1-094973fa24bd.svg";
+const CONTENT_HEADING_ZOOM_OUT_ICON = "https://www.figma.com/api/mcp/asset/bd9db7c3-bd2f-437f-9580-a3851d13bea7.svg";
+const CONTENT_HEADING_KEBAB_ICON = "https://www.figma.com/api/mcp/asset/76c18ae0-a889-4392-96d3-80d8615fd602.svg";
+const CONTENT_HEADING_CHEVRON_ICON = "https://www.figma.com/api/mcp/asset/accb1ea1-9379-4c28-87ef-54491ba33582.svg";
+const CONTENT_HEADING_EXPORT_ICON = "https://www.figma.com/api/mcp/asset/61d44a29-73d4-4aef-8720-a2b8325b86e7.svg";
+const CONTENT_SELECT_ALL_ICON = "https://www.figma.com/api/mcp/asset/adb88873-24cf-427a-badd-f086508668e8.svg";
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 
 const SIDEBAR_SECTIONS = [
@@ -60,9 +70,12 @@ const appState = {
   isCreatingCategory: false,
   newCategoryName: "New Category",
   createdCategoryNames: [],
-  selectedBookmarkId: null,
+  activeSidebarCategory: "All Bookmarks",
+  selectedBookmarkIds: [],
   activeContentView: "cards",
   previewBookmarkId: null,
+  bookmarkDisplayMode: "grid",
+  bookmarkZoomLevel: 1,
   bookmarks: [
     {
       id: "sample-bookmark-1",
@@ -319,13 +332,15 @@ function renderNewBookmarkControl() {
 }
 
 function renderBookmarkSidebarLink(link) {
-  const stateClass = link.state === "active" ? " is-active" : "";
+  const isActive = appState.activeSidebarCategory === link.label;
+  const stateClass = isActive ? " is-active" : "";
   const chevronMarkup = link.chevron
     ? `<span class="bookmark-sidebar-link-chevron"><img src="${BOOKMARK_CHEVRON_ICON}" alt="" width="8.249" height="4.448" /></span>`
     : "";
+  const linkCount = link.count;
 
   return `
-    <button class="bookmark-sidebar-link${stateClass}" type="button">
+    <button class="bookmark-sidebar-link${stateClass}" type="button" data-action="select-sidebar-category" data-category="${escapeHtml(link.label)}">
       <span class="bookmark-sidebar-link-main">
         <span class="bookmark-sidebar-link-icon ${link.iconClass || ""}">
           <span class="bookmark-sidebar-link-icon-frame ${link.iconFrameClass || ""}">
@@ -335,7 +350,7 @@ function renderBookmarkSidebarLink(link) {
         <span class="bookmark-sidebar-link-label">${link.label}</span>
         ${chevronMarkup}
       </span>
-      <span class="bookmark-sidebar-link-count">${link.count}</span>
+      <span class="bookmark-sidebar-link-count">${linkCount}</span>
     </button>
   `;
 }
@@ -362,18 +377,10 @@ function renderNewCategoryDraftRow() {
 }
 
 function renderBookmarkSidebar() {
-  const primaryLinks = BOOKMARK_PRIMARY_LINKS.map(renderBookmarkSidebarLink).join("");
-  const categoryItems = [...BOOKMARK_CATEGORY_LINKS];
-  appState.createdCategoryNames.forEach((name) => {
-    categoryItems.push({
-      label: name,
-      count: "0",
-      state: "default",
-      icon: BOOKMARK_FOLDER_ICON
-    });
-  });
-  const categoryLinks = categoryItems.map(renderBookmarkSidebarLink).join("");
-  const filterLinks = BOOKMARK_FILTER_LINKS.map(renderBookmarkSidebarLink).join("");
+  const sidebarLinks = getSidebarCategoryLinks();
+  const primaryLinks = sidebarLinks.primaryLinks.map(renderBookmarkSidebarLink).join("");
+  const categoryLinks = sidebarLinks.categoryLinks.map(renderBookmarkSidebarLink).join("");
+  const filterLinks = sidebarLinks.filterLinks.map(renderBookmarkSidebarLink).join("");
   const createCategoryClass = appState.createCategoryState === "active" ? " is-active" : "";
   const categoryContent = appState.isCreatingCategory
     ? `${categoryLinks}${renderNewCategoryDraftRow()}`
@@ -433,6 +440,49 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+function getSidebarCategoryLinks() {
+  const primaryLinks = BOOKMARK_PRIMARY_LINKS.map((link) => ({ ...link, group: "primary" }));
+  const categoryLinks = BOOKMARK_CATEGORY_LINKS.map((link) => ({ ...link, group: "category" }));
+  const createdCategoryLinks = appState.createdCategoryNames.map((name) => ({
+    label: name,
+    count: "0",
+    icon: BOOKMARK_FOLDER_ICON,
+    group: "category"
+  }));
+  const filterLinks = BOOKMARK_FILTER_LINKS.map((link) => ({ ...link, group: "filter" }));
+
+  return {
+    primaryLinks,
+    categoryLinks: [...categoryLinks, ...createdCategoryLinks],
+    filterLinks
+  };
+}
+
+function getBookmarksForCategory(categoryName) {
+  if (categoryName === "All Bookmarks") {
+    return appState.bookmarks;
+  }
+
+  if (categoryName === "Deleted Items") {
+    return [];
+  }
+
+  return appState.bookmarks.filter((bookmark) => bookmark.category === categoryName);
+}
+
+function getCategoryBookmarkCount(categoryName) {
+  return getBookmarksForCategory(categoryName).length;
+}
+
+function getVisibleBookmarkIds() {
+  return getBookmarksForCategory(appState.activeSidebarCategory).map((bookmark) => bookmark.id);
+}
+
+function areAllVisibleBookmarksSelected() {
+  const visibleIds = getVisibleBookmarkIds();
+  return visibleIds.length > 0 && visibleIds.every((id) => appState.selectedBookmarkIds.includes(id));
+}
+
 function formatBookmarkDate(date) {
   return date.toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -482,7 +532,7 @@ function buildPreviewArticle(bookmarkTitle, bookmarkUrl) {
 }
 
 function renderBookmarkCard(bookmark) {
-  const isSelected = appState.selectedBookmarkId === bookmark.id;
+  const isSelected = appState.selectedBookmarkIds.includes(bookmark.id);
   const selectedClass = isSelected ? " is-selected" : "";
   const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
   const imageContent = bookmark.isFetchingImage
@@ -547,10 +597,109 @@ function renderBookmarkCard(bookmark) {
 }
 
 function renderBookmarkCards() {
+  const visibleBookmarks = getBookmarksForCategory(appState.activeSidebarCategory);
+  const canvasClass = appState.bookmarkDisplayMode === "list" ? "bookmark-card-canvas is-list" : "bookmark-card-canvas";
+  const zoomStyle = ` style="--bookmark-card-scale:${appState.bookmarkZoomLevel}"`;
+
   return `
-    <div class="bookmark-card-canvas">
-      ${appState.bookmarks.map(renderBookmarkCard).join("")}
+    <div class="bookmark-content-view">
+      ${renderBookmarkContentHeader()}
+      <div class="${canvasClass}"${zoomStyle}>
+        ${visibleBookmarks.map(renderBookmarkCard).join("")}
+      </div>
     </div>
+  `;
+}
+
+function renderBookmarkContentHeader() {
+  const activeCategory = appState.activeSidebarCategory;
+  const bookmarkCount = getCategoryBookmarkCount(activeCategory);
+  const gridActiveClass = appState.bookmarkDisplayMode === "grid" ? " is-active" : "";
+  const listActiveClass = appState.bookmarkDisplayMode === "list" ? " is-active" : "";
+  const selectAllActive = areAllVisibleBookmarksSelected();
+  const selectAllIcon = selectAllActive ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : CONTENT_SELECT_ALL_ICON;
+
+  return `
+    <section class="bookmark-content-header">
+      <div class="bookmark-content-header-main">
+        <div class="bookmark-content-title-block">
+          <div class="bookmark-content-title-row">
+            <h2 class="bookmark-content-title">${escapeHtml(activeCategory)}</h2>
+            <span class="bookmark-content-count">(${bookmarkCount})</span>
+          </div>
+
+          <button class="bookmark-content-select-all${selectAllActive ? " is-selected" : ""}" type="button" data-action="select-all-bookmarks" aria-pressed="${selectAllActive}">
+            <span class="bookmark-content-select-icon">
+              <img src="${selectAllIcon}" alt="" width="20" height="20" />
+            </span>
+            <span class="bookmark-content-select-label">Select All</span>
+          </button>
+        </div>
+
+        <div class="bookmark-content-actions">
+          <div class="bookmark-content-action-buttons">
+            <div class="bookmark-content-view-toggle">
+              <button class="bookmark-content-view-button${gridActiveClass}" type="button" data-action="set-bookmark-display" data-display="grid" aria-pressed="${appState.bookmarkDisplayMode === "grid"}">
+                <span class="bookmark-content-view-icon bookmark-content-view-icon-grid">
+                  <img src="${CONTENT_HEADING_GRID_ICON}" alt="" width="20" height="20" />
+                </span>
+              </button>
+              <button class="bookmark-content-view-button${listActiveClass}" type="button" data-action="set-bookmark-display" data-display="list" aria-pressed="${appState.bookmarkDisplayMode === "list"}">
+                <span class="bookmark-content-view-icon bookmark-content-view-icon-list">
+                  <img src="${CONTENT_HEADING_LIST_ICON}" alt="" width="20" height="20" />
+                </span>
+              </button>
+            </div>
+
+            <div class="bookmark-content-icon-group">
+              <button class="bookmark-content-icon-button" type="button" data-action="sort-bookmarks" aria-label="Sort bookmarks">
+                <span class="bookmark-content-icon bookmark-content-icon-sort">
+                  <img src="${CONTENT_HEADING_SORT_ICON}" alt="" width="20" height="20" />
+                </span>
+              </button>
+              <button class="bookmark-content-icon-button" type="button" data-action="filter-bookmarks" aria-label="Filter bookmarks">
+                <span class="bookmark-content-icon bookmark-content-icon-filter">
+                  <img src="${CONTENT_HEADING_FILTER_ICON}" alt="" width="20" height="20" />
+                </span>
+              </button>
+            </div>
+
+            <div class="bookmark-content-icon-group bookmark-content-icon-group-zoom">
+              <button class="bookmark-content-icon-button" type="button" data-action="zoom-bookmarks-in" aria-label="Zoom in">
+                <span class="bookmark-content-icon bookmark-content-icon-zoom-in">
+                  <img src="${CONTENT_HEADING_ZOOM_IN_ICON}" alt="" width="20" height="20" />
+                </span>
+              </button>
+              <button class="bookmark-content-icon-button" type="button" data-action="zoom-bookmarks-out" aria-label="Zoom out">
+                <span class="bookmark-content-icon bookmark-content-icon-zoom-out">
+                  <img src="${CONTENT_HEADING_ZOOM_OUT_ICON}" alt="" width="20" height="20" />
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="bookmark-content-export-group">
+            <button class="bookmark-content-export-button" type="button" data-action="export-all-items">
+              <span class="bookmark-content-export-main">
+                <span class="bookmark-content-icon bookmark-content-icon-export-all">
+                  <img src="${CONTENT_HEADING_EXPORT_ICON}" alt="" width="20" height="20" />
+                </span>
+                <span class="bookmark-content-export-label">Export all items</span>
+              </span>
+              <span class="bookmark-content-export-chevron">
+                <img src="${CONTENT_HEADING_CHEVRON_ICON}" alt="" width="16" height="16" />
+              </span>
+            </button>
+
+            <button class="bookmark-content-kebab" type="button" data-action="open-content-kebab" aria-label="More options">
+              <span class="bookmark-content-icon bookmark-content-icon-kebab">
+                <span class="bookmark-content-kebab-dots" aria-hidden="true"></span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
   `;
 }
 
@@ -865,7 +1014,13 @@ function handleAppClick(event) {
     const bookmarkCard = event.target.closest("[data-bookmark-id]");
     if (bookmarkCard && !event.target.closest(".bookmark-card-actions")) {
       const bookmarkId = bookmarkCard.getAttribute("data-bookmark-id");
-      appState.selectedBookmarkId = appState.selectedBookmarkId === bookmarkId ? null : bookmarkId;
+      if (bookmarkId) {
+        if (appState.selectedBookmarkIds.includes(bookmarkId)) {
+          appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => id !== bookmarkId);
+        } else {
+          appState.selectedBookmarkIds = [...appState.selectedBookmarkIds, bookmarkId];
+        }
+      }
       renderShell();
       return;
     }
@@ -927,7 +1082,61 @@ function handleAppClick(event) {
 
   if (action === "toggle-bookmark-selection") {
     const bookmarkId = actionTarget.getAttribute("data-bookmark-id");
-    appState.selectedBookmarkId = appState.selectedBookmarkId === bookmarkId ? null : bookmarkId;
+    if (bookmarkId) {
+      if (appState.selectedBookmarkIds.includes(bookmarkId)) {
+        appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => id !== bookmarkId);
+      } else {
+        appState.selectedBookmarkIds = [...appState.selectedBookmarkIds, bookmarkId];
+      }
+    }
+    renderShell();
+    return;
+  }
+
+  if (action === "select-sidebar-category") {
+    const categoryName = actionTarget.getAttribute("data-category");
+    if (categoryName) {
+      appState.activeSidebarCategory = categoryName;
+      appState.activeContentView = "cards";
+      appState.previewBookmarkId = null;
+      appState.selectedBookmarkIds = [];
+      renderShell();
+    }
+    return;
+  }
+
+  if (action === "select-all-bookmarks") {
+    const visibleIds = getVisibleBookmarkIds();
+    if (!visibleIds.length) {
+      return;
+    }
+
+    if (visibleIds.every((id) => appState.selectedBookmarkIds.includes(id))) {
+      appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => !visibleIds.includes(id));
+    } else {
+      appState.selectedBookmarkIds = Array.from(new Set([...appState.selectedBookmarkIds, ...visibleIds]));
+    }
+    renderShell();
+    return;
+  }
+
+  if (action === "set-bookmark-display") {
+    const display = actionTarget.getAttribute("data-display");
+    if (display === "grid" || display === "list") {
+      appState.bookmarkDisplayMode = display;
+      renderShell();
+    }
+    return;
+  }
+
+  if (action === "zoom-bookmarks-in") {
+    appState.bookmarkZoomLevel = Math.min(1.2, Number((appState.bookmarkZoomLevel + 0.05).toFixed(2)));
+    renderShell();
+    return;
+  }
+
+  if (action === "zoom-bookmarks-out") {
+    appState.bookmarkZoomLevel = Math.max(0.85, Number((appState.bookmarkZoomLevel - 0.05).toFixed(2)));
     renderShell();
     return;
   }
