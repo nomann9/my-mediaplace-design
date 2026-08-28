@@ -32,8 +32,15 @@ const BOOKMARK_CARD_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/ced824d2-
 const BOOKMARK_CARD_STATUS_ICON = "https://www.figma.com/api/mcp/asset/2d53fa14-ae79-4f83-9a12-f9e17b81785d.svg";
 const BOOKMARK_CARD_IMAGE = "https://www.figma.com/api/mcp/asset/36c69744-24a8-48c5-9137-2083bbd8c4d3.png";
 const BOOKMARK_CARD_PREVIEW_ICON = "https://www.figma.com/api/mcp/asset/cd99a904-e37b-4824-94f8-d475665e7b89.svg";
-const BOOKMARK_CARD_EDIT_ICON = "https://www.figma.com/api/mcp/asset/3ab6383a-88b8-4061-ae51-6fafbca9d490.svg";
-const BOOKMARK_CARD_CHECKBOX_ICON = "https://www.figma.com/api/mcp/asset/eb7cb228-647d-4639-88be-54d53c1a585f.svg";
+const BOOKMARK_CARD_EDIT_ICON = "https://www.figma.com/api/mcp/asset/b401eac2-d597-40e6-9cd9-25ee1f552b44.svg";
+const BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON = "https://www.figma.com/api/mcp/asset/5ceeea3d-f361-4901-90ce-2d26977860d9.svg";
+const BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/adc55625-92fc-4076-a15f-78aef1d3fef2.svg";
+const PREVIEW_GO_BACK_ICON = "https://www.figma.com/api/mcp/asset/84a29a21-3060-4208-a0f7-607d518413dc.svg";
+const PREVIEW_SAVE_ICON = "https://www.figma.com/api/mcp/asset/1ea3982f-40a6-4866-ace3-27db56a37222.svg";
+const PREVIEW_OPEN_BROWSER_ICON = "https://www.figma.com/api/mcp/asset/051a2ab3-1d04-4723-845c-4177958427f6.svg";
+const PREVIEW_EXPORT_ICON = "https://www.figma.com/api/mcp/asset/5f26ce51-9981-4171-97b7-07cf7a229dc3.svg";
+const PREVIEW_CANCEL_ICON = "https://www.figma.com/api/mcp/asset/25da3f51-5df0-4680-9765-cd8656a883ec.svg";
+const PREVIEW_SAMPLE_IMAGE = "https://www.figma.com/api/mcp/asset/53e379e3-fe1d-47b7-aeb1-8c6d5a809aeb.png";
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 
 const SIDEBAR_SECTIONS = [
@@ -54,15 +61,119 @@ const appState = {
   newCategoryName: "New Category",
   createdCategoryNames: [],
   selectedBookmarkId: null,
+  activeContentView: "cards",
+  previewBookmarkId: null,
   bookmarks: [
     {
       id: "sample-bookmark-1",
-      title: "Sample Bookmark Heading",
+      title: "What is a CMS? A 101 Guide",
       url: "sampleurltext.com",
       category: "Uncategorized",
       date: "28 Aug 2026",
       image: BOOKMARK_CARD_IMAGE,
-      isFetchingImage: true
+      previewImage: PREVIEW_SAMPLE_IMAGE,
+      isFetchingImage: true,
+      subtitle: "A CMS, or content management system, is a tool that helps you create, edit, and organize content on a website without needing to know how to code. It lets you easily update text, images, and pages using simple controls.",
+      datePublished: "04/08/2024",
+      author: "Seriously Published",
+      articleHtml: `
+        <p><strong>What Is a Content Management System (CMS)?</strong></p>
+        <p>A Content Management System (CMS) is software that allows people to create, manage, and update digital content, usually a website, without needing advanced technical skills. Instead of writing code every time you want to change a page, a CMS provides an easy-to-use interface where content can be added, edited, or removed quickly.</p>
+        <p>Before CMS platforms existed, building and updating websites required knowledge of programming languages like HTML, CSS, and PHP. Even small changes meant editing code files manually. A CMS removes most of that complexity by separating content (text, images, videos) from design and functionality.</p>
+        <p>In simple terms, a CMS lets you focus on what you want to say, rather than how the website is built behind the scenes.</p>
+        <p><strong>Core Functions of a CMS</strong></p>
+        <p>Most CMS platforms share a common set of features that make managing websites easier and more efficient.</p>
+        <p><strong>1. Content Creation and Editing</strong></p>
+        <p>A CMS provides visual editors where users can:</p>
+        <p>Write and format text</p>
+        <p>Add images, videos, and links</p>
+        <p>Create pages and blog posts</p>
+        <p>Preview content before publishing</p>
+        <p>This is similar to using a word processor, making it accessible even for beginners.</p>
+        <p><strong>2. Content Organization</strong></p>
+        <p>CMSs help organize content in logical ways, such as:</p>
+        <p>Categories and tags</p>
+        <p>Menus and navigation structures</p>
+        <p>Media libraries for images and files</p>
+        <p>This makes large websites easier to manage and helps visitors find information quickly.</p>
+        <p><strong>3. User Management</strong></p>
+        <p>Many CMS platforms support multiple users, each with different permissions. For example:</p>
+        <p>Administrators control the entire site</p>
+        <p>Editors manage and publish content</p>
+        <p>Authors write content but cannot change site settings</p>
+        <p>This is especially useful for teams, businesses, or organizations.</p>
+        <p><strong>4. Design and Layout Control</strong></p>
+        <p>Instead of designing every page manually, CMSs use templates or themes. These control how content looks while allowing you to change the content independently.</p>
+        <p><strong>Why CMS Platforms Are So Popular</strong></p>
+        <p>CMS platforms are widely used because they save time, reduce costs, and make website ownership more practical for non-technical users.</p>
+        <p>Key benefits include:</p>
+        <p>No need to code for everyday updates</p>
+        <p>Faster content publishing</p>
+        <p>Consistent design across pages</p>
+        <p>Easier collaboration</p>
+        <p>Scalability as a website grows</p>
+        <p>Because of these advantages, CMSs are used for blogs, business websites, news platforms, online stores, and even large enterprise websites.</p>
+        <p><strong>Open-Source vs Proprietary CMSs</strong></p>
+        <p>CMS platforms generally fall into two categories:</p>
+        <p><strong>Open-Source CMSs</strong></p>
+        <p>Free to use</p>
+        <p>Source code is publicly available</p>
+        <p>Highly customizable</p>
+        <p>Large community support</p>
+        <p>Examples include WordPress.org, Joomla, and Drupal.</p>
+        <p><strong>Proprietary CMSs</strong></p>
+        <p>Usually paid services</p>
+        <p>Often hosted and managed by the provider</p>
+        <p>Limited customization compared to open-source systems</p>
+        <p>Each type has advantages, but open-source CMSs are especially popular due to flexibility and cost-effectiveness.</p>
+        <p><strong>Introducing WordPress.org</strong></p>
+        <p>WordPress.org is the most widely used CMS in the world and is an open-source platform. It began as a blogging tool but has evolved into a full-featured CMS capable of powering almost any type of website.</p>
+        <p>It is important to distinguish WordPress.org from WordPress.com:</p>
+        <p>WordPress.org is self-hosted and offers full control</p>
+        <p>WordPress.com is a hosted service with limitations unless you pay for higher plans</p>
+        <p>When people refer to WordPress as a CMS in a professional or flexible sense, they usually mean WordPress.org.</p>
+        <p><strong>How WordPress.org Works as a CMS</strong></p>
+        <p>WordPress.org provides a dashboard where users manage all aspects of their site. From this central area, you can create content, customize design, install features, and manage users.</p>
+        <p><strong>Content in WordPress</strong></p>
+        <p>WordPress uses two main content types:</p>
+        <p>Posts - Typically used for blog articles or news updates</p>
+        <p>Pages - Used for static content like "About" or "Contact" pages</p>
+        <p>Content is created using a block-based editor, allowing users to add elements such as headings, images, buttons, and videos without writing code.</p>
+        <p><strong>Themes: Controlling the Look of Your Site</strong></p>
+        <p>In WordPress, themes control the visual appearance of a website. A theme defines:</p>
+        <p>Layout</p>
+        <p>Colors and fonts</p>
+        <p>Page structure</p>
+        <p>Responsive design for mobile devices</p>
+        <p>Users can change themes without losing their content, which makes redesigning a website much easier than rebuilding it from scratch.</p>
+        <p><strong>Plugins: Extending Functionality</strong></p>
+        <p>One of WordPress.org's greatest strengths is its plugin system. Plugins add new features without modifying core software.</p>
+        <p>Common uses for plugins include:</p>
+        <p>Search engine optimization (SEO)</p>
+        <p>Contact forms</p>
+        <p>Security enhancements</p>
+        <p>Performance and caching</p>
+        <p>E-commerce (e.g., WooCommerce)</p>
+        <p>There are thousands of free and paid plugins available, allowing WordPress to scale from a simple blog to a complex business platform.</p>
+        <p><strong>User Roles and Permissions in WordPress</strong></p>
+        <p>WordPress includes built-in user roles such as:</p>
+        <p>Administrator</p>
+        <p>Editor</p>
+        <p>Author</p>
+        <p>Contributor</p>
+        <p>Subscriber</p>
+        <p>Each role has defined permissions, making WordPress suitable for teams and content-heavy websites.</p>
+        <p><strong>Why WordPress.org Is So Widely Used</strong></p>
+        <p>WordPress.org is popular because it balances simplicity with power. Beginners can launch a website quickly, while developers can deeply customize functionality.</p>
+        <p>Key reasons for its popularity include:</p>
+        <p>Free and open-source</p>
+        <p>Large global community</p>
+        <p>Extensive documentation</p>
+        <p>Frequent updates and improvements</p>
+        <p>Flexibility for many use cases</p>
+        <p><strong>Conclusion</strong></p>
+        <p>A CMS is a tool that simplifies website creation and management by removing the need for constant coding. It allows users to focus on content, structure, and growth. WordPress.org exemplifies this concept by offering a flexible, powerful, and user-friendly CMS that can support everything from personal blogs to large-scale business websites.</p>
+      `
     }
   ]
 };
@@ -299,6 +410,29 @@ function renderBookmarkSidebar() {
   `;
 }
 
+function renderUtilityButton({ action, label, icon, width, className = "", iconClassName = "", state = "default" }) {
+  const stateClass = state !== "default" ? ` is-${state}` : "";
+  const widthStyle = width ? ` style="width:${width}px"` : "";
+
+  return `
+    <button class="utility-button${stateClass}${className ? ` ${className}` : ""}" type="button" data-action="${action}"${widthStyle}>
+      <span class="utility-button-icon${iconClassName ? ` ${iconClassName}` : ""}">
+        <img src="${icon}" alt="" width="20" height="20" />
+      </span>
+      <span class="utility-button-label">${label}</span>
+    </button>
+  `;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function formatBookmarkDate(date) {
   return date.toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -338,9 +472,19 @@ function getBookmarkUrlLabel(url) {
   }
 }
 
+function buildPreviewArticle(bookmarkTitle, bookmarkUrl) {
+  return `
+    <p><strong>${escapeHtml(bookmarkTitle)}</strong></p>
+    <p>This bookmark was saved from ${escapeHtml(bookmarkUrl)} and is ready for a richer article preview once live page parsing is connected. For now, MediaPlace is using structured placeholder content so the preview experience behaves like the final app.</p>
+    <p>The preview pane is designed to hold the featured image, title, supporting description, metadata such as publication date and author when available, and the main article body in a readable long-form layout.</p>
+    <p>As we continue building this out, this area can be populated from real fetched content and mapped into the same design without changing the layout system.</p>
+  `;
+}
+
 function renderBookmarkCard(bookmark) {
   const isSelected = appState.selectedBookmarkId === bookmark.id;
   const selectedClass = isSelected ? " is-selected" : "";
+  const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
   const imageContent = bookmark.isFetchingImage
     ? `
         <div class="bookmark-card-fetch">
@@ -357,19 +501,26 @@ function renderBookmarkCard(bookmark) {
         <div class="bookmark-card-hover-gradient"></div>
 
         <div class="bookmark-card-overlay">
-          <button class="bookmark-card-checkbox" type="button" data-action="toggle-bookmark-selection" data-bookmark-id="${bookmark.id}" aria-label="Select bookmark">
-            <img src="${BOOKMARK_CARD_CHECKBOX_ICON}" alt="" width="20" height="20" />
+          <button class="bookmark-card-checkbox${isSelected ? " is-selected" : ""}" type="button" data-action="toggle-bookmark-selection" data-bookmark-id="${bookmark.id}" aria-label="Select bookmark" aria-pressed="${isSelected}">
+            <img src="${checkboxIcon}" alt="" width="20" height="20" />
           </button>
 
           <div class="bookmark-card-actions" aria-hidden="${isSelected}">
-            <button class="bookmark-card-action bookmark-card-action-preview" type="button" data-action="preview-bookmark">
-              <img src="${BOOKMARK_CARD_PREVIEW_ICON}" alt="" width="20" height="20" />
-              <span>Preview</span>
-            </button>
-            <button class="bookmark-card-action bookmark-card-action-edit" type="button" data-action="edit-bookmark">
-              <img src="${BOOKMARK_CARD_EDIT_ICON}" alt="" width="20" height="20" />
-              <span>Edit</span>
-            </button>
+            ${renderUtilityButton({
+              action: "preview-bookmark",
+              label: "Preview",
+              icon: BOOKMARK_CARD_PREVIEW_ICON,
+              width: 89,
+              className: "bookmark-card-action"
+            })}
+            ${renderUtilityButton({
+              action: "edit-bookmark",
+              label: "Edit",
+              icon: BOOKMARK_CARD_EDIT_ICON,
+              width: 66,
+              className: "bookmark-card-action",
+              iconClassName: "utility-button-icon-edit"
+            })}
           </div>
         </div>
       </div>
@@ -403,6 +554,121 @@ function renderBookmarkCards() {
   `;
 }
 
+function renderPreviewMetaRow(bookmark) {
+  const metaItems = [];
+
+  if (bookmark.datePublished) {
+    metaItems.push(`<span class="preview-pane-meta-item">Date Published: ${escapeHtml(bookmark.datePublished)}</span>`);
+  }
+
+  if (bookmark.author) {
+    metaItems.push(`<span class="preview-pane-meta-item preview-pane-meta-item-right">Author: ${escapeHtml(bookmark.author)}</span>`);
+  }
+
+  if (!metaItems.length) {
+    metaItems.push(`<span class="preview-pane-meta-item">Added: ${escapeHtml(bookmark.date)}</span>`);
+  }
+
+  return metaItems.join("");
+}
+
+function renderPreviewPane() {
+  const bookmark = appState.bookmarks.find((item) => item.id === appState.previewBookmarkId) || appState.bookmarks[0];
+  const subtitleMarkup = bookmark.subtitle
+    ? `<p class="preview-pane-subtitle">${escapeHtml(bookmark.subtitle)}</p>`
+    : "";
+  const articleMarkup = bookmark.articleHtml || `<p>${escapeHtml(bookmark.title)} was saved to MediaPlace.</p>`;
+
+  return `
+    <section class="preview-pane">
+      <div class="preview-pane-nav-wrapper">
+        <div class="preview-pane-nav">
+          ${renderUtilityButton({
+            action: "close-preview",
+            label: "Go back",
+            icon: PREVIEW_GO_BACK_ICON,
+            width: 91,
+            className: "preview-pane-button",
+            iconClassName: "utility-button-icon-back"
+          })}
+
+          <div class="preview-pane-nav-actions">
+            <div class="preview-pane-nav-group">
+              ${renderUtilityButton({
+                action: "save-permanent-copy",
+                label: "Save permanent copy",
+                icon: PREVIEW_SAVE_ICON,
+                width: 170,
+                className: "preview-pane-button",
+                iconClassName: "utility-button-icon-save"
+              })}
+              ${renderUtilityButton({
+                action: "open-bookmark-browser",
+                label: "Open in browser",
+                icon: PREVIEW_OPEN_BROWSER_ICON,
+                width: 138,
+                className: "preview-pane-button",
+                iconClassName: "utility-button-icon-open"
+              })}
+              ${renderUtilityButton({
+                action: "export-bookmark",
+                label: "Export bookmark",
+                icon: PREVIEW_EXPORT_ICON,
+                width: 142,
+                className: "preview-pane-button",
+                iconClassName: "utility-button-icon-export"
+              })}
+              ${renderUtilityButton({
+                action: "edit-bookmark",
+                label: "Edit",
+                icon: BOOKMARK_CARD_EDIT_ICON,
+                width: 66,
+                className: "preview-pane-button",
+                iconClassName: "utility-button-icon-edit"
+              })}
+            </div>
+            ${renderUtilityButton({
+              action: "close-preview",
+              label: "Cancel",
+              icon: PREVIEW_CANCEL_ICON,
+              width: 84,
+              className: "preview-pane-button",
+              iconClassName: "utility-button-icon-cancel"
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-pane-scrollbar" data-role="preview-scrollbar" aria-hidden="true">
+        <div class="preview-pane-scroll-thumb" data-role="preview-scroll-thumb"></div>
+      </div>
+
+      <div class="preview-pane-content-shell">
+        <div class="preview-pane-content-wrapper">
+          <div class="preview-pane-head">
+            <div class="preview-pane-image">
+              <img src="${bookmark.previewImage || bookmark.image}" alt="" />
+            </div>
+
+            <div class="preview-pane-heading-block">
+              <h1 class="preview-pane-title">${escapeHtml(bookmark.title)}</h1>
+              ${subtitleMarkup}
+            </div>
+
+            <div class="preview-pane-meta-row">
+              ${renderPreviewMetaRow(bookmark)}
+            </div>
+          </div>
+
+          <article class="preview-pane-article">
+            ${articleMarkup}
+          </article>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function queueBookmarkImageReveal(bookmarkId) {
   window.setTimeout(() => {
     const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
@@ -413,6 +679,92 @@ function queueBookmarkImageReveal(bookmarkId) {
     bookmark.isFetchingImage = false;
     renderShell();
   }, BOOKMARK_IMAGE_FETCH_DURATION_MS);
+}
+
+function renderContentPanel() {
+  return appState.activeContentView === "preview" ? renderPreviewPane() : renderBookmarkCards();
+}
+
+function setupPreviewPaneScroll() {
+  const previewPane = app.querySelector(".preview-pane");
+  const scrollContainer = app.querySelector(".preview-pane-content-shell");
+  const scrollbar = app.querySelector("[data-role='preview-scrollbar']");
+  const scrollThumb = app.querySelector("[data-role='preview-scroll-thumb']");
+
+  if (!previewPane || !scrollContainer || !scrollbar || !scrollThumb) {
+    return;
+  }
+
+  const minThumbHeight = 170;
+  let dragState = null;
+
+  function syncThumbPosition() {
+    const maxScrollTop = Math.max(scrollContainer.scrollHeight - scrollContainer.clientHeight, 0);
+    const railHeight = scrollbar.clientHeight;
+    const thumbHeight = maxScrollTop > 0
+      ? Math.max((scrollContainer.clientHeight / scrollContainer.scrollHeight) * railHeight, minThumbHeight)
+      : railHeight;
+    const maxThumbTop = Math.max(railHeight - thumbHeight, 0);
+    const thumbTop = maxScrollTop > 0 ? (scrollContainer.scrollTop / maxScrollTop) * maxThumbTop : 0;
+
+    scrollThumb.style.height = `${thumbHeight}px`;
+    scrollThumb.style.transform = `translateY(${thumbTop}px)`;
+  }
+
+  function handlePointerMove(event) {
+    if (!dragState) {
+      return;
+    }
+
+    const railHeight = scrollbar.clientHeight;
+    const thumbHeight = scrollThumb.offsetHeight;
+    const maxThumbTop = Math.max(railHeight - thumbHeight, 0);
+    const nextThumbTop = Math.min(Math.max(event.clientY - dragState.pointerOffset, 0), maxThumbTop);
+    const maxScrollTop = Math.max(scrollContainer.scrollHeight - scrollContainer.clientHeight, 0);
+    const nextScrollTop = maxThumbTop > 0 ? (nextThumbTop / maxThumbTop) * maxScrollTop : 0;
+
+    scrollContainer.scrollTop = nextScrollTop;
+  }
+
+  function clearDragState() {
+    dragState = null;
+    window.removeEventListener("pointermove", handlePointerMove);
+    window.removeEventListener("pointerup", clearDragState);
+  }
+
+  scrollContainer.addEventListener("scroll", syncThumbPosition);
+
+  previewPane.addEventListener("wheel", (event) => {
+    if (event.target.closest(".preview-pane-content-shell")) {
+      return;
+    }
+
+    scrollContainer.scrollTop += event.deltaY;
+    event.preventDefault();
+  }, { passive: false });
+
+  scrollbar.addEventListener("pointerdown", (event) => {
+    if (event.target === scrollThumb) {
+      dragState = {
+        pointerOffset: event.clientY - scrollThumb.getBoundingClientRect().top
+      };
+
+      window.addEventListener("pointermove", handlePointerMove);
+      window.addEventListener("pointerup", clearDragState);
+      return;
+    }
+
+    const railRect = scrollbar.getBoundingClientRect();
+    const thumbHeight = scrollThumb.offsetHeight;
+    const maxScrollTop = Math.max(scrollContainer.scrollHeight - scrollContainer.clientHeight, 0);
+    const maxThumbTop = Math.max(scrollbar.clientHeight - thumbHeight, 0);
+    const nextThumbTop = Math.min(Math.max(event.clientY - railRect.top - thumbHeight / 2, 0), maxThumbTop);
+    const nextScrollTop = maxThumbTop > 0 ? (nextThumbTop / maxThumbTop) * maxScrollTop : 0;
+
+    scrollContainer.scrollTop = nextScrollTop;
+  });
+
+  syncThumbPosition();
 }
 
 function renderShell() {
@@ -473,7 +825,7 @@ function renderShell() {
               </aside>
 
               <section class="content-panel">
-                ${renderBookmarkCards()}
+                ${renderContentPanel()}
               </section>
 
               <aside class="panel inspector-host">
@@ -500,6 +852,10 @@ function renderShell() {
     newCategoryInput.focus();
     const valueLength = newCategoryInput.value.length;
     newCategoryInput.setSelectionRange(valueLength, valueLength);
+  }
+
+  if (appState.activeContentView === "preview") {
+    setupPreviewPaneScroll();
   }
 }
 
@@ -539,14 +895,18 @@ function handleAppClick(event) {
     }
 
     const rawUrl = appState.bookmarkUrl.trim();
+    const bookmarkTitle = getBookmarkTitleFromUrl(rawUrl);
+    const bookmarkUrl = getBookmarkUrlLabel(rawUrl);
     const nextBookmark = {
       id: `bookmark-${Date.now()}`,
-      title: getBookmarkTitleFromUrl(rawUrl),
-      url: getBookmarkUrlLabel(rawUrl),
+      title: bookmarkTitle,
+      url: bookmarkUrl,
       category: "Uncategorized",
       date: formatBookmarkDate(new Date()),
       image: BOOKMARK_CARD_IMAGE,
-      isFetchingImage: true
+      previewImage: PREVIEW_SAMPLE_IMAGE,
+      isFetchingImage: true,
+      articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
     };
 
     appState.bookmarks.unshift(nextBookmark);
@@ -572,7 +932,24 @@ function handleAppClick(event) {
     return;
   }
 
-  if (action === "preview-bookmark" || action === "edit-bookmark") {
+  if (action === "preview-bookmark") {
+    const bookmarkId = actionTarget.closest("[data-bookmark-id]")?.getAttribute("data-bookmark-id");
+    if (bookmarkId) {
+      appState.previewBookmarkId = bookmarkId;
+      appState.activeContentView = "preview";
+      renderShell();
+    }
+    return;
+  }
+
+  if (action === "close-preview") {
+    appState.activeContentView = "cards";
+    appState.previewBookmarkId = null;
+    renderShell();
+    return;
+  }
+
+  if (action === "save-permanent-copy" || action === "open-bookmark-browser" || action === "export-bookmark" || action === "edit-bookmark") {
     return;
   }
 }
@@ -626,14 +1003,18 @@ function handleAppKeydown(event) {
 
   if (event.key === "Enter" && appState.bookmarkUrl.trim()) {
     const rawUrl = appState.bookmarkUrl.trim();
+    const bookmarkTitle = getBookmarkTitleFromUrl(rawUrl);
+    const bookmarkUrl = getBookmarkUrlLabel(rawUrl);
     const nextBookmark = {
       id: `bookmark-${Date.now()}`,
-      title: getBookmarkTitleFromUrl(rawUrl),
-      url: getBookmarkUrlLabel(rawUrl),
+      title: bookmarkTitle,
+      url: bookmarkUrl,
       category: "Uncategorized",
       date: formatBookmarkDate(new Date()),
       image: BOOKMARK_CARD_IMAGE,
-      isFetchingImage: true
+      previewImage: PREVIEW_SAMPLE_IMAGE,
+      isFetchingImage: true,
+      articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
     };
 
     appState.bookmarks.unshift(nextBookmark);
