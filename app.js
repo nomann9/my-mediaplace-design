@@ -86,6 +86,7 @@ const appState = {
       image: BOOKMARK_CARD_IMAGE,
       previewImage: PREVIEW_SAMPLE_IMAGE,
       isFetchingImage: true,
+      isPermanentCopy: false,
       subtitle: "A CMS, or content management system, is a tool that helps you create, edit, and organize content on a website without needing to know how to code. It lets you easily update text, images, and pages using simple controls.",
       datePublished: "04/08/2024",
       author: "Seriously Published",
@@ -484,12 +485,12 @@ function areAllVisibleBookmarksSelected() {
 }
 
 function syncBookmarkSelectionUi() {
-  app.querySelectorAll(".bookmark-card[data-bookmark-id]").forEach((card) => {
+  app.querySelectorAll(".bookmark-card[data-bookmark-id], .bookmark-list-card[data-bookmark-id]").forEach((card) => {
     const bookmarkId = card.getAttribute("data-bookmark-id");
     const isSelected = appState.selectedBookmarkIds.includes(bookmarkId);
     const checkbox = card.querySelector(".bookmark-card-checkbox");
     const checkboxImage = checkbox?.querySelector("img");
-    const actions = card.querySelector(".bookmark-card-actions");
+    const actions = card.querySelector(".bookmark-card-actions, .bookmark-list-card-actions");
 
     card.classList.toggle("is-selected", isSelected);
 
@@ -602,6 +603,9 @@ function renderBookmarkCard(bookmark) {
   const isSelected = appState.selectedBookmarkIds.includes(bookmark.id);
   const selectedClass = isSelected ? " is-selected" : "";
   const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
+  const permanentCopyBanner = bookmark.isPermanentCopy
+    ? `<div class="bookmark-card-permanent-banner"><span>Permanent copy</span></div>`
+    : "";
   const imageContent = bookmark.isFetchingImage
     ? `
         <div class="bookmark-card-fetch">
@@ -615,6 +619,7 @@ function renderBookmarkCard(bookmark) {
     <article class="bookmark-card${selectedClass}" data-bookmark-id="${bookmark.id}">
       <div class="bookmark-card-image-shell">
         ${imageContent}
+        ${permanentCopyBanner}
         <div class="bookmark-card-hover-gradient"></div>
 
         <div class="bookmark-card-overlay">
@@ -663,16 +668,85 @@ function renderBookmarkCard(bookmark) {
   `;
 }
 
+function renderBookmarkListCard(bookmark) {
+  const isSelected = appState.selectedBookmarkIds.includes(bookmark.id);
+  const selectedClass = isSelected ? " is-selected" : "";
+  const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
+  const imageContent = bookmark.isFetchingImage
+    ? `
+        <div class="bookmark-card-fetch bookmark-list-card-fetch">
+          <span class="bookmark-card-fetch-text">Fetching Image</span>
+          <span class="bookmark-card-fetch-shine" aria-hidden="true"></span>
+        </div>
+      `
+    : `<img class="bookmark-list-card-image" src="${bookmark.image}" alt="" />`;
+
+  return `
+    <article class="bookmark-list-card${selectedClass}" data-bookmark-id="${bookmark.id}">
+      <div class="bookmark-list-card-main">
+        <div class="bookmark-list-card-media-group">
+          <button class="bookmark-card-checkbox${isSelected ? " is-selected" : ""}" type="button" data-action="toggle-bookmark-selection" data-bookmark-id="${bookmark.id}" aria-label="Select bookmark" aria-pressed="${isSelected}">
+            <img src="${checkboxIcon}" alt="" width="20" height="20" />
+          </button>
+
+          <div class="bookmark-list-card-image-shell">
+            ${imageContent}
+            <div class="bookmark-list-card-image-gradient"></div>
+          </div>
+        </div>
+
+        <div class="bookmark-list-card-copy">
+          <div class="bookmark-list-card-heading-group">
+            <h3 class="bookmark-list-card-title">${escapeHtml(bookmark.title)}</h3>
+            <div class="bookmark-list-card-url-row">
+              <span class="bookmark-list-card-url">${escapeHtml(bookmark.url)}</span>
+              <img class="bookmark-list-card-status" src="${BOOKMARK_CARD_STATUS_ICON}" alt="" width="6" height="6" />
+            </div>
+          </div>
+
+          <div class="bookmark-list-card-meta-row">
+            <div class="bookmark-list-card-category">
+              <img class="bookmark-list-card-category-icon" src="${BOOKMARK_CARD_FOLDER_ICON}" alt="" width="20" height="20" />
+              <span class="bookmark-list-card-meta-text">${escapeHtml(bookmark.category)}</span>
+            </div>
+            <span class="bookmark-list-card-meta-divider"></span>
+            <span class="bookmark-list-card-meta-text">${escapeHtml(bookmark.date)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bookmark-list-card-actions" aria-hidden="${isSelected}">
+        ${renderUtilityButton({
+          action: "preview-bookmark",
+          label: "Preview",
+          icon: BOOKMARK_CARD_PREVIEW_ICON,
+          width: 89,
+          className: "bookmark-card-action"
+        })}
+        ${renderUtilityButton({
+          action: "edit-bookmark",
+          label: "Edit",
+          icon: BOOKMARK_CARD_EDIT_ICON,
+          width: 66,
+          className: "bookmark-card-action",
+          iconClassName: "utility-button-icon-edit"
+        })}
+      </div>
+    </article>
+  `;
+}
+
 function renderBookmarkCards() {
   const visibleBookmarks = getBookmarksForCategory(appState.activeSidebarCategory);
   const canvasClass = appState.bookmarkDisplayMode === "list" ? "bookmark-card-canvas is-list" : "bookmark-card-canvas";
   const zoomStyle = ` style="--bookmark-card-scale:${appState.bookmarkZoomLevel}"`;
+  const cardRenderer = appState.bookmarkDisplayMode === "list" ? renderBookmarkListCard : renderBookmarkCard;
 
   return `
     <div class="bookmark-content-view">
       ${renderBookmarkContentHeader()}
       <div class="${canvasClass}"${zoomStyle}>
-        ${visibleBookmarks.map(renderBookmarkCard).join("")}
+        ${visibleBookmarks.map(cardRenderer).join("")}
       </div>
     </div>
   `;
@@ -1079,7 +1153,7 @@ function handleAppClick(event) {
   const actionTarget = event.target.closest("[data-action]");
   if (!actionTarget) {
     const bookmarkCard = event.target.closest("[data-bookmark-id]");
-    if (bookmarkCard && !event.target.closest(".bookmark-card-actions")) {
+    if (bookmarkCard && !event.target.closest(".bookmark-card-actions, .bookmark-list-card-actions")) {
       const bookmarkId = bookmarkCard.getAttribute("data-bookmark-id");
       toggleBookmarkSelection(bookmarkId);
       return;
@@ -1121,6 +1195,7 @@ function handleAppClick(event) {
       image: BOOKMARK_CARD_IMAGE,
       previewImage: PREVIEW_SAMPLE_IMAGE,
       isFetchingImage: true,
+      isPermanentCopy: false,
       articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
     };
 
@@ -1201,7 +1276,17 @@ function handleAppClick(event) {
     return;
   }
 
-  if (action === "save-permanent-copy" || action === "open-bookmark-browser" || action === "export-bookmark" || action === "edit-bookmark") {
+  if (action === "save-permanent-copy") {
+    const bookmark = appState.bookmarks.find((item) => item.id === appState.previewBookmarkId);
+
+    if (bookmark) {
+      bookmark.isPermanentCopy = true;
+    }
+
+    return;
+  }
+
+  if (action === "open-bookmark-browser" || action === "export-bookmark" || action === "edit-bookmark") {
     return;
   }
 }
@@ -1266,6 +1351,7 @@ function handleAppKeydown(event) {
       image: BOOKMARK_CARD_IMAGE,
       previewImage: PREVIEW_SAMPLE_IMAGE,
       isFetchingImage: true,
+      isPermanentCopy: false,
       articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
     };
 
