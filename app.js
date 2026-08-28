@@ -28,6 +28,13 @@ const BOOKMARK_VIDEO_ICON = "https://www.figma.com/api/mcp/asset/37e8ebc8-9fd8-4
 const BOOKMARK_UNTAGGED_ICON = "https://www.figma.com/api/mcp/asset/cc60a370-1a30-406c-b299-08360a3f8f26.svg";
 const BOOKMARK_ADD_CATEGORY_ICON = "https://www.figma.com/api/mcp/asset/8d438e45-6706-469d-b423-0ebd6eef1681.svg";
 const BOOKMARK_ADD_CATEGORY_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/bd9f8cc2-a797-4c09-b87a-69ac123194f0.svg";
+const BOOKMARK_CARD_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/ced824d2-419d-40d6-8d93-73c0f483a758.svg";
+const BOOKMARK_CARD_STATUS_ICON = "https://www.figma.com/api/mcp/asset/2d53fa14-ae79-4f83-9a12-f9e17b81785d.svg";
+const BOOKMARK_CARD_IMAGE = "https://www.figma.com/api/mcp/asset/36c69744-24a8-48c5-9137-2083bbd8c4d3.png";
+const BOOKMARK_CARD_PREVIEW_ICON = "https://www.figma.com/api/mcp/asset/cd99a904-e37b-4824-94f8-d475665e7b89.svg";
+const BOOKMARK_CARD_EDIT_ICON = "https://www.figma.com/api/mcp/asset/3ab6383a-88b8-4061-ae51-6fafbca9d490.svg";
+const BOOKMARK_CARD_CHECKBOX_ICON = "https://www.figma.com/api/mcp/asset/eb7cb228-647d-4639-88be-54d53c1a585f.svg";
+const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 
 const SIDEBAR_SECTIONS = [
   { title: "Main Menu", icon: MENU_ICON, links: [] },
@@ -45,13 +52,25 @@ const appState = {
   createCategoryState: "default",
   isCreatingCategory: false,
   newCategoryName: "New Category",
-  createdCategoryNames: []
+  createdCategoryNames: [],
+  selectedBookmarkId: null,
+  bookmarks: [
+    {
+      id: "sample-bookmark-1",
+      title: "Sample Bookmark Heading",
+      url: "sampleurltext.com",
+      category: "Uncategorized",
+      date: "28 Aug 2026",
+      image: BOOKMARK_CARD_IMAGE,
+      isFetchingImage: true
+    }
+  ]
 };
 
 const BOOKMARK_PRIMARY_LINKS = [
   { label: "All Bookmarks", count: "462", state: "active", icon: BOOKMARK_FOLDER_ICON },
   { label: "Uncategorized", count: "4", state: "default", icon: BOOKMARK_FOLDER_ICON },
-  { label: "Deleted Items", count: "0", state: "default", icon: BOOKMARK_TRASH_ICON, iconClass: "bookmark-trash-icon" }
+  { label: "Deleted Items", count: "0", state: "default", icon: BOOKMARK_TRASH_ICON, iconClass: "bookmark-trash-icon", iconFrameClass: "bookmark-trash-frame" }
 ];
 
 const BOOKMARK_CATEGORY_LINKS = [
@@ -280,6 +299,122 @@ function renderBookmarkSidebar() {
   `;
 }
 
+function formatBookmarkDate(date) {
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function getBookmarkTitleFromUrl(url) {
+  try {
+    const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const { hostname, pathname } = new URL(normalizedUrl);
+    const cleanHostname = hostname.replace(/^www\./i, "");
+    const pathLabel = pathname
+      .split("/")
+      .filter(Boolean)
+      .pop();
+    const sourceLabel = pathLabel || cleanHostname.split(".")[0] || "bookmark";
+
+    return sourceLabel
+      .split(/[-_]+/)
+      .filter(Boolean)
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(" ") || "New Bookmark";
+  } catch (error) {
+    return "New Bookmark";
+  }
+}
+
+function getBookmarkUrlLabel(url) {
+  try {
+    const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const { hostname } = new URL(normalizedUrl);
+    return hostname.replace(/^www\./i, "") || url;
+  } catch (error) {
+    return url;
+  }
+}
+
+function renderBookmarkCard(bookmark) {
+  const isSelected = appState.selectedBookmarkId === bookmark.id;
+  const selectedClass = isSelected ? " is-selected" : "";
+  const imageContent = bookmark.isFetchingImage
+    ? `
+        <div class="bookmark-card-fetch">
+          <span class="bookmark-card-fetch-text">Fetching Image</span>
+          <span class="bookmark-card-fetch-shine" aria-hidden="true"></span>
+        </div>
+      `
+    : `<img class="bookmark-card-image" src="${bookmark.image}" alt="" />`;
+
+  return `
+    <article class="bookmark-card${selectedClass}" data-bookmark-id="${bookmark.id}">
+      <div class="bookmark-card-image-shell">
+        ${imageContent}
+        <div class="bookmark-card-hover-gradient"></div>
+
+        <div class="bookmark-card-overlay">
+          <button class="bookmark-card-checkbox" type="button" data-action="toggle-bookmark-selection" data-bookmark-id="${bookmark.id}" aria-label="Select bookmark">
+            <img src="${BOOKMARK_CARD_CHECKBOX_ICON}" alt="" width="20" height="20" />
+          </button>
+
+          <div class="bookmark-card-actions" aria-hidden="${isSelected}">
+            <button class="bookmark-card-action bookmark-card-action-preview" type="button" data-action="preview-bookmark">
+              <img src="${BOOKMARK_CARD_PREVIEW_ICON}" alt="" width="20" height="20" />
+              <span>Preview</span>
+            </button>
+            <button class="bookmark-card-action bookmark-card-action-edit" type="button" data-action="edit-bookmark">
+              <img src="${BOOKMARK_CARD_EDIT_ICON}" alt="" width="20" height="20" />
+              <span>Edit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bookmark-card-body">
+        <div class="bookmark-card-heading-group">
+          <h3 class="bookmark-card-title">${bookmark.title}</h3>
+          <div class="bookmark-card-url-row">
+            <span class="bookmark-card-url">${bookmark.url}</span>
+            <img class="bookmark-card-status" src="${BOOKMARK_CARD_STATUS_ICON}" alt="" width="6" height="6" />
+          </div>
+        </div>
+
+        <div class="bookmark-card-meta-row">
+          <div class="bookmark-card-category">
+            <img class="bookmark-card-category-icon" src="${BOOKMARK_CARD_FOLDER_ICON}" alt="" width="16" height="16" />
+            <span class="bookmark-card-category-text">${bookmark.category}</span>
+          </div>
+          <span class="bookmark-card-date">${bookmark.date}</span>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderBookmarkCards() {
+  return `
+    <div class="bookmark-card-canvas">
+      ${appState.bookmarks.map(renderBookmarkCard).join("")}
+    </div>
+  `;
+}
+
+function queueBookmarkImageReveal(bookmarkId) {
+  window.setTimeout(() => {
+    const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
+    if (!bookmark) {
+      return;
+    }
+
+    bookmark.isFetchingImage = false;
+    renderShell();
+  }, BOOKMARK_IMAGE_FETCH_DURATION_MS);
+}
+
 function renderShell() {
   const sidebarMarkup = SIDEBAR_SECTIONS.map(renderSidebarSection).join("");
 
@@ -338,9 +473,7 @@ function renderShell() {
               </aside>
 
               <section class="content-panel">
-                <div class="scaffold-block">
-                  <span class="scaffold-label">Bookmark Card Area</span>
-                </div>
+                ${renderBookmarkCards()}
               </section>
 
               <aside class="panel inspector-host">
@@ -373,6 +506,14 @@ function renderShell() {
 function handleAppClick(event) {
   const actionTarget = event.target.closest("[data-action]");
   if (!actionTarget) {
+    const bookmarkCard = event.target.closest("[data-bookmark-id]");
+    if (bookmarkCard && !event.target.closest(".bookmark-card-actions")) {
+      const bookmarkId = bookmarkCard.getAttribute("data-bookmark-id");
+      appState.selectedBookmarkId = appState.selectedBookmarkId === bookmarkId ? null : bookmarkId;
+      renderShell();
+      return;
+    }
+
     if (appState.isCreatingCategory && !event.target.closest("[data-role='new-category-input']")) {
       finalizeNewCategory();
     }
@@ -397,9 +538,22 @@ function handleAppClick(event) {
       return;
     }
 
+    const rawUrl = appState.bookmarkUrl.trim();
+    const nextBookmark = {
+      id: `bookmark-${Date.now()}`,
+      title: getBookmarkTitleFromUrl(rawUrl),
+      url: getBookmarkUrlLabel(rawUrl),
+      category: "Uncategorized",
+      date: formatBookmarkDate(new Date()),
+      image: BOOKMARK_CARD_IMAGE,
+      isFetchingImage: true
+    };
+
+    appState.bookmarks.unshift(nextBookmark);
     appState.bookmarkUrl = "";
     appState.newBookmarkExpanded = false;
     renderShell();
+    queueBookmarkImageReveal(nextBookmark.id);
     return;
   }
 
@@ -408,6 +562,17 @@ function handleAppClick(event) {
     appState.isCreatingCategory = true;
     appState.newCategoryName = "New Category";
     renderShell();
+    return;
+  }
+
+  if (action === "toggle-bookmark-selection") {
+    const bookmarkId = actionTarget.getAttribute("data-bookmark-id");
+    appState.selectedBookmarkId = appState.selectedBookmarkId === bookmarkId ? null : bookmarkId;
+    renderShell();
+    return;
+  }
+
+  if (action === "preview-bookmark" || action === "edit-bookmark") {
     return;
   }
 }
@@ -460,9 +625,22 @@ function handleAppKeydown(event) {
   }
 
   if (event.key === "Enter" && appState.bookmarkUrl.trim()) {
+    const rawUrl = appState.bookmarkUrl.trim();
+    const nextBookmark = {
+      id: `bookmark-${Date.now()}`,
+      title: getBookmarkTitleFromUrl(rawUrl),
+      url: getBookmarkUrlLabel(rawUrl),
+      category: "Uncategorized",
+      date: formatBookmarkDate(new Date()),
+      image: BOOKMARK_CARD_IMAGE,
+      isFetchingImage: true
+    };
+
+    appState.bookmarks.unshift(nextBookmark);
     appState.bookmarkUrl = "";
     appState.newBookmarkExpanded = false;
     renderShell();
+    queueBookmarkImageReveal(nextBookmark.id);
   }
 
   if (event.key === "Escape") {
@@ -481,6 +659,10 @@ async function init() {
   }
 
   renderShell();
+  const sampleBookmark = appState.bookmarks.find((bookmark) => bookmark.id === "sample-bookmark-1" && bookmark.isFetchingImage);
+  if (sampleBookmark) {
+    queueBookmarkImageReveal(sampleBookmark.id);
+  }
   app.addEventListener("click", handleAppClick);
   app.addEventListener("input", handleAppInput);
   app.addEventListener("keydown", handleAppKeydown);
