@@ -1,57 +1,136 @@
 const app = document.getElementById("app");
-const MINIMIZE_ICON = "https://www.figma.com/api/mcp/asset/4043a3d6-ec1e-45ac-8da0-70867e5fc2ab.svg";
-const MAXIMIZE_ICON = "https://www.figma.com/api/mcp/asset/0b42d234-1ebe-4fdb-ad85-6409398c5006.svg";
-const CLOSE_ICON = "https://www.figma.com/api/mcp/asset/53807366-1866-4b89-825f-8861b5ab728b.svg";
-const MENU_ICON = "https://www.figma.com/api/mcp/asset/561ab72a-6e9c-408e-81de-de2e78dea17d.svg";
+const MINIMIZE_ICON = "https://www.figma.com/api/mcp/asset/7e601499-4a77-4592-8125-b7b0a30b1b1b.svg";
+const MAXIMIZE_ICON = "https://www.figma.com/api/mcp/asset/fbd7336c-bc4c-4fb0-b4f2-7a6631055971.svg";
+const CLOSE_ICON = "https://www.figma.com/api/mcp/asset/602713fe-fb9a-4721-a13e-5e3f4ab79674.svg";
+const MENU_ICON = "https://www.figma.com/api/mcp/asset/720bdc27-8d08-4a5d-9916-f8d8f93d236d.svg";
 const DIVIDER_ICON = "https://www.figma.com/api/mcp/asset/baee6d56-c5fb-4a37-91e6-f51d1d605242.svg";
-const HOME_ICON = "https://www.figma.com/api/mcp/asset/61073f90-678d-4392-a1ad-267b4b8863e5.svg";
-const AI_ICON = "https://www.figma.com/api/mcp/asset/3a8cca54-a683-4d91-9fff-33134e09b205.svg";
-const ORGANIZE_ICON = "https://www.figma.com/api/mcp/asset/940bdea9-af91-438c-8fc9-f860643212f1.svg";
-const AVATAR_ICON = "https://www.figma.com/api/mcp/asset/586c36b0-2813-466f-b03b-e16e329e8069.svg";
-const CREATE_ICON = "https://www.figma.com/api/mcp/asset/493218df-370b-4370-8e1e-32389133235d.svg";
-const DOWNLOAD_ICON = "https://www.figma.com/api/mcp/asset/b67e6ab5-b7fe-4f88-a860-ce6e84479763.svg";
+const HOME_ICON = "https://www.figma.com/api/mcp/asset/6e49476b-49fd-4c9e-8d0c-2dbef7e0e1b8.svg";
+const AI_ICON = "https://www.figma.com/api/mcp/asset/6bd9b3aa-1cbb-4f9a-8349-87a3fca368ea.svg";
+const ORGANIZE_ICON = "https://www.figma.com/api/mcp/asset/fc3c4ca3-0c72-40cf-b42c-f6e5bdb2f3b0.svg";
+const AVATAR_ICON = "https://www.figma.com/api/mcp/asset/6e7395f1-4e0c-4815-8430-a30c56ea255d.svg";
+const CREATE_ICON = "https://www.figma.com/api/mcp/asset/550dcb0a-7145-427e-8a18-a63434daf2bf.svg";
+const DOWNLOAD_ICON = "https://www.figma.com/api/mcp/asset/be4205ff-e3e6-458a-9c41-f11674e0e6e0.svg";
 const SIDEBAR_FOOTER_IMAGE = "https://www.figma.com/api/mcp/asset/852e9ec6-8bda-45bd-8cab-7ede875208d9.png";
-const SUBMENU_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/19230374-707a-4a80-8bff-f772da09df6b.svg";
-const SUBMENU_HOVER_ICON = "https://www.figma.com/api/mcp/asset/96d9c4ed-aae2-4a83-aba7-995add61699c.svg";
-const ADD_BOOKMARK_ICON = "https://www.figma.com/api/mcp/asset/a317d3cb-5629-470e-8eaf-f209811de574.svg";
-const IMPORT_BOOKMARKS_ICON = "https://www.figma.com/api/mcp/asset/99ddd7df-8b30-4b0b-97c5-16695869139a.svg";
-const SEARCH_ICON = "https://www.figma.com/api/mcp/asset/20f159d6-507d-4b16-af4f-4a36737483f6.svg";
-const BOOKMARK_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/176b819c-7c13-4077-85bb-b143172eebac.svg";
-const BOOKMARK_CHEVRON_ICON = "https://www.figma.com/api/mcp/asset/adcfb519-287c-4b72-ba76-bb401c73e37a.svg";
-const BOOKMARK_LOCKED_ICON = "https://www.figma.com/api/mcp/asset/1eec1291-ba1f-4919-bc85-73517f3f1ecc.svg";
-const BOOKMARK_TRASH_ICON = "https://www.figma.com/api/mcp/asset/11520fd7-7461-48a2-af73-d13b36b73ecd.svg";
-const BOOKMARK_STAR_ICON = "https://www.figma.com/api/mcp/asset/3260432c-abe9-466d-8f6f-e67a15be0255.svg";
-const BOOKMARK_LINK_ICON = "https://www.figma.com/api/mcp/asset/28e4c662-783e-47e6-a3d5-8229a6c23020.svg";
-const BOOKMARK_DOCUMENTS_ICON = "https://www.figma.com/api/mcp/asset/59103a71-f384-478f-b511-a1c0d2e514c4.svg";
-const BOOKMARK_AUDIO_ICON = "https://www.figma.com/api/mcp/asset/45ce4d75-5b95-49b5-9c60-fe9b53edb3ec.svg";
-const BOOKMARK_VIDEO_ICON = "https://www.figma.com/api/mcp/asset/37e8ebc8-9fd8-4d8d-b340-d3d16e39a051.svg";
-const BOOKMARK_UNTAGGED_ICON = "https://www.figma.com/api/mcp/asset/cc60a370-1a30-406c-b299-08360a3f8f26.svg";
-const BOOKMARK_ADD_CATEGORY_ICON = "https://www.figma.com/api/mcp/asset/8d438e45-6706-469d-b423-0ebd6eef1681.svg";
+const SUBMENU_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/d14ab9b1-9f63-4821-89ea-05114afddb7d.svg";
+const SUBMENU_HOVER_ICON = "https://www.figma.com/api/mcp/asset/0c4152c0-5d12-4e4a-bb3e-1d9baeea8bbc.svg";
+const ADD_BOOKMARK_ICON = "https://www.figma.com/api/mcp/asset/8187ea10-c387-4055-a25a-9e4cab552ebf.svg";
+const IMPORT_BOOKMARKS_ICON = "https://www.figma.com/api/mcp/asset/607ed0a5-0585-4a46-8a19-d736f8ae2f1a.svg";
+const SEARCH_ICON = "https://www.figma.com/api/mcp/asset/978e8e43-ee32-4603-91ac-c8c181eb6874.svg";
+const BOOKMARK_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/ca75bd8f-299a-4698-99b6-f91ea0d629b4.svg";
+const BOOKMARK_CHEVRON_ICON = "https://www.figma.com/api/mcp/asset/271ebccb-2afd-4954-9878-0db0f5922d5a.svg";
+const BOOKMARK_LOCKED_ICON = "https://www.figma.com/api/mcp/asset/5cdb5433-c880-453f-b162-091b964b8633.svg";
+const BOOKMARK_TRASH_ICON = "https://www.figma.com/api/mcp/asset/36a07bee-315f-45ea-8a60-3fe9194c2d91.svg";
+const BOOKMARK_STAR_ICON = "https://www.figma.com/api/mcp/asset/6c223006-1025-4aa5-9909-623b0780d7d5.svg";
+const BOOKMARK_LINK_ICON = "https://www.figma.com/api/mcp/asset/d9e51e3d-80ab-4161-8976-bcaddffed1c4.svg";
+const BOOKMARK_DOCUMENTS_ICON = "https://www.figma.com/api/mcp/asset/adcff124-a0e6-4017-a7f7-565b1b3b4719.svg";
+const BOOKMARK_AUDIO_ICON = "https://www.figma.com/api/mcp/asset/8c242210-a24a-450b-a921-470095ac6aae.svg";
+const BOOKMARK_VIDEO_ICON = "https://www.figma.com/api/mcp/asset/3e0e7e6b-9a3c-43ce-8b1c-a3a4785d72da.svg";
+const BOOKMARK_UNTAGGED_ICON = "https://www.figma.com/api/mcp/asset/c1e49ec9-0852-4855-af79-a07a62c23b58.svg";
+const BOOKMARK_ADD_CATEGORY_ICON = "https://www.figma.com/api/mcp/asset/0d352490-3828-4415-97f1-658f67665a79.svg";
 const BOOKMARK_ADD_CATEGORY_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/bd9f8cc2-a797-4c09-b87a-69ac123194f0.svg";
-const BOOKMARK_CARD_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/ced824d2-419d-40d6-8d93-73c0f483a758.svg";
-const BOOKMARK_CARD_STATUS_ICON = "https://www.figma.com/api/mcp/asset/2d53fa14-ae79-4f83-9a12-f9e17b81785d.svg";
-const BOOKMARK_CARD_IMAGE = "https://www.figma.com/api/mcp/asset/36c69744-24a8-48c5-9137-2083bbd8c4d3.png";
-const BOOKMARK_CARD_PREVIEW_ICON = "https://www.figma.com/api/mcp/asset/cd99a904-e37b-4824-94f8-d475665e7b89.svg";
-const BOOKMARK_CARD_EDIT_ICON = "https://www.figma.com/api/mcp/asset/b401eac2-d597-40e6-9cd9-25ee1f552b44.svg";
-const BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON = "https://www.figma.com/api/mcp/asset/5ceeea3d-f361-4901-90ce-2d26977860d9.svg";
-const BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/adc55625-92fc-4076-a15f-78aef1d3fef2.svg";
+const BOOKMARK_CARD_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/ec8eec83-c151-41fb-8237-397ac2d6879d.svg";
+const BOOKMARK_CARD_STATUS_ICON = "https://www.figma.com/api/mcp/asset/72b09fc0-a749-41d5-acf3-dd273870b12b.svg";
+const BOOKMARK_CARD_STATUS_ORANGE_ICON = "https://www.figma.com/api/mcp/asset/499952dd-ae9f-492c-b112-5696e4b30d30.svg";
+const BOOKMARK_CARD_STATUS_RED_ICON = "https://www.figma.com/api/mcp/asset/29e3bf79-b244-4882-a32d-edf02204b091.svg";
+const BOOKMARK_CARD_IMAGE = "https://www.figma.com/api/mcp/asset/d8f2fcdb-afa9-473d-b841-0cb0b099b90e.png";
+const BOOKMARK_CARD_PREVIEW_ICON = "https://www.figma.com/api/mcp/asset/672b1a75-0c5e-4bb4-8173-360c9d03b270.svg";
+const BOOKMARK_CARD_EDIT_ICON = "https://www.figma.com/api/mcp/asset/62ab2753-7920-424d-b68e-a1d8e35bc6d2.svg";
+const BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON = "https://www.figma.com/api/mcp/asset/fec18e29-f693-4bc9-a415-6cf2fd693903.svg";
+const BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/806c58ad-7261-4f69-b792-8264bf967589.svg";
 const PREVIEW_GO_BACK_ICON = "https://www.figma.com/api/mcp/asset/84a29a21-3060-4208-a0f7-607d518413dc.svg";
 const PREVIEW_SAVE_ICON = "https://www.figma.com/api/mcp/asset/1ea3982f-40a6-4866-ace3-27db56a37222.svg";
 const PREVIEW_OPEN_BROWSER_ICON = "https://www.figma.com/api/mcp/asset/051a2ab3-1d04-4723-845c-4177958427f6.svg";
 const PREVIEW_EXPORT_ICON = "https://www.figma.com/api/mcp/asset/5f26ce51-9981-4171-97b7-07cf7a229dc3.svg";
 const PREVIEW_CANCEL_ICON = "https://www.figma.com/api/mcp/asset/25da3f51-5df0-4680-9765-cd8656a883ec.svg";
 const PREVIEW_SAMPLE_IMAGE = "https://www.figma.com/api/mcp/asset/53e379e3-fe1d-47b7-aeb1-8c6d5a809aeb.png";
-const CONTENT_HEADING_GRID_ICON = "https://www.figma.com/api/mcp/asset/5c9dc650-53bb-473b-a9d1-b2804de33879.svg";
-const CONTENT_HEADING_LIST_ICON = "https://www.figma.com/api/mcp/asset/f4508592-039f-4d47-84b2-b594eb27090f.svg";
-const CONTENT_HEADING_SORT_ICON = "https://www.figma.com/api/mcp/asset/1fa760cb-50df-4cfc-bd2c-9a3d7eb3489a.svg";
-const CONTENT_HEADING_FILTER_ICON = "https://www.figma.com/api/mcp/asset/dff6dc00-bc20-4d9b-bf8a-74341a971939.svg";
-const CONTENT_HEADING_ZOOM_IN_ICON = "https://www.figma.com/api/mcp/asset/b86f0e45-17a3-445a-bdb1-094973fa24bd.svg";
-const CONTENT_HEADING_ZOOM_OUT_ICON = "https://www.figma.com/api/mcp/asset/bd9db7c3-bd2f-437f-9580-a3851d13bea7.svg";
-const CONTENT_HEADING_KEBAB_ICON = "https://www.figma.com/api/mcp/asset/76c18ae0-a889-4392-96d3-80d8615fd602.svg";
-const CONTENT_HEADING_CHEVRON_ICON = "https://www.figma.com/api/mcp/asset/accb1ea1-9379-4c28-87ef-54491ba33582.svg";
-const CONTENT_HEADING_EXPORT_ICON = "https://www.figma.com/api/mcp/asset/61d44a29-73d4-4aef-8720-a2b8325b86e7.svg";
-const CONTENT_SELECT_ALL_ICON = "https://www.figma.com/api/mcp/asset/adb88873-24cf-427a-badd-f086508668e8.svg";
+const CONTENT_HEADING_GRID_ICON = "https://www.figma.com/api/mcp/asset/60569bc5-3723-4a02-973f-fb420db4777c.svg";
+const CONTENT_HEADING_LIST_ICON = "https://www.figma.com/api/mcp/asset/c60cb679-0433-499c-bdb8-6c1e60e41b0b.svg";
+const CONTENT_HEADING_SORT_ICON = "https://www.figma.com/api/mcp/asset/f2bf8147-4d8e-4087-92cd-76a8b1f59ded.svg";
+const CONTENT_HEADING_FILTER_ICON = "https://www.figma.com/api/mcp/asset/19806e00-cd8c-4e4a-9e1e-fc865b82931f.svg";
+const CONTENT_HEADING_ZOOM_IN_ICON = "https://www.figma.com/api/mcp/asset/342c9f09-24a1-4c6d-a9c0-a9bc64d3d5a6.svg";
+const CONTENT_HEADING_ZOOM_OUT_ICON = "https://www.figma.com/api/mcp/asset/4ffe2a45-f7d2-45c0-b247-998b6f0e8d89.svg";
+const CONTENT_HEADING_KEBAB_ICON = "https://www.figma.com/api/mcp/asset/f4287519-7129-4119-9586-362722a3a71c.svg";
+const CONTENT_HEADING_CHEVRON_ICON = BOOKMARK_CHEVRON_ICON;
+const CONTENT_HEADING_EXPORT_ICON = IMPORT_BOOKMARKS_ICON;
+const CONTENT_SELECT_ALL_ICON = BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
+const FIGMA_BOOKMARK_IMAGE_URLS = [
+  "https://www.figma.com/api/mcp/asset/e63e0d1d-dd75-4111-8cc7-0c913c0394ac.png",
+  "https://www.figma.com/api/mcp/asset/1496eea8-fa0f-4e20-ad1a-294e39ee913c.png",
+  "https://www.figma.com/api/mcp/asset/75b79825-358c-4e9d-9e08-4c4bbe1d57fd.png",
+  "https://www.figma.com/api/mcp/asset/b3bdc6ee-03c2-48d1-b158-487a91c4dbf4.png",
+  "https://www.figma.com/api/mcp/asset/087f4127-0032-45e1-9060-5ff48e86e070.png",
+  "https://www.figma.com/api/mcp/asset/432ddac5-0f8f-4d6b-867a-6c56aec5a42a.png",
+  "https://www.figma.com/api/mcp/asset/971092ce-0547-44db-b330-0b225f31d049.png",
+  "https://www.figma.com/api/mcp/asset/19bc93dd-1929-45ea-99c4-7bc89b24f374.png",
+  "https://www.figma.com/api/mcp/asset/a3434af2-49e4-42d4-8ae7-37ceb49fba3d.png",
+  "https://www.figma.com/api/mcp/asset/80722c10-9131-4f9b-8394-6f02659866c9.png",
+  "https://www.figma.com/api/mcp/asset/3686da08-e77b-40e5-9599-6654afd5e9cf.png",
+  "https://www.figma.com/api/mcp/asset/424a0253-67f4-4b2b-b8a1-1d6af8846c1b.png",
+  "https://www.figma.com/api/mcp/asset/59d69cc6-af93-4b5f-9b5b-41812203dc17.png",
+  "https://www.figma.com/api/mcp/asset/25062f9f-e30b-4234-8a23-f603232ddd56.png",
+  "https://www.figma.com/api/mcp/asset/229d98b6-2508-4e4f-8986-be66b9283290.png",
+  "https://www.figma.com/api/mcp/asset/14e222b4-3fd4-45a3-823b-a02a9869576b.png",
+  "https://www.figma.com/api/mcp/asset/b6bdae8d-ef2a-44c5-8e82-ca87a7778de2.png",
+  "https://www.figma.com/api/mcp/asset/0f962d0f-1638-438b-ba49-f4c088824209.png",
+  "https://www.figma.com/api/mcp/asset/e7de8841-1631-4458-8192-471166a20861.png",
+  "https://www.figma.com/api/mcp/asset/9be605ce-4c71-4c8d-ac76-26ea69e458fb.png",
+  "https://www.figma.com/api/mcp/asset/e88a2b2c-a18d-4991-acba-29c2b501160f.png",
+  "https://www.figma.com/api/mcp/asset/9b9a5170-ebf0-47a5-9645-311786fa1bb0.png",
+  "https://www.figma.com/api/mcp/asset/429f2e01-79fe-4d36-88dc-aa63f7d45dba.png",
+  "https://www.figma.com/api/mcp/asset/145c3fc1-25c7-4218-a5bf-23b4f2097178.png",
+  "https://www.figma.com/api/mcp/asset/dcaf1502-3c8f-46fa-806d-ed6174e005c9.png",
+  "https://www.figma.com/api/mcp/asset/4e209631-6a5b-4922-b5ca-d14d50b0bbdc.png",
+  "https://www.figma.com/api/mcp/asset/03e44c1e-433c-4a27-b72c-ae04410367dd.png",
+  "https://www.figma.com/api/mcp/asset/47085e37-2ff1-4305-b4ff-7188453eca8e.png",
+  "https://www.figma.com/api/mcp/asset/02fbc9f6-68f1-4370-bdcd-8258497980c0.png",
+  "https://www.figma.com/api/mcp/asset/76f1997d-b375-4fec-abd2-1987444f09bb.png",
+  "https://www.figma.com/api/mcp/asset/cf52de02-25db-49bd-8313-537c9ba42d0e.png",
+  "https://www.figma.com/api/mcp/asset/3a629792-7a9c-467a-8d2e-652b03715d25.png",
+  "https://www.figma.com/api/mcp/asset/309ca937-4673-4f2c-9c4a-b44dc1c8df54.png",
+  "https://www.figma.com/api/mcp/asset/eb9e7dae-2459-464c-98ac-c1a1052ca63a.png",
+  "https://www.figma.com/api/mcp/asset/6713a922-5bb7-4014-96af-b4872eeb1d41.png",
+  "https://www.figma.com/api/mcp/asset/05a923a2-5ae0-407f-9769-4613f80cbbb8.png",
+  "https://www.figma.com/api/mcp/asset/9f299446-54a6-4901-b738-e44e3434b8b3.png",
+  "https://www.figma.com/api/mcp/asset/d12285de-15d8-4d7e-a1d3-07d1bb587f5c.png",
+  "https://www.figma.com/api/mcp/asset/4f3e48a6-ab88-4b9f-86cc-fba295d4a6e9.png",
+  "https://www.figma.com/api/mcp/asset/7f8346df-5666-40ca-8cb3-465095e1f082.png",
+  "https://www.figma.com/api/mcp/asset/a5064d16-9977-4092-b55e-4179cf98cdf0.png",
+  "https://www.figma.com/api/mcp/asset/4df6602c-5e85-4508-8454-d25012571efc.png",
+  "https://www.figma.com/api/mcp/asset/d0bab436-9ed9-4780-ba22-98c8f089c25a.png",
+  "https://www.figma.com/api/mcp/asset/327dbf59-5f4d-4cee-a60b-dc82cab61b3c.png",
+  "https://www.figma.com/api/mcp/asset/c744d3d0-cc00-4093-9158-74e4b856a2c8.png",
+  "https://www.figma.com/api/mcp/asset/e496822b-c5c6-465f-a1b6-54d949ee07a3.png",
+  "https://www.figma.com/api/mcp/asset/b21dc5e5-ecb7-48b3-a257-e0bf36f9cafd.png",
+  "https://www.figma.com/api/mcp/asset/e642b585-8614-4b3e-a91c-ae565dc486f8.png",
+  "https://www.figma.com/api/mcp/asset/0240e462-388d-44a9-b158-7c72ad182ef7.png",
+  "https://www.figma.com/api/mcp/asset/6b4474fa-2cdf-4173-b69d-1afd89448590.png",
+  "https://www.figma.com/api/mcp/asset/b42a7771-48de-41c0-8dde-2f43fcd63cda.png",
+  "https://www.figma.com/api/mcp/asset/2724f65c-edf7-4150-bd4f-292479747d76.png",
+  "https://www.figma.com/api/mcp/asset/03db4073-bcd9-438c-83ae-03f8ec68484e.png",
+  "https://www.figma.com/api/mcp/asset/fdb50ee1-eb15-4169-8fcc-85ad5a4da072.png",
+  "https://www.figma.com/api/mcp/asset/ef8613a8-5b24-4ae3-9e7e-e23eddd386cc.png",
+  "https://www.figma.com/api/mcp/asset/d2c4690b-6edc-42a0-8123-4a11141c8f4e.png",
+  "https://www.figma.com/api/mcp/asset/d48a4f7c-05f9-4287-a60e-9f0fe3e678e5.png",
+  "https://www.figma.com/api/mcp/asset/cc8f4603-3077-423f-b863-d1070aa48104.png",
+  "https://www.figma.com/api/mcp/asset/00367eee-c990-435a-9c39-b9e4e1fa90f0.png",
+  "https://www.figma.com/api/mcp/asset/37fa3397-c955-43a5-860f-ef7f504c722e.png",
+  "https://www.figma.com/api/mcp/asset/2896ad4b-629b-43cf-bbb9-68084fdd0bef.png",
+  "https://www.figma.com/api/mcp/asset/ecf82a06-fe97-4406-949d-f9daa3851236.png",
+  "https://www.figma.com/api/mcp/asset/f2319771-c2ed-4771-8bb8-24558bd933a3.png",
+  "https://www.figma.com/api/mcp/asset/a2504d1a-b41c-4791-8ae8-def8117d6cc1.png",
+  "https://www.figma.com/api/mcp/asset/d4dd79a1-42d3-44e3-880a-220f6f65c536.png",
+  "https://www.figma.com/api/mcp/asset/d145f997-4e9b-455e-96ad-082401053720.png"
+];
+const BOOKMARK_STATUS_ORANGE_IDS = new Set([
+  "figma-bookmark-a-soulful-connection-within",
+  "figma-bookmark-whispers-in-the-aether",
+  "figma-bookmark-same-thoughts-many-minds"
+]);
+const BOOKMARK_STATUS_RED_IDS = new Set([
+  "figma-bookmark-cycling-three-continents",
+  "figma-bookmark-between-iron-and-ember"
+]);
 
 const FIGMA_BOOKMARK_GRID = [
   {
@@ -1011,8 +1090,11 @@ const BOOKMARK_FILTER_LINKS = [
   { label: "Untagged", count: "56", icon: BOOKMARK_UNTAGGED_ICON, iconClass: "bookmark-untagged-icon", iconFrameClass: "bookmark-untagged-frame" }
 ];
 
-appState.bookmarks = FIGMA_BOOKMARK_GRID.map((bookmark) => ({
+appState.bookmarks = FIGMA_BOOKMARK_GRID.map((bookmark, index) => ({
   ...bookmark,
+  image: FIGMA_BOOKMARK_IMAGE_URLS[index] || bookmark.image,
+  previewImage: FIGMA_BOOKMARK_IMAGE_URLS[index] || bookmark.previewImage || bookmark.image,
+  statusIcon: getBookmarkStatusIcon(bookmark),
   articleHtml: buildPreviewArticle(bookmark.title, bookmark.url)
 }));
 
@@ -1101,7 +1183,7 @@ function renderSidebarSection(section, index) {
       </div>
       ${section.links.length ? `<div class="sidebar-section-links">${sectionLinks}</div>` : ""}
     </section>
-    ${index < SIDEBAR_SECTIONS.length - 1 ? `<img class="sidebar-divider" src="${DIVIDER_ICON}" alt="" />` : ""}
+    ${index < SIDEBAR_SECTIONS.length - 1 ? `<span class="sidebar-divider" aria-hidden="true"></span>` : ""}
   `;
 }
 
@@ -1138,7 +1220,7 @@ function renderBookmarkSidebarLink(link) {
   const chevronMarkup = link.chevron
     ? `<span class="bookmark-sidebar-link-chevron"><img src="${BOOKMARK_CHEVRON_ICON}" alt="" width="8.249" height="4.448" /></span>`
     : "";
-  const linkCount = link.count;
+  const linkCount = link.group === "filter" ? link.count : String(getCategoryBookmarkCount(link.label));
 
   return `
     <button class="bookmark-sidebar-link${stateClass}" type="button" data-action="select-sidebar-category" data-category="${escapeHtml(link.label)}">
@@ -1259,6 +1341,26 @@ function getSidebarCategoryLinks() {
   };
 }
 
+function normalizeBookmarkCategory(categoryName) {
+  if (categoryName === "Arts and Culture") {
+    return "Arts & Culture";
+  }
+
+  return categoryName;
+}
+
+function getBookmarkStatusIcon(bookmark) {
+  if (BOOKMARK_STATUS_RED_IDS.has(bookmark.id)) {
+    return BOOKMARK_CARD_STATUS_RED_ICON;
+  }
+
+  if (BOOKMARK_STATUS_ORANGE_IDS.has(bookmark.id)) {
+    return BOOKMARK_CARD_STATUS_ORANGE_ICON;
+  }
+
+  return BOOKMARK_CARD_STATUS_ICON;
+}
+
 function getBookmarksForCategory(categoryName) {
   if (categoryName === "All Bookmarks") {
     return appState.bookmarks;
@@ -1268,7 +1370,8 @@ function getBookmarksForCategory(categoryName) {
     return [];
   }
 
-  return appState.bookmarks.filter((bookmark) => bookmark.category === categoryName);
+  const normalizedCategoryName = normalizeBookmarkCategory(categoryName);
+  return appState.bookmarks.filter((bookmark) => normalizeBookmarkCategory(bookmark.category) === normalizedCategoryName);
 }
 
 function getCategoryBookmarkCount(categoryName) {
@@ -1319,6 +1422,74 @@ function syncBookmarkSelectionUi() {
 
   if (selectAllImage) {
     selectAllImage.src = selectAllActive ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : CONTENT_SELECT_ALL_ICON;
+  }
+}
+
+function syncSidebarCategoryUi() {
+  app.querySelectorAll("[data-action='select-sidebar-category']").forEach((link) => {
+    const categoryName = link.getAttribute("data-category");
+    const isActive = categoryName === appState.activeSidebarCategory;
+    const count = link.querySelector(".bookmark-sidebar-link-count");
+
+    link.classList.toggle("is-active", isActive);
+
+    if (count && !link.closest(".bookmark-sidebar-group-filter")) {
+      count.textContent = String(getCategoryBookmarkCount(categoryName));
+    }
+  });
+}
+
+function renderVisibleBookmarkCardsMarkup() {
+  const visibleBookmarks = getBookmarksForCategory(appState.activeSidebarCategory);
+  const cardRenderer = appState.bookmarkDisplayMode === "list" ? renderBookmarkListCard : renderBookmarkCard;
+
+  return visibleBookmarks.map(cardRenderer).join("");
+}
+
+function syncBookmarkContentForActiveCategory() {
+  const contentPanel = app.querySelector(".content-panel");
+
+  if (!contentPanel) {
+    renderShell();
+    return;
+  }
+
+  if (appState.activeContentView !== "cards") {
+    contentPanel.innerHTML = renderContentPanel();
+    return;
+  }
+
+  const title = contentPanel.querySelector(".bookmark-content-title");
+  const count = contentPanel.querySelector(".bookmark-content-count");
+  const selectAllButton = contentPanel.querySelector("[data-action='select-all-bookmarks']");
+  const selectAllImage = selectAllButton?.querySelector(".bookmark-content-select-icon img");
+  const canvas = contentPanel.querySelector(".bookmark-card-canvas");
+  const selectAllActive = areAllVisibleBookmarksSelected();
+
+  if (title) {
+    title.textContent = appState.activeSidebarCategory;
+  }
+
+  if (count) {
+    count.textContent = `(${getCategoryBookmarkCount(appState.activeSidebarCategory)})`;
+  }
+
+  if (selectAllButton) {
+    selectAllButton.classList.toggle("is-selected", selectAllActive);
+    selectAllButton.setAttribute("aria-pressed", String(selectAllActive));
+  }
+
+  if (selectAllImage) {
+    const nextIcon = selectAllActive ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : CONTENT_SELECT_ALL_ICON;
+    if (selectAllImage.getAttribute("src") !== nextIcon) {
+      selectAllImage.src = nextIcon;
+    }
+  }
+
+  if (canvas) {
+    canvas.className = appState.bookmarkDisplayMode === "list" ? "bookmark-card-canvas is-list" : "bookmark-card-canvas";
+    canvas.style.setProperty("--bookmark-card-scale", appState.bookmarkZoomLevel);
+    canvas.innerHTML = renderVisibleBookmarkCardsMarkup();
   }
 }
 
@@ -2031,7 +2202,8 @@ function handleAppClick(event) {
       appState.activeContentView = "cards";
       appState.previewBookmarkId = null;
       appState.selectedBookmarkIds = [];
-      renderShell();
+      syncSidebarCategoryUi();
+      syncBookmarkContentForActiveCategory();
     }
     return;
   }
