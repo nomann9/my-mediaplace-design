@@ -483,6 +483,73 @@ function areAllVisibleBookmarksSelected() {
   return visibleIds.length > 0 && visibleIds.every((id) => appState.selectedBookmarkIds.includes(id));
 }
 
+function syncBookmarkSelectionUi() {
+  app.querySelectorAll(".bookmark-card[data-bookmark-id]").forEach((card) => {
+    const bookmarkId = card.getAttribute("data-bookmark-id");
+    const isSelected = appState.selectedBookmarkIds.includes(bookmarkId);
+    const checkbox = card.querySelector(".bookmark-card-checkbox");
+    const checkboxImage = checkbox?.querySelector("img");
+    const actions = card.querySelector(".bookmark-card-actions");
+
+    card.classList.toggle("is-selected", isSelected);
+
+    if (checkbox) {
+      checkbox.classList.toggle("is-selected", isSelected);
+      checkbox.setAttribute("aria-pressed", String(isSelected));
+    }
+
+    if (checkboxImage) {
+      checkboxImage.src = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
+    }
+
+    if (actions) {
+      actions.setAttribute("aria-hidden", String(isSelected));
+    }
+  });
+
+  const selectAllButton = app.querySelector("[data-action='select-all-bookmarks']");
+  const selectAllImage = selectAllButton?.querySelector(".bookmark-content-select-icon img");
+  const selectAllActive = areAllVisibleBookmarksSelected();
+
+  if (selectAllButton) {
+    selectAllButton.classList.toggle("is-selected", selectAllActive);
+    selectAllButton.setAttribute("aria-pressed", String(selectAllActive));
+  }
+
+  if (selectAllImage) {
+    selectAllImage.src = selectAllActive ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : CONTENT_SELECT_ALL_ICON;
+  }
+}
+
+function toggleBookmarkSelection(bookmarkId) {
+  if (!bookmarkId) {
+    return;
+  }
+
+  if (appState.selectedBookmarkIds.includes(bookmarkId)) {
+    appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => id !== bookmarkId);
+  } else {
+    appState.selectedBookmarkIds = [...appState.selectedBookmarkIds, bookmarkId];
+  }
+
+  syncBookmarkSelectionUi();
+}
+
+function toggleVisibleBookmarkSelection() {
+  const visibleIds = getVisibleBookmarkIds();
+  if (!visibleIds.length) {
+    return;
+  }
+
+  if (visibleIds.every((id) => appState.selectedBookmarkIds.includes(id))) {
+    appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => !visibleIds.includes(id));
+  } else {
+    appState.selectedBookmarkIds = Array.from(new Set([...appState.selectedBookmarkIds, ...visibleIds]));
+  }
+
+  syncBookmarkSelectionUi();
+}
+
 function formatBookmarkDate(date) {
   return date.toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -1014,14 +1081,7 @@ function handleAppClick(event) {
     const bookmarkCard = event.target.closest("[data-bookmark-id]");
     if (bookmarkCard && !event.target.closest(".bookmark-card-actions")) {
       const bookmarkId = bookmarkCard.getAttribute("data-bookmark-id");
-      if (bookmarkId) {
-        if (appState.selectedBookmarkIds.includes(bookmarkId)) {
-          appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => id !== bookmarkId);
-        } else {
-          appState.selectedBookmarkIds = [...appState.selectedBookmarkIds, bookmarkId];
-        }
-      }
-      renderShell();
+      toggleBookmarkSelection(bookmarkId);
       return;
     }
 
@@ -1082,14 +1142,7 @@ function handleAppClick(event) {
 
   if (action === "toggle-bookmark-selection") {
     const bookmarkId = actionTarget.getAttribute("data-bookmark-id");
-    if (bookmarkId) {
-      if (appState.selectedBookmarkIds.includes(bookmarkId)) {
-        appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => id !== bookmarkId);
-      } else {
-        appState.selectedBookmarkIds = [...appState.selectedBookmarkIds, bookmarkId];
-      }
-    }
-    renderShell();
+    toggleBookmarkSelection(bookmarkId);
     return;
   }
 
@@ -1106,17 +1159,7 @@ function handleAppClick(event) {
   }
 
   if (action === "select-all-bookmarks") {
-    const visibleIds = getVisibleBookmarkIds();
-    if (!visibleIds.length) {
-      return;
-    }
-
-    if (visibleIds.every((id) => appState.selectedBookmarkIds.includes(id))) {
-      appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => !visibleIds.includes(id));
-    } else {
-      appState.selectedBookmarkIds = Array.from(new Set([...appState.selectedBookmarkIds, ...visibleIds]));
-    }
-    renderShell();
+    toggleVisibleBookmarkSelection();
     return;
   }
 
