@@ -45,7 +45,7 @@ const appState = {
   createCategoryState: "default",
   isCreatingCategory: false,
   newCategoryName: "New Category",
-  createdCategoryName: null
+  createdCategoryNames: []
 };
 
 const BOOKMARK_PRIMARY_LINKS = [
@@ -234,21 +234,21 @@ function renderNewCategoryDraftRow() {
 function renderBookmarkSidebar() {
   const primaryLinks = BOOKMARK_PRIMARY_LINKS.map(renderBookmarkSidebarLink).join("");
   const categoryItems = [...BOOKMARK_CATEGORY_LINKS];
-  if (appState.createdCategoryName) {
+  appState.createdCategoryNames.forEach((name) => {
     categoryItems.push({
-      label: appState.createdCategoryName,
+      label: name,
       count: "0",
       state: "default",
       icon: BOOKMARK_FOLDER_ICON
     });
-  }
+  });
   const categoryLinks = categoryItems.map(renderBookmarkSidebarLink).join("");
   const filterLinks = BOOKMARK_FILTER_LINKS.map(renderBookmarkSidebarLink).join("");
   const createCategoryClass = appState.createCategoryState === "active" ? " is-active" : "";
   const categoryContent = appState.isCreatingCategory
     ? `${categoryLinks}${renderNewCategoryDraftRow()}`
     : categoryLinks;
-  const categoryCount = String(BOOKMARK_CATEGORY_LINKS.length + (appState.createdCategoryName ? 1 : 0));
+  const categoryCount = String(BOOKMARK_CATEGORY_LINKS.length + appState.createdCategoryNames.length);
 
   return `
     <div class="bookmark-sidebar-panel">
@@ -414,10 +414,10 @@ function handleAppClick(event) {
 
 function finalizeNewCategory() {
   const trimmedName = appState.newCategoryName.trim();
-  appState.createdCategoryName = trimmedName || "New Category";
+  appState.createdCategoryNames.push(trimmedName || "New Category");
   appState.createCategoryState = "default";
   appState.isCreatingCategory = false;
-  appState.newCategoryName = appState.createdCategoryName;
+  appState.newCategoryName = "New Category";
   renderShell();
 }
 
@@ -447,7 +447,6 @@ function handleAppKeydown(event) {
         appState.createCategoryState = "default";
         appState.isCreatingCategory = false;
         appState.newCategoryName = "New Category";
-        appState.createdCategoryName = null;
         renderShell();
       }
       return;

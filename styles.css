@@ -734,9 +734,11 @@ input {
   appearance: none;
   background: transparent;
   border: 0;
+  box-sizing: border-box;
   color: #65656e;
   cursor: pointer;
   display: flex;
+  flex: 0 0 240px;
   height: 32px;
   justify-content: space-between;
   margin: 8px 20px 0;
@@ -751,6 +753,7 @@ input {
   background: #252538;
   border-radius: 4px;
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+  flex-basis: 240px;
   padding: 6px 8px;
 }
 
