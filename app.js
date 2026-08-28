@@ -53,6 +53,801 @@ const CONTENT_HEADING_EXPORT_ICON = "https://www.figma.com/api/mcp/asset/61d44a2
 const CONTENT_SELECT_ALL_ICON = "https://www.figma.com/api/mcp/asset/adb88873-24cf-427a-badd-f086508668e8.svg";
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 
+const FIGMA_BOOKMARK_GRID = [
+  {
+    id: "figma-bookmark-designing-modern-typefaces",
+    title: "Designing Modern Typefaces",
+    url: "studioluma.com",
+    category: "Design Resources",
+    date: "24 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/b28dc17c-f431-4fe6-8278-50d4c860480e.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/7ff6bc2f-3644-4353-9de1-04c826884b9f.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/b28dc17c-f431-4fe6-8278-50d4c860480e.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-lone-street-story",
+    title: "Lone Street Story",
+    url: "culturecurrent.net",
+    category: "Arts & Culture",
+    date: "23 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/9c2257b2-b1f0-49a6-82ec-a85b8e9851ce.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/ab603703-e19d-4d30-88dc-346bcb518faa.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/9c2257b2-b1f0-49a6-82ec-a85b8e9851ce.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-keeping-websites-secure",
+    title: "Keeping Websites Secure",
+    url: "wpfoundry.org",
+    category: "WP Resources",
+    date: "22 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/ce613400-c3a9-4cc2-8c49-8229612318ba.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/8b3f271f-0709-4751-9287-a3bbe2708f21.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/ce613400-c3a9-4cc2-8c49-8229612318ba.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-my-daily-basketball-diary",
+    title: "My Daily Basketball Diary",
+    url: "urbanhoops.io",
+    category: "Sports",
+    date: "21 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/fc1b9f02-9578-45eb-b357-012d95045eeb.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/bbcf7d8f-d2e3-4a90-9f2d-b355f0790ee5.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/fc1b9f02-9578-45eb-b357-012d95045eeb.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-the-widows-happiness",
+    title: "The Widows' Happiness",
+    url: "thewanderingsoul.com",
+    category: "Arts & Culture",
+    date: "21 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/8bea497b-221e-4a21-8201-12ff1d0972f6.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/af7c3979-1b6e-42a6-a242-e5b92cfd27b2.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/8bea497b-221e-4a21-8201-12ff1d0972f6.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-blue-parrots-of-southern-africa",
+    title: "Blue Parrots of Southern Africa",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "21 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/fd6816e5-b485-4222-aad8-2397e2d776eb.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/c35b6e2a-53eb-4c0f-91d8-3beeec4b1664.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/fd6816e5-b485-4222-aad8-2397e2d776eb.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-theyyam-a-ritual-performance",
+    title: "Theyyam - A Ritual Performance",
+    url: "globalnest.com",
+    category: "Arts & Culture",
+    date: "20 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/56311d4d-56a2-44f0-a427-5d08c53cabe6.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/170c88a7-d50b-4929-aa0e-f4758bb13c71.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/56311d4d-56a2-44f0-a427-5d08c53cabe6.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-a-soulful-connection-within",
+    title: "A Soulful Connection Within",
+    url: "yourgoodsoul.com",
+    category: "Arts & Culture",
+    date: "20 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/9c62b37c-d794-4001-b953-ef67a1ce7d82.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/be4ca7e9-67b6-427c-bdd4-32f8d45ee916.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/9c62b37c-d794-4001-b953-ef67a1ce7d82.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-swimming-in-deep-ocean",
+    title: "Swimming in Deep Ocean",
+    url: "sportsphere.io",
+    category: "Sports",
+    date: "20 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/112a6f0f-96cf-42c9-aed2-55e591480433.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/35f8cba7-26e9-46a7-a83d-fc45a7d47694.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/112a6f0f-96cf-42c9-aed2-55e591480433.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-joy-of-coding-in-the-cloud",
+    title: "Joy of Coding in the Cloud",
+    url: "wplaunchlab.com",
+    category: "WP Resources",
+    date: "19 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/d2299934-c92d-4a50-a4f6-54c9f7b26404.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/753e71c8-8709-4e14-bc3a-9ceee8e729f5.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/d2299934-c92d-4a50-a4f6-54c9f7b26404.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-dizzying-towers-of-colours",
+    title: "Dizzying Towers of Colours",
+    url: "canvastheory.art",
+    category: "Design Resources",
+    date: "19 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/c23ed93b-7713-4bed-8265-ee3eb27d388c.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/3f726b90-1097-4caa-b26b-006893d9ac3a.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/c23ed93b-7713-4bed-8265-ee3eb27d388c.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-a-very-cold-himalayan-odyssey",
+    title: "A Very Cold Himalayan Odyssey",
+    url: "wanderhaven.com",
+    category: "Arts & Culture",
+    date: "18 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/5b09c96e-a310-4f9f-9846-b8b9435dda8c.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/d4286602-b8b6-4349-af47-ef1cfc698c04.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/5b09c96e-a310-4f9f-9846-b8b9435dda8c.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-evolution-of-a-friendly-jellyfish",
+    title: "Evolution of a Friendly Jellyfish",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "17 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/49dff14d-2805-45a5-b7b1-0f62cdbfc057.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/7aceb57f-ecb1-47bd-ad50-727ab0464664.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/49dff14d-2805-45a5-b7b1-0f62cdbfc057.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-the-atlas-of-forgotten-dreams",
+    title: "The Atlas of Forgotten Dreams",
+    url: "pageturnerpress.com",
+    category: "Uncategorized",
+    date: "17 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/ea62baf5-9911-48eb-bede-8caeac28f5d2.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/33f39bf7-7353-41dc-ac78-b43050882b64.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/ea62baf5-9911-48eb-bede-8caeac28f5d2.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-wish-good-things-last-longer",
+    title: "Wish Good Things Last Longer",
+    url: "globalnest.com",
+    category: "Arts & Culture",
+    date: "16 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/08ae3bd1-402c-469b-b756-05ed9b502de5.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/a94fa835-f955-4a6f-ac64-ae029874d725.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/08ae3bd1-402c-469b-b756-05ed9b502de5.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-the-new-egyptian-vacation",
+    title: "The New Egyptian Vacation",
+    url: "musestreet.com",
+    category: "Arts & Culture",
+    date: "16 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/97473ec3-7028-4368-a952-546489494e3c.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/7f74e4ab-0635-4e97-a18b-f0383f57995b.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/97473ec3-7028-4368-a952-546489494e3c.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-whispers-in-the-aether",
+    title: "Whispers in the Aether",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "14 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/0c70d02f-3e86-4b3f-ae90-d2bf52ada513.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/dfed5d92-4d66-46bc-8044-9c2f2d49d74a.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/0c70d02f-3e86-4b3f-ae90-d2bf52ada513.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-subtle-neuronic-condemnation",
+    title: "Subtle Neuronic Condemnation",
+    url: "wanderhaven.com",
+    category: "Arts & Culture",
+    date: "13 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/687d1116-25e8-4ff5-8eab-5dcce001fb61.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/72d8880b-0ab8-4655-8309-0895ab560d6c.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/687d1116-25e8-4ff5-8eab-5dcce001fb61.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-managing-client-expectations",
+    title: "Managing Client Expectations",
+    url: "themecrafts.com",
+    category: "WP Resources",
+    date: "13 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/9c8f4680-cb59-4bdd-a337-edf386aae937.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/cb0caa5e-ffb1-455e-b432-86a16eb8df9f.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/9c8f4680-cb59-4bdd-a337-edf386aae937.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-summer-of-25",
+    title: "Summer of 25!",
+    url: "thepalettepost.co",
+    category: "Uncategorized",
+    date: "13 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/7aabd4ca-bdbf-4bab-ae31-34998e255071.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/04e7178b-e6b1-4eba-a668-d7626b54a65e.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/7aabd4ca-bdbf-4bab-ae31-34998e255071.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-flying-thoughts",
+    title: "Flying Thoughts",
+    url: "spectrumsociety.com",
+    category: "Arts & Culture",
+    date: "12 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/adb416f5-76cd-4230-8f6a-1a3a1436e05b.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/75776a25-3554-401b-93c9-071f5e5f26a6.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/adb416f5-76cd-4230-8f6a-1a3a1436e05b.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-a-south-american-travel-guide",
+    title: "A South American Travel Guide",
+    url: "roamculture.com",
+    category: "Arts & Culture",
+    date: "10 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/a629c7ca-64f6-4c85-a3df-f47beca9ffe0.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/cb51745b-94b0-4b5b-845f-4c4f66d44134.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/a629c7ca-64f6-4c85-a3df-f47beca9ffe0.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-glitch-experiment-gone-right",
+    title: "Glitch Experiment - Gone Right",
+    url: "artechomag.com",
+    category: "Arts & Culture",
+    date: "10 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/3c45dbe8-d9f1-41ce-8e06-cab2fa7f1596.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/95e6684b-fa64-42f4-8ffa-509e7cc34dbb.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/3c45dbe8-d9f1-41ce-8e06-cab2fa7f1596.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-psychology-of-colours-a-bait",
+    title: "Psychology of Colours - A Bait?",
+    url: "pixelforge.io",
+    category: "Design Resources",
+    date: "10 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/ccf1e6b8-9f42-4ff5-9aea-2b098ff50d50.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/85c1f65a-a181-4d13-be1d-c5f1de547b8a.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/ccf1e6b8-9f42-4ff5-9aea-2b098ff50d50.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-greed-and-red-cherry",
+    title: "Greed and Red Cherry",
+    url: "culturenova.org",
+    category: "Arts & Culture",
+    date: "9 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/14419b43-be59-485f-85d2-5b83887ec53a.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/2b07e327-e81a-43a1-ae56-1b9e4b4875ce.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/14419b43-be59-485f-85d2-5b83887ec53a.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-life-of-a-nomad",
+    title: "Life of a Nomad",
+    url: "trailbound.com",
+    category: "Arts & Culture",
+    date: "8 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/7ea8acbd-3e8c-4437-b5d5-470025d6c23c.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/59970dc9-1158-4c71-a8ba-a3e516475e0d.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/7ea8acbd-3e8c-4437-b5d5-470025d6c23c.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-cycling-three-continents",
+    title: "Cycling Three Continents",
+    url: "apexathletics.org",
+    category: "Sports",
+    date: "8 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/79e0a34b-f2dd-4f05-9a60-e3b8ea40e36d.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/39f5eb10-50e3-4d25-9d44-4eaadc1825bb.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/79e0a34b-f2dd-4f05-9a60-e3b8ea40e36d.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-create-an-accessible-theme",
+    title: "Create an Accessible Theme",
+    url: "wpstreamline.com",
+    category: "WP Resources",
+    date: "5 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/88dbb4a0-468c-4c4e-bb4f-343c2345808c.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/a39b840e-0633-4a40-aae7-64a60a5645bc.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/88dbb4a0-468c-4c4e-bb4f-343c2345808c.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-basketball-in-the-backyard",
+    title: "Basketball in the Backyard",
+    url: "matchmindset.com",
+    category: "Sports",
+    date: "5 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/901ce4eb-29ef-4ff9-a123-1adc50b37660.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/afc76c8b-94ae-4ae8-8e07-6f0a6c4df1f2.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/901ce4eb-29ef-4ff9-a123-1adc50b37660.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-7-woven-fabrics",
+    title: "7 Woven Fabrics",
+    url: "mapmosaic.org",
+    category: "Arts & Culture",
+    date: "3 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/86638902-c3e8-4dac-b8e5-6972db47409f.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/bd2220e8-3443-4dd4-99cd-c6c302bc55cc.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/86638902-c3e8-4dac-b8e5-6972db47409f.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-staring-at-the-white-wall",
+    title: "Staring at the White Wall",
+    url: "creativeepoch.net",
+    category: "Arts & Culture",
+    date: "3 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/daf08ad0-099c-487f-86ec-5a00ecfb1117.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/9ed8a3c6-d431-44bb-ad41-fc7c5c0d6f08.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/daf08ad0-099c-487f-86ec-5a00ecfb1117.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-the-curious-watering-tanks",
+    title: "The Curious Watering Tanks",
+    url: "thewanderingsoul.com",
+    category: "Arts & Culture",
+    date: "1 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/02e683be-5c60-402d-8e6b-8db336b3e68d.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/6ad7635d-abfb-4dea-9643-81b8697c1995.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/02e683be-5c60-402d-8e6b-8db336b3e68d.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-a-colourful-culture",
+    title: "A Colourful Culture",
+    url: "pathwayplanet.org",
+    category: "Arts & Culture",
+    date: "1 Dec 2025",
+    image: "https://www.figma.com/api/mcp/asset/237933b0-6f15-439d-82fd-1e14e7b9ac74.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/2a43f4a2-8832-4020-8270-7ac32165dc11.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/237933b0-6f15-439d-82fd-1e14e7b9ac74.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-easy-ecommerce-wp-checkout",
+    title: "Easy Ecommerce WP Checkout",
+    url: "wporbit.co",
+    category: "WP Resources",
+    date: "30 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/af97181b-7a50-4250-9742-d2fd072793d8.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/b91d707b-10eb-4bd9-899c-57fdcffd010b.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/af97181b-7a50-4250-9742-d2fd072793d8.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-weddings-of-the-east-women",
+    title: "Weddings of the East Women",
+    url: "trailbound.com",
+    category: "Arts & Culture",
+    date: "28 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/77b0e551-b6f8-4548-9187-9e26b3a79682.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/38a3cefe-ac8d-4e8a-b930-259f01d077bb.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/77b0e551-b6f8-4548-9187-9e26b3a79682.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-girl-in-the-black-meadow",
+    title: "Girl in the Black Meadow",
+    url: "creativeepoch.net",
+    category: "Arts & Culture",
+    date: "28 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/2ca51ee8-7619-4e5d-a7d5-10d7cb9d35e5.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/8cf6bf3d-62f9-4779-8144-f8e4bec2c57a.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/2ca51ee8-7619-4e5d-a7d5-10d7cb9d35e5.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-learn-storytelling-in-20-mins",
+    title: "Learn Storytelling in 20 Mins",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "26 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/ddfd82a3-9745-4bfd-bc4d-78fbae9c8668.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/dcb34474-6693-4b88-9191-7445a47e73bd.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/ddfd82a3-9745-4bfd-bc4d-78fbae9c8668.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-the-last-librarian-of-evermore",
+    title: "The Last Librarian of Evermore",
+    url: "thereadingdesk.io",
+    category: "Books",
+    date: "24 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/dbadd18e-a9be-481b-bab9-b332f105d512.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/3340869c-05f8-47c2-ad41-525da9dc8855.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/dbadd18e-a9be-481b-bab9-b332f105d512.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-the-far-east-wise-premonition",
+    title: "The Far-East Wise Premonition",
+    url: "explorehorizon.com",
+    category: "Arts & Culture",
+    date: "24 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/5d819ddd-d5bc-4414-b31c-0e9d2f6b3f8b.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/40f71757-e297-4912-abbf-dd61c2c462a0.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/5d819ddd-d5bc-4414-b31c-0e9d2f6b3f8b.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-a-growing-colourful-curse",
+    title: "A Growing Colourful Curse",
+    url: "epicreadshelf.org",
+    category: "Books",
+    date: "24 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/bb47c457-0b15-4c10-956a-a64e79022bd8.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/bf7229d7-2cae-4f40-852a-63b2f1e6f255.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/bb47c457-0b15-4c10-956a-a64e79022bd8.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-a-designers-collection",
+    title: "A Designer's Collection",
+    url: "formadesigns.net",
+    category: "Design Resources",
+    date: "22 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/ef60e7e5-41ed-4abc-a235-6f6dfd596aa2.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/cf18a63b-4e80-487f-8abe-423aa1857981.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/ef60e7e5-41ed-4abc-a235-6f6dfd596aa2.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-just-pick-a-damn-sport",
+    title: "Just Pick a Damn Sport!",
+    url: "powerplaynation.com",
+    category: "Sports",
+    date: "20 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/78c495f5-7951-44f1-b3ee-5f514472b5e7.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/922ecde2-3c34-431b-9967-28e42b2c6aa1.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/78c495f5-7951-44f1-b3ee-5f514472b5e7.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-exciting-chipsets-of-the-future",
+    title: "Exciting Chipsets of the Future",
+    url: "codeandcontent.net",
+    category: "WP Resources",
+    date: "20 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/42b9f033-75ed-47fb-8cf0-50bce7de0c74.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/6d18ef9f-34b3-4b56-8d8d-c7e596cd6a54.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/42b9f033-75ed-47fb-8cf0-50bce7de0c74.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-combating-laziness-at-play",
+    title: "Combating Laziness at Play",
+    url: "proplayzone.com",
+    category: "Sports",
+    date: "18 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/b947aa12-fbc7-4efc-abf9-11ac3d4102b4.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/10e234e0-348d-4d4b-acfb-4c454d0427a7.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/b947aa12-fbc7-4efc-abf9-11ac3d4102b4.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-learn-wordpress-the-right-way",
+    title: "Learn WordPress the Right Way",
+    url: "wplaunchlab.com",
+    category: "WP Resources",
+    date: "18 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/32845145-5eab-4a9f-91cc-b5c1cebd72b6.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/9743055c-fa4f-4ded-a4f4-ad0e8d8db094.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/32845145-5eab-4a9f-91cc-b5c1cebd72b6.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-same-thoughts-many-minds",
+    title: "Same Thoughts, Many Minds",
+    url: "culturevoyage.es",
+    category: "Arts & Culture",
+    date: "17 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/3f8492aa-7a3d-493f-852c-e4eaab6f89f9.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/99fce8d6-93c4-4413-9c58-38ba6e24e81b.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/3f8492aa-7a3d-493f-852c-e4eaab6f89f9.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-build-a-million-dollar-channel",
+    title: "Build a Million Dollar Channel",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "17 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/7b734baf-1287-4d69-9ed3-7e22bb1e98f8.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/15dfb6f5-355c-4b77-8fdc-980c7b60109b.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/7b734baf-1287-4d69-9ed3-7e22bb1e98f8.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-aligning-wp-with-design",
+    title: "Aligning WP with Design",
+    url: "shapeandspace.com",
+    category: "WP Resources",
+    date: "15 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/7059f770-f572-401e-88da-5af4e5fb79e0.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/f18a8196-0830-4f17-96ea-e8a27f960ff8.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/7059f770-f572-401e-88da-5af4e5fb79e0.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-best-strawberry-cake-recipe",
+    title: "Best Strawberry Cake Recipe",
+    url: "youtube.com",
+    category: "Uncategorized",
+    date: "13 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/25adaeb9-aba5-4517-b0eb-b1058c7255e6.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/d952dd1c-3f1e-4bd3-9376-415c8d27eadc.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/25adaeb9-aba5-4517-b0eb-b1058c7255e6.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-echoes-of-rain",
+    title: "Echoes of Rain",
+    url: "pureinkheaven.com",
+    category: "Books",
+    date: "13 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/f2679305-5451-4527-865a-3ee78bb88aaa.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/10860fba-8942-4b7f-9c7e-524b3b9a4eba.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/f2679305-5451-4527-865a-3ee78bb88aaa.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-top-security-wordpress-plugins",
+    title: "Top Security WordPress Plugins",
+    url: "pluginpulse.com",
+    category: "WP Resources",
+    date: "11 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/6a192104-2918-4a94-8c6b-f86ff3cc48c0.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/f203537c-b512-4493-8ced-01b7031abbd2.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/6a192104-2918-4a94-8c6b-f86ff3cc48c0.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-generate-ai-videos-instantly",
+    title: "Generate AI Videos Instantly",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "8 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/b3384cae-3e25-46d2-9cd9-a91473dd4d40.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/8b00b85e-ce7f-45a8-b7c7-6938bcd497bc.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/b3384cae-3e25-46d2-9cd9-a91473dd4d40.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-design-for-the-corporate-client",
+    title: "Design for the Corporate Client",
+    url: "patterncore.design",
+    category: "Design Resources",
+    date: "6 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/47d5e558-5bc8-46d4-8786-301bbf96bd9f.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/e55377f4-5550-40b5-a8b0-607596259f61.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/47d5e558-5bc8-46d4-8786-301bbf96bd9f.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-easy-tasty-breakfast-picks",
+    title: "Easy & Tasty Breakfast Picks",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "6 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/491c0171-30ec-4e0d-ab03-2f86f3253673.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/fcf1f6b2-fb73-4895-838e-868741ddc1f2.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/491c0171-30ec-4e0d-ab03-2f86f3253673.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-tracking-down-the-maneater",
+    title: "Tracking Down the Maneater",
+    url: "youtube.com",
+    category: "Uncategorized",
+    date: "3 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/5c6cb598-0d38-48de-a35d-ba5837b1b76d.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/005cd61d-f21e-4d75-a529-188e4bbc9f49.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/5c6cb598-0d38-48de-a35d-ba5837b1b76d.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-choosing-the-right-typeface",
+    title: "Choosing the Right Typeface",
+    url: "designverve.com",
+    category: "Design Resources",
+    date: "2 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/051c19de-f938-48a6-b758-44c081885360.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/bd3c0ee3-4a23-4edc-8c85-172b4016311d.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/051c19de-f938-48a6-b758-44c081885360.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-before-you-knew",
+    title: "Before You Knew",
+    url: "pagealchemy.io",
+    category: "Books",
+    date: "2 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/f988b33f-30d6-4d09-a5f3-81cfadb4d7ef.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/23fb7e59-f782-4099-abc7-d7c482cc130b.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/f988b33f-30d6-4d09-a5f3-81cfadb4d7ef.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-20-resources-for-all-designers",
+    title: "20 Resources for All Designers",
+    url: "studioluma.com",
+    category: "Design Resources",
+    date: "1 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/7fda01c7-003b-4618-bff3-cff27c70bffa.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/93eb1420-416c-4828-9479-7ebaa4256ca7.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/7fda01c7-003b-4618-bff3-cff27c70bffa.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-beautiful-calligraphic-art-project",
+    title: "Beautiful Calligraphic Art Project",
+    url: "designdrift.co",
+    category: "Design Resources",
+    date: "1 Nov 2025",
+    image: "https://www.figma.com/api/mcp/asset/99374a85-5bd8-485d-a61a-b52471eef4c5.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/8034bc1c-c1e4-4eb9-ae08-be2bd3192f93.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/99374a85-5bd8-485d-a61a-b52471eef4c5.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-a-holographic-reflection",
+    title: "A Holographic Reflection",
+    url: "shapeandspace.com",
+    category: "Design Resources",
+    date: "29 Oct 2025",
+    image: "https://www.figma.com/api/mcp/asset/18ad2cad-9d44-46dd-9eed-638ce494436f.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/a94c56a8-1b77-4632-9787-7eb8152cc347.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/18ad2cad-9d44-46dd-9eed-638ce494436f.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-drowning-into-the-space",
+    title: "Drowning into the Space",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "26 Oct 2025",
+    image: "https://www.figma.com/api/mcp/asset/8026712b-869b-4b53-9ef8-4b40b83896ee.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/9bdcb5db-1efd-415a-8426-0f50c74d5c2e.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/8026712b-869b-4b53-9ef8-4b40b83896ee.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-a-guide-to-iconography",
+    title: "A Guide to Iconography",
+    url: "patterncore.design",
+    category: "Design Resources",
+    date: "28 Oct 2025",
+    image: "https://www.figma.com/api/mcp/asset/84752648-490f-4d2c-93de-7fa55a3a1c54.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/828df9ef-df0c-4ab8-9055-4b1ad8cef331.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/84752648-490f-4d2c-93de-7fa55a3a1c54.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  },
+  {
+    id: "figma-bookmark-olives-of-the-middle-east",
+    title: "Olives of the Middle East",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "22 Oct 2025",
+    image: "https://www.figma.com/api/mcp/asset/ce65d058-04d2-4837-8d8f-20b170de2ce1.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/6c128324-021e-4739-9ef9-44d94a795501.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/ce65d058-04d2-4837-8d8f-20b170de2ce1.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-a-season-of-paper-butterflies",
+    title: "A Season of Paper Butterflies",
+    url: "youtube.com",
+    category: "YouTube Channels",
+    date: "19 Oct 2025",
+    image: "https://www.figma.com/api/mcp/asset/e0ecdfc1-849c-481c-924f-ac18d19f6b38.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/f26cf30a-0908-4103-bd07-ed00eafb8e92.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/e0ecdfc1-849c-481c-924f-ac18d19f6b38.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-between-iron-and-ember",
+    title: "Between Iron and Ember",
+    url: "theboundshelf.com",
+    category: "Books",
+    date: "19 Oct 2025",
+    image: "https://www.figma.com/api/mcp/asset/695ac2a9-2ac6-4549-af49-4e879be25938.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/390f875d-6d03-49fa-b583-1940df6a79c9.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/695ac2a9-2ac6-4549-af49-4e879be25938.png",
+    isFetchingImage: false,
+    isPermanentCopy: false
+  },
+  {
+    id: "figma-bookmark-birmingham-museums-trust",
+    title: "Birmingham Museums Trust",
+    url: "wandernest.org",
+    category: "Arts & Culture",
+    date: "19 Oct 2025",
+    image: "https://www.figma.com/api/mcp/asset/40675bc2-46b7-4fac-b522-aae945a3560b.png",
+    statusIcon: "https://www.figma.com/api/mcp/asset/c2a1f6bb-ee20-4edd-8c95-94e072e51052.svg",
+    previewImage: "https://www.figma.com/api/mcp/asset/40675bc2-46b7-4fac-b522-aae945a3560b.png",
+    isFetchingImage: false,
+    isPermanentCopy: true
+  }
+];
+
 const SIDEBAR_SECTIONS = [
   { title: "Main Menu", icon: MENU_ICON, links: [] },
   { title: "Home", icon: HOME_ICON, links: [] },
@@ -215,6 +1010,11 @@ const BOOKMARK_FILTER_LINKS = [
   { label: "Videos", count: "168", icon: BOOKMARK_VIDEO_ICON, iconClass: "bookmark-video-icon", iconFrameClass: "bookmark-video-frame" },
   { label: "Untagged", count: "56", icon: BOOKMARK_UNTAGGED_ICON, iconClass: "bookmark-untagged-icon", iconFrameClass: "bookmark-untagged-frame" }
 ];
+
+appState.bookmarks = FIGMA_BOOKMARK_GRID.map((bookmark) => ({
+  ...bookmark,
+  articleHtml: buildPreviewArticle(bookmark.title, bookmark.url)
+}));
 
 function getByPath(object, path) {
   return path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), object);
@@ -603,6 +1403,7 @@ function renderBookmarkCard(bookmark) {
   const isSelected = appState.selectedBookmarkIds.includes(bookmark.id);
   const selectedClass = isSelected ? " is-selected" : "";
   const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
+  const statusIcon = bookmark.statusIcon || BOOKMARK_CARD_STATUS_ICON;
   const permanentCopyBanner = bookmark.isPermanentCopy
     ? `<div class="bookmark-card-permanent-banner"><span>Permanent copy</span></div>`
     : "";
@@ -652,7 +1453,7 @@ function renderBookmarkCard(bookmark) {
           <h3 class="bookmark-card-title">${bookmark.title}</h3>
           <div class="bookmark-card-url-row">
             <span class="bookmark-card-url">${bookmark.url}</span>
-            <img class="bookmark-card-status" src="${BOOKMARK_CARD_STATUS_ICON}" alt="" width="6" height="6" />
+            <img class="bookmark-card-status" src="${statusIcon}" alt="" width="6" height="6" />
           </div>
         </div>
 
@@ -672,6 +1473,7 @@ function renderBookmarkListCard(bookmark) {
   const isSelected = appState.selectedBookmarkIds.includes(bookmark.id);
   const selectedClass = isSelected ? " is-selected" : "";
   const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
+  const statusIcon = bookmark.statusIcon || BOOKMARK_CARD_STATUS_ICON;
   const imageContent = bookmark.isFetchingImage
     ? `
         <div class="bookmark-card-fetch bookmark-list-card-fetch">
@@ -700,7 +1502,7 @@ function renderBookmarkListCard(bookmark) {
             <h3 class="bookmark-list-card-title">${escapeHtml(bookmark.title)}</h3>
             <div class="bookmark-list-card-url-row">
               <span class="bookmark-list-card-url">${escapeHtml(bookmark.url)}</span>
-              <img class="bookmark-list-card-status" src="${BOOKMARK_CARD_STATUS_ICON}" alt="" width="6" height="6" />
+              <img class="bookmark-list-card-status" src="${statusIcon}" alt="" width="6" height="6" />
             </div>
           </div>
 
@@ -1196,6 +1998,7 @@ function handleAppClick(event) {
       previewImage: PREVIEW_SAMPLE_IMAGE,
       isFetchingImage: true,
       isPermanentCopy: false,
+      statusIcon: BOOKMARK_CARD_STATUS_ICON,
       articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
     };
 
@@ -1352,6 +2155,7 @@ function handleAppKeydown(event) {
       previewImage: PREVIEW_SAMPLE_IMAGE,
       isFetchingImage: true,
       isPermanentCopy: false,
+      statusIcon: BOOKMARK_CARD_STATUS_ICON,
       articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
     };
 

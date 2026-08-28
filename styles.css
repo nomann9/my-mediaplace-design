@@ -1144,7 +1144,8 @@ input {
 .bookmark-card-canvas {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  column-gap: 16px;
+  row-gap: 40px;
   padding: 20px 12px 12px;
   transform-origin: top left;
 }
