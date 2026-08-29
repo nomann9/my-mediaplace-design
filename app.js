@@ -57,6 +57,13 @@ const CONTENT_KEBAB_DUPLICATE_ICON = "assets/figma/489489a9-f697-4b5d-8109-56f52
 const CONTENT_KEBAB_READ_ICON = "assets/figma/e12e2637-8369-4937-ba1a-37dc1c548ddd.svg";
 const CONTENT_KEBAB_REVALIDATE_ICON = "assets/figma/c0a08e07-2ca3-4eed-a510-e734c1b8243a.svg";
 const CONTENT_SELECT_ALL_ICON = BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
+const INSPECTOR_NOTE_ICON = "assets/figma/76acfa70-132f-439a-9ed5-25b981c855c3.svg";
+const INSPECTOR_TAG_ICON = "assets/figma/70b5a85e-904d-4d21-8a1e-01e0aaae8c1c.svg";
+const INSPECTOR_TRASH_ICON = "assets/figma/3f19edb0-72d0-407b-a80a-ef43f8afc879.svg";
+const INSPECTOR_CHECKBOX_ICON = "assets/figma/0548e8d9-018c-45ae-8de8-debe33b5180e.svg";
+const INSPECTOR_TOP_DIVIDER = "assets/figma/9b662299-5edb-469b-aad4-fa474e830878.svg";
+const INSPECTOR_BOTTOM_DIVIDER = "assets/figma/2177d70d-534f-437a-913d-cffa16184fd5.svg";
+const INSPECTOR_TAG_REMOVE_ICON = "assets/figma/560a6dcf-447f-4cf1-8cee-340a0622405b.svg";
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 const FIGMA_BOOKMARK_IMAGE_URLS = [
   "assets/figma/e63e0d1d-dd75-4111-8cc7-0c913c0394ac.png",
@@ -952,6 +959,13 @@ const appState = {
   selectedBookmarkIds: [],
   activeContentView: "cards",
   contentKebabOpen: false,
+  allBookmarksLastSaved: "29 Dec 2025",
+  allBookmarksLastModified: "21 Dec 2025",
+  allBookmarksSavePermanentCopy: false,
+  allBookmarksPasswordProtected: false,
+  allBookmarksTags: [],
+  allBookmarksTagDraft: "",
+  allBookmarksNote: "",
   previewBookmarkId: null,
   bookmarkDisplayMode: "grid",
   bookmarkZoomLevel: 1,
@@ -1516,6 +1530,116 @@ function formatBookmarkDate(date) {
   });
 }
 
+function updateAllBookmarksLastSaved(date = new Date()) {
+  appState.allBookmarksLastSaved = formatBookmarkDate(date);
+}
+
+function updateAllBookmarksLastModified(date = new Date()) {
+  appState.allBookmarksLastModified = formatBookmarkDate(date);
+}
+
+function syncInspectorPanel() {
+  const inspectorHost = app.querySelector(".inspector-host");
+  if (!inspectorHost) {
+    return;
+  }
+
+  inspectorHost.innerHTML = renderInspectorPanel();
+}
+
+function syncInspectorMetadataUi() {
+  const lastSaved = app.querySelector("[data-role='inspector-last-saved']");
+  const lastModified = app.querySelector("[data-role='inspector-last-modified']");
+
+  if (lastSaved) {
+    lastSaved.textContent = appState.allBookmarksLastSaved;
+  }
+
+  if (lastModified) {
+    lastModified.textContent = appState.allBookmarksLastModified;
+  }
+}
+
+function syncInspectorTagsUi() {
+  const tagsContainer = app.querySelector("[data-role='all-bookmarks-tags-list']");
+  const tagsInput = app.querySelector("[data-role='all-bookmarks-tags-input']");
+  if (!tagsContainer || !tagsInput) {
+    return;
+  }
+
+  tagsContainer.innerHTML = renderInspectorSavedTags();
+  tagsInput.value = appState.allBookmarksTagDraft;
+}
+
+function createBookmarkFromUrl(rawUrl) {
+  const bookmarkTitle = getBookmarkTitleFromUrl(rawUrl);
+  const bookmarkUrl = getBookmarkUrlLabel(rawUrl);
+  const now = new Date();
+
+  return {
+    id: `bookmark-${Date.now()}`,
+    title: bookmarkTitle,
+    url: bookmarkUrl,
+    category: "Uncategorized",
+    date: formatBookmarkDate(now),
+    image: BOOKMARK_CARD_IMAGE,
+    previewImage: PREVIEW_SAMPLE_IMAGE,
+    isFetchingImage: true,
+    isPermanentCopy: false,
+    statusIcon: BOOKMARK_CARD_STATUS_ICON,
+    articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
+  };
+}
+
+function addBookmarkFromCurrentInput() {
+  if (!appState.bookmarkUrl.trim()) {
+    return false;
+  }
+
+  const nextBookmark = createBookmarkFromUrl(appState.bookmarkUrl.trim());
+  appState.bookmarks.unshift(nextBookmark);
+  appState.bookmarkUrl = "";
+  appState.newBookmarkExpanded = false;
+  updateAllBookmarksLastSaved();
+  renderShell();
+  queueBookmarkImageReveal(nextBookmark.id);
+  return true;
+}
+
+function normalizeTagLabel(value) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function renderInspectorSavedTags() {
+  return appState.allBookmarksTags.map((tag) => `
+    <button class="inspector-panel-tag-chip" type="button" data-action="remove-all-bookmarks-tag" data-tag="${escapeHtml(tag)}" aria-label="Remove ${escapeHtml(tag)} tag">
+      <span class="inspector-panel-tag-chip-label">${escapeHtml(tag)}</span>
+      <span class="inspector-panel-tag-chip-icon">
+        <img src="${INSPECTOR_TAG_REMOVE_ICON}" alt="" width="8" height="8" />
+      </span>
+    </button>
+  `).join("");
+}
+
+function commitAllBookmarksTag() {
+  const normalizedTag = normalizeTagLabel(appState.allBookmarksTagDraft);
+  if (!normalizedTag) {
+    appState.allBookmarksTagDraft = "";
+    syncInspectorTagsUi();
+    return false;
+  }
+
+  if (!appState.allBookmarksTags.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())) {
+    appState.allBookmarksTags = [...appState.allBookmarksTags, normalizedTag];
+    updateAllBookmarksLastModified();
+    syncInspectorMetadataUi();
+  }
+
+  appState.allBookmarksTagDraft = "";
+  syncInspectorTagsUi();
+  return true;
+}
+
 function getBookmarkTitleFromUrl(url) {
   try {
     const normalizedUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
@@ -1964,6 +2088,97 @@ function renderContentPanel() {
   return appState.activeContentView === "preview" ? renderPreviewPane() : renderBookmarkCards();
 }
 
+function renderInspectorPanel() {
+  if (appState.activeSidebarCategory !== "All Bookmarks") {
+    return `
+      <div class="scaffold-block">
+        <span class="scaffold-label">Right Details Panel</span>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="inspector-panel inspector-panel-all-bookmarks">
+      <div class="inspector-panel-title">All Bookmarks</div>
+
+      <div class="inspector-panel-metadata">
+        <div class="inspector-panel-meta-row">
+          <span class="inspector-panel-meta-label">Types</span>
+          <span class="inspector-panel-meta-value inspector-panel-meta-value-types">Article, Audio, Link, Video</span>
+        </div>
+        <div class="inspector-panel-meta-row">
+          <span class="inspector-panel-meta-label">Last Saved</span>
+          <span class="inspector-panel-meta-value" data-role="inspector-last-saved">${escapeHtml(appState.allBookmarksLastSaved)}</span>
+        </div>
+        <div class="inspector-panel-meta-row">
+          <span class="inspector-panel-meta-label">Last Modified</span>
+          <span class="inspector-panel-meta-value" data-role="inspector-last-modified">${escapeHtml(appState.allBookmarksLastModified)}</span>
+        </div>
+      </div>
+
+      <div class="inspector-panel-divider">
+        <img src="${INSPECTOR_TOP_DIVIDER}" alt="" width="300" height="1" />
+      </div>
+
+      <button class="inspector-panel-toggle-row inspector-panel-toggle-row-primary" type="button" data-action="toggle-all-bookmarks-permanent-copy" aria-pressed="${appState.allBookmarksSavePermanentCopy}">
+        <span class="inspector-panel-checkbox">
+          <img src="${appState.allBookmarksSavePermanentCopy ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
+        </span>
+        <span class="inspector-panel-toggle-label">Save all as permanent copy</span>
+      </button>
+
+      <div class="inspector-panel-password-block">
+        <button class="inspector-panel-toggle-row" type="button" data-action="toggle-all-bookmarks-password" aria-pressed="${appState.allBookmarksPasswordProtected}">
+          <span class="inspector-panel-checkbox">
+            <img src="${appState.allBookmarksPasswordProtected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
+          </span>
+          <span class="inspector-panel-toggle-label">Password-protect this view</span>
+        </button>
+      </div>
+
+      <div class="inspector-panel-divider inspector-panel-divider-bottom">
+        <img src="${INSPECTOR_BOTTOM_DIVIDER}" alt="" width="300" height="1" />
+      </div>
+
+      <div class="inspector-panel-fields">
+        <div class="inspector-panel-field">
+          <div class="inspector-panel-field-label-row">
+            <span class="inspector-panel-field-icon">
+              <img src="${INSPECTOR_TAG_ICON}" alt="" width="16" height="16" />
+            </span>
+            <span class="inspector-panel-field-label">Add tags</span>
+          </div>
+          <div class="inspector-panel-field-box inspector-panel-field-box-tags inspector-panel-field-box-resizable">
+            <div class="inspector-panel-tags-field">
+              <div class="inspector-panel-tags-list" data-role="all-bookmarks-tags-list">${renderInspectorSavedTags()}</div>
+              <input class="inspector-panel-input inspector-panel-input-tags" type="text" value="${escapeHtml(appState.allBookmarksTagDraft).replace(/"/g, "&quot;")}" data-role="all-bookmarks-tags-input" />
+            </div>
+          </div>
+        </div>
+
+        <div class="inspector-panel-field">
+          <div class="inspector-panel-field-label-row">
+            <span class="inspector-panel-field-icon">
+              <img src="${INSPECTOR_NOTE_ICON}" alt="" width="16" height="16" />
+            </span>
+            <span class="inspector-panel-field-label">Add a note</span>
+          </div>
+          <label class="inspector-panel-field-box inspector-panel-field-box-note inspector-panel-field-box-resizable">
+            <textarea class="inspector-panel-input inspector-panel-input-note" data-role="all-bookmarks-note-input">${escapeHtml(appState.allBookmarksNote)}</textarea>
+          </label>
+        </div>
+      </div>
+
+      <button class="inspector-panel-delete-button" type="button">
+        <span class="inspector-panel-delete-icon">
+          <img src="${INSPECTOR_TRASH_ICON}" alt="" width="16" height="16" />
+        </span>
+        <span class="inspector-panel-delete-label">Delete all bookmarks</span>
+      </button>
+    </div>
+  `;
+}
+
 function setupPreviewPaneScroll() {
   const previewPane = app.querySelector(".preview-pane");
   const scrollContainer = app.querySelector(".preview-pane-content-shell");
@@ -2108,9 +2323,7 @@ function renderShell() {
               </section>
 
               <aside class="panel inspector-host">
-                <div class="scaffold-block">
-                  <span class="scaffold-label">Right Details Panel</span>
-                </div>
+                ${renderInspectorPanel()}
               </aside>
             </div>
           </div>
@@ -2148,6 +2361,10 @@ function handleAppClick(event) {
       return;
     }
 
+    if (appState.allBookmarksTagDraft && !event.target.closest("[data-role='all-bookmarks-tags-input']")) {
+      commitAllBookmarksTag();
+    }
+
     if (appState.isCreatingCategory && !event.target.closest("[data-role='new-category-input']")) {
       finalizeNewCategory();
     }
@@ -2177,32 +2394,9 @@ function handleAppClick(event) {
   }
 
   if (action === "save-bookmark") {
-    if (!appState.bookmarkUrl.trim()) {
-      return;
+    if (addBookmarkFromCurrentInput()) {
+      syncInspectorPanel();
     }
-
-    const rawUrl = appState.bookmarkUrl.trim();
-    const bookmarkTitle = getBookmarkTitleFromUrl(rawUrl);
-    const bookmarkUrl = getBookmarkUrlLabel(rawUrl);
-    const nextBookmark = {
-      id: `bookmark-${Date.now()}`,
-      title: bookmarkTitle,
-      url: bookmarkUrl,
-      category: "Uncategorized",
-      date: formatBookmarkDate(new Date()),
-      image: BOOKMARK_CARD_IMAGE,
-      previewImage: PREVIEW_SAMPLE_IMAGE,
-      isFetchingImage: true,
-      isPermanentCopy: false,
-      statusIcon: BOOKMARK_CARD_STATUS_ICON,
-      articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
-    };
-
-    appState.bookmarks.unshift(nextBookmark);
-    appState.bookmarkUrl = "";
-    appState.newBookmarkExpanded = false;
-    renderShell();
-    queueBookmarkImageReveal(nextBookmark.id);
     return;
   }
 
@@ -2230,6 +2424,7 @@ function handleAppClick(event) {
       appState.contentKebabOpen = false;
       syncSidebarCategoryUi();
       syncBookmarkContentForActiveCategory();
+      syncInspectorPanel();
     }
     return;
   }
@@ -2294,8 +2489,35 @@ function handleAppClick(event) {
 
     if (bookmark) {
       bookmark.isPermanentCopy = true;
+      updateAllBookmarksLastModified();
+      syncInspectorPanel();
     }
 
+    return;
+  }
+
+  if (action === "toggle-all-bookmarks-permanent-copy") {
+    appState.allBookmarksSavePermanentCopy = !appState.allBookmarksSavePermanentCopy;
+    updateAllBookmarksLastModified();
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "toggle-all-bookmarks-password") {
+    appState.allBookmarksPasswordProtected = !appState.allBookmarksPasswordProtected;
+    updateAllBookmarksLastModified();
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "remove-all-bookmarks-tag") {
+    const tag = actionTarget.getAttribute("data-tag");
+    if (!tag) {
+      return;
+    }
+    appState.allBookmarksTags = appState.allBookmarksTags.filter((item) => item !== tag);
+    updateAllBookmarksLastModified();
+    syncInspectorPanel();
     return;
   }
 
@@ -2325,11 +2547,36 @@ function handleAppInput(event) {
 
   if (event.target.matches("[data-role='new-category-input']")) {
     appState.newCategoryName = event.target.value;
+    return;
+  }
+
+  if (event.target.matches("[data-role='all-bookmarks-tags-input']")) {
+    appState.allBookmarksTagDraft = event.target.value;
+    return;
+  }
+
+  if (event.target.matches("[data-role='all-bookmarks-note-input']")) {
+    appState.allBookmarksNote = event.target.value;
+    updateAllBookmarksLastModified();
+    syncInspectorMetadataUi();
   }
 }
 
 function handleAppKeydown(event) {
   if (!event.target.matches("[data-role='new-bookmark-input']")) {
+    if (event.target.matches("[data-role='all-bookmarks-tags-input']")) {
+      if (event.key === "Enter" || event.key === ",") {
+        event.preventDefault();
+        commitAllBookmarksTag();
+      }
+
+      if (event.key === "Escape") {
+        appState.allBookmarksTagDraft = "";
+        syncInspectorTagsUi();
+      }
+      return;
+    }
+
     if (event.target.matches("[data-role='new-category-input']")) {
       if (event.key === "Enter") {
         finalizeNewCategory();
@@ -2352,28 +2599,7 @@ function handleAppKeydown(event) {
   }
 
   if (event.key === "Enter" && appState.bookmarkUrl.trim()) {
-    const rawUrl = appState.bookmarkUrl.trim();
-    const bookmarkTitle = getBookmarkTitleFromUrl(rawUrl);
-    const bookmarkUrl = getBookmarkUrlLabel(rawUrl);
-    const nextBookmark = {
-      id: `bookmark-${Date.now()}`,
-      title: bookmarkTitle,
-      url: bookmarkUrl,
-      category: "Uncategorized",
-      date: formatBookmarkDate(new Date()),
-      image: BOOKMARK_CARD_IMAGE,
-      previewImage: PREVIEW_SAMPLE_IMAGE,
-      isFetchingImage: true,
-      isPermanentCopy: false,
-      statusIcon: BOOKMARK_CARD_STATUS_ICON,
-      articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
-    };
-
-    appState.bookmarks.unshift(nextBookmark);
-    appState.bookmarkUrl = "";
-    appState.newBookmarkExpanded = false;
-    renderShell();
-    queueBookmarkImageReveal(nextBookmark.id);
+    addBookmarkFromCurrentInput();
   }
 
   if (event.key === "Escape") {
