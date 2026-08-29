@@ -1074,6 +1074,14 @@ input {
   width: 32px;
 }
 
+.bookmark-content-export-chevron-icon {
+  align-items: center;
+  display: inline-flex;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
+}
+
 .bookmark-content-export-chevron img {
   display: block;
   height: 16px;

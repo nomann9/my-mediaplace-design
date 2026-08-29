@@ -1,126 +1,126 @@
 const app = document.getElementById("app");
-const MINIMIZE_ICON = "https://www.figma.com/api/mcp/asset/7e601499-4a77-4592-8125-b7b0a30b1b1b.svg";
-const MAXIMIZE_ICON = "https://www.figma.com/api/mcp/asset/fbd7336c-bc4c-4fb0-b4f2-7a6631055971.svg";
-const CLOSE_ICON = "https://www.figma.com/api/mcp/asset/602713fe-fb9a-4721-a13e-5e3f4ab79674.svg";
-const MENU_ICON = "https://www.figma.com/api/mcp/asset/720bdc27-8d08-4a5d-9916-f8d8f93d236d.svg";
-const DIVIDER_ICON = "https://www.figma.com/api/mcp/asset/baee6d56-c5fb-4a37-91e6-f51d1d605242.svg";
-const HOME_ICON = "https://www.figma.com/api/mcp/asset/6e49476b-49fd-4c9e-8d0c-2dbef7e0e1b8.svg";
-const AI_ICON = "https://www.figma.com/api/mcp/asset/6bd9b3aa-1cbb-4f9a-8349-87a3fca368ea.svg";
-const ORGANIZE_ICON = "https://www.figma.com/api/mcp/asset/fc3c4ca3-0c72-40cf-b42c-f6e5bdb2f3b0.svg";
-const AVATAR_ICON = "https://www.figma.com/api/mcp/asset/6e7395f1-4e0c-4815-8430-a30c56ea255d.svg";
-const CREATE_ICON = "https://www.figma.com/api/mcp/asset/550dcb0a-7145-427e-8a18-a63434daf2bf.svg";
-const DOWNLOAD_ICON = "https://www.figma.com/api/mcp/asset/be4205ff-e3e6-458a-9c41-f11674e0e6e0.svg";
-const SIDEBAR_FOOTER_IMAGE = "https://www.figma.com/api/mcp/asset/852e9ec6-8bda-45bd-8cab-7ede875208d9.png";
-const SUBMENU_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/d14ab9b1-9f63-4821-89ea-05114afddb7d.svg";
-const SUBMENU_HOVER_ICON = "https://www.figma.com/api/mcp/asset/0c4152c0-5d12-4e4a-bb3e-1d9baeea8bbc.svg";
-const ADD_BOOKMARK_ICON = "https://www.figma.com/api/mcp/asset/8187ea10-c387-4055-a25a-9e4cab552ebf.svg";
-const IMPORT_BOOKMARKS_ICON = "https://www.figma.com/api/mcp/asset/607ed0a5-0585-4a46-8a19-d736f8ae2f1a.svg";
-const SEARCH_ICON = "https://www.figma.com/api/mcp/asset/978e8e43-ee32-4603-91ac-c8c181eb6874.svg";
-const BOOKMARK_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/ca75bd8f-299a-4698-99b6-f91ea0d629b4.svg";
-const BOOKMARK_CHEVRON_ICON = "https://www.figma.com/api/mcp/asset/271ebccb-2afd-4954-9878-0db0f5922d5a.svg";
-const BOOKMARK_LOCKED_ICON = "https://www.figma.com/api/mcp/asset/5cdb5433-c880-453f-b162-091b964b8633.svg";
-const BOOKMARK_TRASH_ICON = "https://www.figma.com/api/mcp/asset/36a07bee-315f-45ea-8a60-3fe9194c2d91.svg";
-const BOOKMARK_STAR_ICON = "https://www.figma.com/api/mcp/asset/6c223006-1025-4aa5-9909-623b0780d7d5.svg";
-const BOOKMARK_LINK_ICON = "https://www.figma.com/api/mcp/asset/d9e51e3d-80ab-4161-8976-bcaddffed1c4.svg";
-const BOOKMARK_DOCUMENTS_ICON = "https://www.figma.com/api/mcp/asset/adcff124-a0e6-4017-a7f7-565b1b3b4719.svg";
-const BOOKMARK_AUDIO_ICON = "https://www.figma.com/api/mcp/asset/8c242210-a24a-450b-a921-470095ac6aae.svg";
-const BOOKMARK_VIDEO_ICON = "https://www.figma.com/api/mcp/asset/3e0e7e6b-9a3c-43ce-8b1c-a3a4785d72da.svg";
-const BOOKMARK_UNTAGGED_ICON = "https://www.figma.com/api/mcp/asset/c1e49ec9-0852-4855-af79-a07a62c23b58.svg";
-const BOOKMARK_ADD_CATEGORY_ICON = "https://www.figma.com/api/mcp/asset/0d352490-3828-4415-97f1-658f67665a79.svg";
-const BOOKMARK_ADD_CATEGORY_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/bd9f8cc2-a797-4c09-b87a-69ac123194f0.svg";
-const BOOKMARK_CARD_FOLDER_ICON = "https://www.figma.com/api/mcp/asset/ec8eec83-c151-41fb-8237-397ac2d6879d.svg";
-const BOOKMARK_CARD_STATUS_ICON = "https://www.figma.com/api/mcp/asset/72b09fc0-a749-41d5-acf3-dd273870b12b.svg";
-const BOOKMARK_CARD_STATUS_ORANGE_ICON = "https://www.figma.com/api/mcp/asset/499952dd-ae9f-492c-b112-5696e4b30d30.svg";
-const BOOKMARK_CARD_STATUS_RED_ICON = "https://www.figma.com/api/mcp/asset/29e3bf79-b244-4882-a32d-edf02204b091.svg";
-const BOOKMARK_CARD_IMAGE = "https://www.figma.com/api/mcp/asset/d8f2fcdb-afa9-473d-b841-0cb0b099b90e.png";
-const BOOKMARK_CARD_PREVIEW_ICON = "https://www.figma.com/api/mcp/asset/672b1a75-0c5e-4bb4-8173-360c9d03b270.svg";
-const BOOKMARK_CARD_EDIT_ICON = "https://www.figma.com/api/mcp/asset/62ab2753-7920-424d-b68e-a1d8e35bc6d2.svg";
-const BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON = "https://www.figma.com/api/mcp/asset/fec18e29-f693-4bc9-a415-6cf2fd693903.svg";
-const BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON = "https://www.figma.com/api/mcp/asset/806c58ad-7261-4f69-b792-8264bf967589.svg";
-const PREVIEW_GO_BACK_ICON = "https://www.figma.com/api/mcp/asset/84a29a21-3060-4208-a0f7-607d518413dc.svg";
-const PREVIEW_SAVE_ICON = "https://www.figma.com/api/mcp/asset/1ea3982f-40a6-4866-ace3-27db56a37222.svg";
-const PREVIEW_OPEN_BROWSER_ICON = "https://www.figma.com/api/mcp/asset/051a2ab3-1d04-4723-845c-4177958427f6.svg";
-const PREVIEW_EXPORT_ICON = "https://www.figma.com/api/mcp/asset/5f26ce51-9981-4171-97b7-07cf7a229dc3.svg";
-const PREVIEW_CANCEL_ICON = "https://www.figma.com/api/mcp/asset/25da3f51-5df0-4680-9765-cd8656a883ec.svg";
-const PREVIEW_SAMPLE_IMAGE = "https://www.figma.com/api/mcp/asset/53e379e3-fe1d-47b7-aeb1-8c6d5a809aeb.png";
-const CONTENT_HEADING_GRID_ICON = "https://www.figma.com/api/mcp/asset/60569bc5-3723-4a02-973f-fb420db4777c.svg";
-const CONTENT_HEADING_LIST_ICON = "https://www.figma.com/api/mcp/asset/c60cb679-0433-499c-bdb8-6c1e60e41b0b.svg";
-const CONTENT_HEADING_SORT_ICON = "https://www.figma.com/api/mcp/asset/f2bf8147-4d8e-4087-92cd-76a8b1f59ded.svg";
-const CONTENT_HEADING_FILTER_ICON = "https://www.figma.com/api/mcp/asset/19806e00-cd8c-4e4a-9e1e-fc865b82931f.svg";
-const CONTENT_HEADING_ZOOM_IN_ICON = "https://www.figma.com/api/mcp/asset/342c9f09-24a1-4c6d-a9c0-a9bc64d3d5a6.svg";
-const CONTENT_HEADING_ZOOM_OUT_ICON = "https://www.figma.com/api/mcp/asset/4ffe2a45-f7d2-45c0-b247-998b6f0e8d89.svg";
-const CONTENT_HEADING_KEBAB_ICON = "https://www.figma.com/api/mcp/asset/f4287519-7129-4119-9586-362722a3a71c.svg";
-const CONTENT_HEADING_CHEVRON_ICON = BOOKMARK_CHEVRON_ICON;
-const CONTENT_HEADING_EXPORT_ICON = IMPORT_BOOKMARKS_ICON;
+const MINIMIZE_ICON = "assets/figma/7e601499-4a77-4592-8125-b7b0a30b1b1b.svg";
+const MAXIMIZE_ICON = "assets/figma/fbd7336c-bc4c-4fb0-b4f2-7a6631055971.svg";
+const CLOSE_ICON = "assets/figma/602713fe-fb9a-4721-a13e-5e3f4ab79674.svg";
+const MENU_ICON = "assets/figma/720bdc27-8d08-4a5d-9916-f8d8f93d236d.svg";
+const DIVIDER_ICON = "assets/figma/baee6d56-c5fb-4a37-91e6-f51d1d605242.svg";
+const HOME_ICON = "assets/figma/6e49476b-49fd-4c9e-8d0c-2dbef7e0e1b8.svg";
+const AI_ICON = "assets/figma/6bd9b3aa-1cbb-4f9a-8349-87a3fca368ea.svg";
+const ORGANIZE_ICON = "assets/figma/fc3c4ca3-0c72-40cf-b42c-f6e5bdb2f3b0.svg";
+const AVATAR_ICON = "assets/figma/6e7395f1-4e0c-4815-8430-a30c56ea255d.svg";
+const CREATE_ICON = "assets/figma/550dcb0a-7145-427e-8a18-a63434daf2bf.svg";
+const DOWNLOAD_ICON = "assets/figma/be4205ff-e3e6-458a-9c41-f11674e0e6e0.svg";
+const SIDEBAR_FOOTER_IMAGE = "assets/figma/852e9ec6-8bda-45bd-8cab-7ede875208d9.png";
+const SUBMENU_ACTIVE_ICON = "assets/figma/d14ab9b1-9f63-4821-89ea-05114afddb7d.svg";
+const SUBMENU_HOVER_ICON = "assets/figma/0c4152c0-5d12-4e4a-bb3e-1d9baeea8bbc.svg";
+const ADD_BOOKMARK_ICON = "assets/figma/8187ea10-c387-4055-a25a-9e4cab552ebf.svg";
+const IMPORT_BOOKMARKS_ICON = "assets/figma/607ed0a5-0585-4a46-8a19-d736f8ae2f1a.svg";
+const SEARCH_ICON = "assets/figma/978e8e43-ee32-4603-91ac-c8c181eb6874.svg";
+const BOOKMARK_FOLDER_ICON = "assets/figma/ca75bd8f-299a-4698-99b6-f91ea0d629b4.svg";
+const BOOKMARK_CHEVRON_ICON = "assets/figma/271ebccb-2afd-4954-9878-0db0f5922d5a.svg";
+const BOOKMARK_LOCKED_ICON = "assets/figma/5cdb5433-c880-453f-b162-091b964b8633.svg";
+const BOOKMARK_TRASH_ICON = "assets/figma/36a07bee-315f-45ea-8a60-3fe9194c2d91.svg";
+const BOOKMARK_STAR_ICON = "assets/figma/6c223006-1025-4aa5-9909-623b0780d7d5.svg";
+const BOOKMARK_LINK_ICON = "assets/figma/d9e51e3d-80ab-4161-8976-bcaddffed1c4.svg";
+const BOOKMARK_DOCUMENTS_ICON = "assets/figma/adcff124-a0e6-4017-a7f7-565b1b3b4719.svg";
+const BOOKMARK_AUDIO_ICON = "assets/figma/8c242210-a24a-450b-a921-470095ac6aae.svg";
+const BOOKMARK_VIDEO_ICON = "assets/figma/3e0e7e6b-9a3c-43ce-8b1c-a3a4785d72da.svg";
+const BOOKMARK_UNTAGGED_ICON = "assets/figma/c1e49ec9-0852-4855-af79-a07a62c23b58.svg";
+const BOOKMARK_ADD_CATEGORY_ICON = "assets/figma/0d352490-3828-4415-97f1-658f67665a79.svg";
+const BOOKMARK_ADD_CATEGORY_ACTIVE_ICON = "assets/figma/bd9f8cc2-a797-4c09-b87a-69ac123194f0.svg";
+const BOOKMARK_CARD_FOLDER_ICON = "assets/figma/ec8eec83-c151-41fb-8237-397ac2d6879d.svg";
+const BOOKMARK_CARD_STATUS_ICON = "assets/figma/72b09fc0-a749-41d5-acf3-dd273870b12b.svg";
+const BOOKMARK_CARD_STATUS_ORANGE_ICON = "assets/figma/499952dd-ae9f-492c-b112-5696e4b30d30.svg";
+const BOOKMARK_CARD_STATUS_RED_ICON = "assets/figma/29e3bf79-b244-4882-a32d-edf02204b091.svg";
+const BOOKMARK_CARD_IMAGE = "assets/figma/d8f2fcdb-afa9-473d-b841-0cb0b099b90e.png";
+const BOOKMARK_CARD_PREVIEW_ICON = "assets/figma/672b1a75-0c5e-4bb4-8173-360c9d03b270.svg";
+const BOOKMARK_CARD_EDIT_ICON = "assets/figma/62ab2753-7920-424d-b68e-a1d8e35bc6d2.svg";
+const BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON = "assets/figma/fec18e29-f693-4bc9-a415-6cf2fd693903.svg";
+const BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON = "assets/figma/806c58ad-7261-4f69-b792-8264bf967589.svg";
+const PREVIEW_GO_BACK_ICON = "assets/figma/84a29a21-3060-4208-a0f7-607d518413dc.svg";
+const PREVIEW_SAVE_ICON = "assets/figma/1ea3982f-40a6-4866-ace3-27db56a37222.svg";
+const PREVIEW_OPEN_BROWSER_ICON = "assets/figma/051a2ab3-1d04-4723-845c-4177958427f6.svg";
+const PREVIEW_EXPORT_ICON = "assets/figma/5f26ce51-9981-4171-97b7-07cf7a229dc3.svg";
+const PREVIEW_CANCEL_ICON = "assets/figma/25da3f51-5df0-4680-9765-cd8656a883ec.svg";
+const PREVIEW_SAMPLE_IMAGE = "assets/figma/53e379e3-fe1d-47b7-aeb1-8c6d5a809aeb.png";
+const CONTENT_HEADING_GRID_ICON = "assets/figma/60569bc5-3723-4a02-973f-fb420db4777c.svg";
+const CONTENT_HEADING_LIST_ICON = "assets/figma/c60cb679-0433-499c-bdb8-6c1e60e41b0b.svg";
+const CONTENT_HEADING_SORT_ICON = "assets/figma/f2bf8147-4d8e-4087-92cd-76a8b1f59ded.svg";
+const CONTENT_HEADING_FILTER_ICON = "assets/figma/19806e00-cd8c-4e4a-9e1e-fc865b82931f.svg";
+const CONTENT_HEADING_ZOOM_IN_ICON = "assets/figma/342c9f09-24a1-4c6d-a9c0-a9bc64d3d5a6.svg";
+const CONTENT_HEADING_ZOOM_OUT_ICON = "assets/figma/4ffe2a45-f7d2-45c0-b247-998b6f0e8d89.svg";
+const CONTENT_HEADING_KEBAB_ICON = "assets/figma/f4287519-7129-4119-9586-362722a3a71c.svg";
+const CONTENT_HEADING_CHEVRON_ICON = "assets/figma/c8491e4a-2b0c-443f-892d-3aa72b88a697.svg";
+const CONTENT_HEADING_EXPORT_ICON = "assets/figma/3c693a14-1cd0-46a4-ab33-9b60f298a351.svg";
 const CONTENT_SELECT_ALL_ICON = BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 const FIGMA_BOOKMARK_IMAGE_URLS = [
-  "https://www.figma.com/api/mcp/asset/e63e0d1d-dd75-4111-8cc7-0c913c0394ac.png",
-  "https://www.figma.com/api/mcp/asset/1496eea8-fa0f-4e20-ad1a-294e39ee913c.png",
-  "https://www.figma.com/api/mcp/asset/75b79825-358c-4e9d-9e08-4c4bbe1d57fd.png",
-  "https://www.figma.com/api/mcp/asset/b3bdc6ee-03c2-48d1-b158-487a91c4dbf4.png",
-  "https://www.figma.com/api/mcp/asset/087f4127-0032-45e1-9060-5ff48e86e070.png",
-  "https://www.figma.com/api/mcp/asset/432ddac5-0f8f-4d6b-867a-6c56aec5a42a.png",
-  "https://www.figma.com/api/mcp/asset/971092ce-0547-44db-b330-0b225f31d049.png",
-  "https://www.figma.com/api/mcp/asset/19bc93dd-1929-45ea-99c4-7bc89b24f374.png",
-  "https://www.figma.com/api/mcp/asset/a3434af2-49e4-42d4-8ae7-37ceb49fba3d.png",
-  "https://www.figma.com/api/mcp/asset/80722c10-9131-4f9b-8394-6f02659866c9.png",
-  "https://www.figma.com/api/mcp/asset/3686da08-e77b-40e5-9599-6654afd5e9cf.png",
-  "https://www.figma.com/api/mcp/asset/424a0253-67f4-4b2b-b8a1-1d6af8846c1b.png",
-  "https://www.figma.com/api/mcp/asset/59d69cc6-af93-4b5f-9b5b-41812203dc17.png",
-  "https://www.figma.com/api/mcp/asset/25062f9f-e30b-4234-8a23-f603232ddd56.png",
-  "https://www.figma.com/api/mcp/asset/229d98b6-2508-4e4f-8986-be66b9283290.png",
-  "https://www.figma.com/api/mcp/asset/14e222b4-3fd4-45a3-823b-a02a9869576b.png",
-  "https://www.figma.com/api/mcp/asset/b6bdae8d-ef2a-44c5-8e82-ca87a7778de2.png",
-  "https://www.figma.com/api/mcp/asset/0f962d0f-1638-438b-ba49-f4c088824209.png",
-  "https://www.figma.com/api/mcp/asset/e7de8841-1631-4458-8192-471166a20861.png",
-  "https://www.figma.com/api/mcp/asset/9be605ce-4c71-4c8d-ac76-26ea69e458fb.png",
-  "https://www.figma.com/api/mcp/asset/e88a2b2c-a18d-4991-acba-29c2b501160f.png",
-  "https://www.figma.com/api/mcp/asset/9b9a5170-ebf0-47a5-9645-311786fa1bb0.png",
-  "https://www.figma.com/api/mcp/asset/429f2e01-79fe-4d36-88dc-aa63f7d45dba.png",
-  "https://www.figma.com/api/mcp/asset/145c3fc1-25c7-4218-a5bf-23b4f2097178.png",
-  "https://www.figma.com/api/mcp/asset/dcaf1502-3c8f-46fa-806d-ed6174e005c9.png",
-  "https://www.figma.com/api/mcp/asset/4e209631-6a5b-4922-b5ca-d14d50b0bbdc.png",
-  "https://www.figma.com/api/mcp/asset/03e44c1e-433c-4a27-b72c-ae04410367dd.png",
-  "https://www.figma.com/api/mcp/asset/47085e37-2ff1-4305-b4ff-7188453eca8e.png",
-  "https://www.figma.com/api/mcp/asset/02fbc9f6-68f1-4370-bdcd-8258497980c0.png",
-  "https://www.figma.com/api/mcp/asset/76f1997d-b375-4fec-abd2-1987444f09bb.png",
-  "https://www.figma.com/api/mcp/asset/cf52de02-25db-49bd-8313-537c9ba42d0e.png",
-  "https://www.figma.com/api/mcp/asset/3a629792-7a9c-467a-8d2e-652b03715d25.png",
-  "https://www.figma.com/api/mcp/asset/309ca937-4673-4f2c-9c4a-b44dc1c8df54.png",
-  "https://www.figma.com/api/mcp/asset/eb9e7dae-2459-464c-98ac-c1a1052ca63a.png",
-  "https://www.figma.com/api/mcp/asset/6713a922-5bb7-4014-96af-b4872eeb1d41.png",
-  "https://www.figma.com/api/mcp/asset/05a923a2-5ae0-407f-9769-4613f80cbbb8.png",
-  "https://www.figma.com/api/mcp/asset/9f299446-54a6-4901-b738-e44e3434b8b3.png",
-  "https://www.figma.com/api/mcp/asset/d12285de-15d8-4d7e-a1d3-07d1bb587f5c.png",
-  "https://www.figma.com/api/mcp/asset/4f3e48a6-ab88-4b9f-86cc-fba295d4a6e9.png",
-  "https://www.figma.com/api/mcp/asset/7f8346df-5666-40ca-8cb3-465095e1f082.png",
-  "https://www.figma.com/api/mcp/asset/a5064d16-9977-4092-b55e-4179cf98cdf0.png",
-  "https://www.figma.com/api/mcp/asset/4df6602c-5e85-4508-8454-d25012571efc.png",
-  "https://www.figma.com/api/mcp/asset/d0bab436-9ed9-4780-ba22-98c8f089c25a.png",
-  "https://www.figma.com/api/mcp/asset/327dbf59-5f4d-4cee-a60b-dc82cab61b3c.png",
-  "https://www.figma.com/api/mcp/asset/c744d3d0-cc00-4093-9158-74e4b856a2c8.png",
-  "https://www.figma.com/api/mcp/asset/e496822b-c5c6-465f-a1b6-54d949ee07a3.png",
-  "https://www.figma.com/api/mcp/asset/b21dc5e5-ecb7-48b3-a257-e0bf36f9cafd.png",
-  "https://www.figma.com/api/mcp/asset/e642b585-8614-4b3e-a91c-ae565dc486f8.png",
-  "https://www.figma.com/api/mcp/asset/0240e462-388d-44a9-b158-7c72ad182ef7.png",
-  "https://www.figma.com/api/mcp/asset/6b4474fa-2cdf-4173-b69d-1afd89448590.png",
-  "https://www.figma.com/api/mcp/asset/b42a7771-48de-41c0-8dde-2f43fcd63cda.png",
-  "https://www.figma.com/api/mcp/asset/2724f65c-edf7-4150-bd4f-292479747d76.png",
-  "https://www.figma.com/api/mcp/asset/03db4073-bcd9-438c-83ae-03f8ec68484e.png",
-  "https://www.figma.com/api/mcp/asset/fdb50ee1-eb15-4169-8fcc-85ad5a4da072.png",
-  "https://www.figma.com/api/mcp/asset/ef8613a8-5b24-4ae3-9e7e-e23eddd386cc.png",
-  "https://www.figma.com/api/mcp/asset/d2c4690b-6edc-42a0-8123-4a11141c8f4e.png",
-  "https://www.figma.com/api/mcp/asset/d48a4f7c-05f9-4287-a60e-9f0fe3e678e5.png",
-  "https://www.figma.com/api/mcp/asset/cc8f4603-3077-423f-b863-d1070aa48104.png",
-  "https://www.figma.com/api/mcp/asset/00367eee-c990-435a-9c39-b9e4e1fa90f0.png",
-  "https://www.figma.com/api/mcp/asset/37fa3397-c955-43a5-860f-ef7f504c722e.png",
-  "https://www.figma.com/api/mcp/asset/2896ad4b-629b-43cf-bbb9-68084fdd0bef.png",
-  "https://www.figma.com/api/mcp/asset/ecf82a06-fe97-4406-949d-f9daa3851236.png",
-  "https://www.figma.com/api/mcp/asset/f2319771-c2ed-4771-8bb8-24558bd933a3.png",
-  "https://www.figma.com/api/mcp/asset/a2504d1a-b41c-4791-8ae8-def8117d6cc1.png",
-  "https://www.figma.com/api/mcp/asset/d4dd79a1-42d3-44e3-880a-220f6f65c536.png",
-  "https://www.figma.com/api/mcp/asset/d145f997-4e9b-455e-96ad-082401053720.png"
+  "assets/figma/e63e0d1d-dd75-4111-8cc7-0c913c0394ac.png",
+  "assets/figma/1496eea8-fa0f-4e20-ad1a-294e39ee913c.png",
+  "assets/figma/75b79825-358c-4e9d-9e08-4c4bbe1d57fd.png",
+  "assets/figma/b3bdc6ee-03c2-48d1-b158-487a91c4dbf4.png",
+  "assets/figma/087f4127-0032-45e1-9060-5ff48e86e070.png",
+  "assets/figma/432ddac5-0f8f-4d6b-867a-6c56aec5a42a.png",
+  "assets/figma/971092ce-0547-44db-b330-0b225f31d049.png",
+  "assets/figma/19bc93dd-1929-45ea-99c4-7bc89b24f374.png",
+  "assets/figma/a3434af2-49e4-42d4-8ae7-37ceb49fba3d.png",
+  "assets/figma/80722c10-9131-4f9b-8394-6f02659866c9.png",
+  "assets/figma/3686da08-e77b-40e5-9599-6654afd5e9cf.png",
+  "assets/figma/424a0253-67f4-4b2b-b8a1-1d6af8846c1b.png",
+  "assets/figma/59d69cc6-af93-4b5f-9b5b-41812203dc17.png",
+  "assets/figma/25062f9f-e30b-4234-8a23-f603232ddd56.png",
+  "assets/figma/229d98b6-2508-4e4f-8986-be66b9283290.png",
+  "assets/figma/14e222b4-3fd4-45a3-823b-a02a9869576b.png",
+  "assets/figma/b6bdae8d-ef2a-44c5-8e82-ca87a7778de2.png",
+  "assets/figma/0f962d0f-1638-438b-ba49-f4c088824209.png",
+  "assets/figma/e7de8841-1631-4458-8192-471166a20861.png",
+  "assets/figma/9be605ce-4c71-4c8d-ac76-26ea69e458fb.png",
+  "assets/figma/e88a2b2c-a18d-4991-acba-29c2b501160f.png",
+  "assets/figma/9b9a5170-ebf0-47a5-9645-311786fa1bb0.png",
+  "assets/figma/429f2e01-79fe-4d36-88dc-aa63f7d45dba.png",
+  "assets/figma/145c3fc1-25c7-4218-a5bf-23b4f2097178.png",
+  "assets/figma/dcaf1502-3c8f-46fa-806d-ed6174e005c9.png",
+  "assets/figma/4e209631-6a5b-4922-b5ca-d14d50b0bbdc.png",
+  "assets/figma/03e44c1e-433c-4a27-b72c-ae04410367dd.png",
+  "assets/figma/47085e37-2ff1-4305-b4ff-7188453eca8e.png",
+  "assets/figma/02fbc9f6-68f1-4370-bdcd-8258497980c0.png",
+  "assets/figma/76f1997d-b375-4fec-abd2-1987444f09bb.png",
+  "assets/figma/cf52de02-25db-49bd-8313-537c9ba42d0e.png",
+  "assets/figma/3a629792-7a9c-467a-8d2e-652b03715d25.png",
+  "assets/figma/309ca937-4673-4f2c-9c4a-b44dc1c8df54.png",
+  "assets/figma/eb9e7dae-2459-464c-98ac-c1a1052ca63a.png",
+  "assets/figma/6713a922-5bb7-4014-96af-b4872eeb1d41.png",
+  "assets/figma/05a923a2-5ae0-407f-9769-4613f80cbbb8.png",
+  "assets/figma/9f299446-54a6-4901-b738-e44e3434b8b3.png",
+  "assets/figma/d12285de-15d8-4d7e-a1d3-07d1bb587f5c.png",
+  "assets/figma/4f3e48a6-ab88-4b9f-86cc-fba295d4a6e9.png",
+  "assets/figma/7f8346df-5666-40ca-8cb3-465095e1f082.png",
+  "assets/figma/a5064d16-9977-4092-b55e-4179cf98cdf0.png",
+  "assets/figma/4df6602c-5e85-4508-8454-d25012571efc.png",
+  "assets/figma/d0bab436-9ed9-4780-ba22-98c8f089c25a.png",
+  "assets/figma/327dbf59-5f4d-4cee-a60b-dc82cab61b3c.png",
+  "assets/figma/c744d3d0-cc00-4093-9158-74e4b856a2c8.png",
+  "assets/figma/e496822b-c5c6-465f-a1b6-54d949ee07a3.png",
+  "assets/figma/b21dc5e5-ecb7-48b3-a257-e0bf36f9cafd.png",
+  "assets/figma/e642b585-8614-4b3e-a91c-ae565dc486f8.png",
+  "assets/figma/0240e462-388d-44a9-b158-7c72ad182ef7.png",
+  "assets/figma/6b4474fa-2cdf-4173-b69d-1afd89448590.png",
+  "assets/figma/b42a7771-48de-41c0-8dde-2f43fcd63cda.png",
+  "assets/figma/2724f65c-edf7-4150-bd4f-292479747d76.png",
+  "assets/figma/03db4073-bcd9-438c-83ae-03f8ec68484e.png",
+  "assets/figma/fdb50ee1-eb15-4169-8fcc-85ad5a4da072.png",
+  "assets/figma/ef8613a8-5b24-4ae3-9e7e-e23eddd386cc.png",
+  "assets/figma/d2c4690b-6edc-42a0-8123-4a11141c8f4e.png",
+  "assets/figma/d48a4f7c-05f9-4287-a60e-9f0fe3e678e5.png",
+  "assets/figma/cc8f4603-3077-423f-b863-d1070aa48104.png",
+  "assets/figma/00367eee-c990-435a-9c39-b9e4e1fa90f0.png",
+  "assets/figma/37fa3397-c955-43a5-860f-ef7f504c722e.png",
+  "assets/figma/2896ad4b-629b-43cf-bbb9-68084fdd0bef.png",
+  "assets/figma/ecf82a06-fe97-4406-949d-f9daa3851236.png",
+  "assets/figma/f2319771-c2ed-4771-8bb8-24558bd933a3.png",
+  "assets/figma/a2504d1a-b41c-4791-8ae8-def8117d6cc1.png",
+  "assets/figma/d4dd79a1-42d3-44e3-880a-220f6f65c536.png",
+  "assets/figma/d145f997-4e9b-455e-96ad-082401053720.png"
 ];
 const BOOKMARK_STATUS_ORANGE_IDS = new Set([
   "figma-bookmark-a-soulful-connection-within",
@@ -139,9 +139,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "studioluma.com",
     category: "Design Resources",
     date: "24 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/b28dc17c-f431-4fe6-8278-50d4c860480e.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/7ff6bc2f-3644-4353-9de1-04c826884b9f.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/b28dc17c-f431-4fe6-8278-50d4c860480e.png",
+    image: "assets/figma/b28dc17c-f431-4fe6-8278-50d4c860480e.png",
+    statusIcon: "assets/figma/7ff6bc2f-3644-4353-9de1-04c826884b9f.svg",
+    previewImage: "assets/figma/b28dc17c-f431-4fe6-8278-50d4c860480e.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -151,9 +151,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "culturecurrent.net",
     category: "Arts & Culture",
     date: "23 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/9c2257b2-b1f0-49a6-82ec-a85b8e9851ce.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/ab603703-e19d-4d30-88dc-346bcb518faa.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/9c2257b2-b1f0-49a6-82ec-a85b8e9851ce.png",
+    image: "assets/figma/9c2257b2-b1f0-49a6-82ec-a85b8e9851ce.png",
+    statusIcon: "assets/figma/ab603703-e19d-4d30-88dc-346bcb518faa.svg",
+    previewImage: "assets/figma/9c2257b2-b1f0-49a6-82ec-a85b8e9851ce.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -163,9 +163,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "wpfoundry.org",
     category: "WP Resources",
     date: "22 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/ce613400-c3a9-4cc2-8c49-8229612318ba.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/8b3f271f-0709-4751-9287-a3bbe2708f21.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/ce613400-c3a9-4cc2-8c49-8229612318ba.png",
+    image: "assets/figma/ce613400-c3a9-4cc2-8c49-8229612318ba.png",
+    statusIcon: "assets/figma/8b3f271f-0709-4751-9287-a3bbe2708f21.svg",
+    previewImage: "assets/figma/ce613400-c3a9-4cc2-8c49-8229612318ba.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -175,9 +175,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "urbanhoops.io",
     category: "Sports",
     date: "21 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/fc1b9f02-9578-45eb-b357-012d95045eeb.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/bbcf7d8f-d2e3-4a90-9f2d-b355f0790ee5.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/fc1b9f02-9578-45eb-b357-012d95045eeb.png",
+    image: "assets/figma/fc1b9f02-9578-45eb-b357-012d95045eeb.png",
+    statusIcon: "assets/figma/bbcf7d8f-d2e3-4a90-9f2d-b355f0790ee5.svg",
+    previewImage: "assets/figma/fc1b9f02-9578-45eb-b357-012d95045eeb.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -187,9 +187,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "thewanderingsoul.com",
     category: "Arts & Culture",
     date: "21 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/8bea497b-221e-4a21-8201-12ff1d0972f6.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/af7c3979-1b6e-42a6-a242-e5b92cfd27b2.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/8bea497b-221e-4a21-8201-12ff1d0972f6.png",
+    image: "assets/figma/8bea497b-221e-4a21-8201-12ff1d0972f6.png",
+    statusIcon: "assets/figma/af7c3979-1b6e-42a6-a242-e5b92cfd27b2.svg",
+    previewImage: "assets/figma/8bea497b-221e-4a21-8201-12ff1d0972f6.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -199,9 +199,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "21 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/fd6816e5-b485-4222-aad8-2397e2d776eb.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/c35b6e2a-53eb-4c0f-91d8-3beeec4b1664.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/fd6816e5-b485-4222-aad8-2397e2d776eb.png",
+    image: "assets/figma/fd6816e5-b485-4222-aad8-2397e2d776eb.png",
+    statusIcon: "assets/figma/c35b6e2a-53eb-4c0f-91d8-3beeec4b1664.svg",
+    previewImage: "assets/figma/fd6816e5-b485-4222-aad8-2397e2d776eb.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -211,9 +211,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "globalnest.com",
     category: "Arts & Culture",
     date: "20 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/56311d4d-56a2-44f0-a427-5d08c53cabe6.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/170c88a7-d50b-4929-aa0e-f4758bb13c71.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/56311d4d-56a2-44f0-a427-5d08c53cabe6.png",
+    image: "assets/figma/56311d4d-56a2-44f0-a427-5d08c53cabe6.png",
+    statusIcon: "assets/figma/170c88a7-d50b-4929-aa0e-f4758bb13c71.svg",
+    previewImage: "assets/figma/56311d4d-56a2-44f0-a427-5d08c53cabe6.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -223,9 +223,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "yourgoodsoul.com",
     category: "Arts & Culture",
     date: "20 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/9c62b37c-d794-4001-b953-ef67a1ce7d82.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/be4ca7e9-67b6-427c-bdd4-32f8d45ee916.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/9c62b37c-d794-4001-b953-ef67a1ce7d82.png",
+    image: "assets/figma/9c62b37c-d794-4001-b953-ef67a1ce7d82.png",
+    statusIcon: "assets/figma/be4ca7e9-67b6-427c-bdd4-32f8d45ee916.svg",
+    previewImage: "assets/figma/9c62b37c-d794-4001-b953-ef67a1ce7d82.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -235,9 +235,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "sportsphere.io",
     category: "Sports",
     date: "20 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/112a6f0f-96cf-42c9-aed2-55e591480433.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/35f8cba7-26e9-46a7-a83d-fc45a7d47694.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/112a6f0f-96cf-42c9-aed2-55e591480433.png",
+    image: "assets/figma/112a6f0f-96cf-42c9-aed2-55e591480433.png",
+    statusIcon: "assets/figma/35f8cba7-26e9-46a7-a83d-fc45a7d47694.svg",
+    previewImage: "assets/figma/112a6f0f-96cf-42c9-aed2-55e591480433.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -247,9 +247,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "wplaunchlab.com",
     category: "WP Resources",
     date: "19 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/d2299934-c92d-4a50-a4f6-54c9f7b26404.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/753e71c8-8709-4e14-bc3a-9ceee8e729f5.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/d2299934-c92d-4a50-a4f6-54c9f7b26404.png",
+    image: "assets/figma/d2299934-c92d-4a50-a4f6-54c9f7b26404.png",
+    statusIcon: "assets/figma/753e71c8-8709-4e14-bc3a-9ceee8e729f5.svg",
+    previewImage: "assets/figma/d2299934-c92d-4a50-a4f6-54c9f7b26404.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -259,9 +259,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "canvastheory.art",
     category: "Design Resources",
     date: "19 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/c23ed93b-7713-4bed-8265-ee3eb27d388c.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/3f726b90-1097-4caa-b26b-006893d9ac3a.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/c23ed93b-7713-4bed-8265-ee3eb27d388c.png",
+    image: "assets/figma/c23ed93b-7713-4bed-8265-ee3eb27d388c.png",
+    statusIcon: "assets/figma/3f726b90-1097-4caa-b26b-006893d9ac3a.svg",
+    previewImage: "assets/figma/c23ed93b-7713-4bed-8265-ee3eb27d388c.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -271,9 +271,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "wanderhaven.com",
     category: "Arts & Culture",
     date: "18 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/5b09c96e-a310-4f9f-9846-b8b9435dda8c.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/d4286602-b8b6-4349-af47-ef1cfc698c04.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/5b09c96e-a310-4f9f-9846-b8b9435dda8c.png",
+    image: "assets/figma/5b09c96e-a310-4f9f-9846-b8b9435dda8c.png",
+    statusIcon: "assets/figma/d4286602-b8b6-4349-af47-ef1cfc698c04.svg",
+    previewImage: "assets/figma/5b09c96e-a310-4f9f-9846-b8b9435dda8c.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -283,9 +283,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "17 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/49dff14d-2805-45a5-b7b1-0f62cdbfc057.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/7aceb57f-ecb1-47bd-ad50-727ab0464664.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/49dff14d-2805-45a5-b7b1-0f62cdbfc057.png",
+    image: "assets/figma/49dff14d-2805-45a5-b7b1-0f62cdbfc057.png",
+    statusIcon: "assets/figma/7aceb57f-ecb1-47bd-ad50-727ab0464664.svg",
+    previewImage: "assets/figma/49dff14d-2805-45a5-b7b1-0f62cdbfc057.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -295,9 +295,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "pageturnerpress.com",
     category: "Uncategorized",
     date: "17 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/ea62baf5-9911-48eb-bede-8caeac28f5d2.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/33f39bf7-7353-41dc-ac78-b43050882b64.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/ea62baf5-9911-48eb-bede-8caeac28f5d2.png",
+    image: "assets/figma/ea62baf5-9911-48eb-bede-8caeac28f5d2.png",
+    statusIcon: "assets/figma/33f39bf7-7353-41dc-ac78-b43050882b64.svg",
+    previewImage: "assets/figma/ea62baf5-9911-48eb-bede-8caeac28f5d2.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -307,9 +307,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "globalnest.com",
     category: "Arts & Culture",
     date: "16 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/08ae3bd1-402c-469b-b756-05ed9b502de5.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/a94fa835-f955-4a6f-ac64-ae029874d725.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/08ae3bd1-402c-469b-b756-05ed9b502de5.png",
+    image: "assets/figma/08ae3bd1-402c-469b-b756-05ed9b502de5.png",
+    statusIcon: "assets/figma/a94fa835-f955-4a6f-ac64-ae029874d725.svg",
+    previewImage: "assets/figma/08ae3bd1-402c-469b-b756-05ed9b502de5.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -319,9 +319,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "musestreet.com",
     category: "Arts & Culture",
     date: "16 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/97473ec3-7028-4368-a952-546489494e3c.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/7f74e4ab-0635-4e97-a18b-f0383f57995b.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/97473ec3-7028-4368-a952-546489494e3c.png",
+    image: "assets/figma/97473ec3-7028-4368-a952-546489494e3c.png",
+    statusIcon: "assets/figma/7f74e4ab-0635-4e97-a18b-f0383f57995b.svg",
+    previewImage: "assets/figma/97473ec3-7028-4368-a952-546489494e3c.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -331,9 +331,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "14 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/0c70d02f-3e86-4b3f-ae90-d2bf52ada513.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/dfed5d92-4d66-46bc-8044-9c2f2d49d74a.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/0c70d02f-3e86-4b3f-ae90-d2bf52ada513.png",
+    image: "assets/figma/0c70d02f-3e86-4b3f-ae90-d2bf52ada513.png",
+    statusIcon: "assets/figma/dfed5d92-4d66-46bc-8044-9c2f2d49d74a.svg",
+    previewImage: "assets/figma/0c70d02f-3e86-4b3f-ae90-d2bf52ada513.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -343,9 +343,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "wanderhaven.com",
     category: "Arts & Culture",
     date: "13 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/687d1116-25e8-4ff5-8eab-5dcce001fb61.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/72d8880b-0ab8-4655-8309-0895ab560d6c.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/687d1116-25e8-4ff5-8eab-5dcce001fb61.png",
+    image: "assets/figma/687d1116-25e8-4ff5-8eab-5dcce001fb61.png",
+    statusIcon: "assets/figma/72d8880b-0ab8-4655-8309-0895ab560d6c.svg",
+    previewImage: "assets/figma/687d1116-25e8-4ff5-8eab-5dcce001fb61.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -355,9 +355,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "themecrafts.com",
     category: "WP Resources",
     date: "13 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/9c8f4680-cb59-4bdd-a337-edf386aae937.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/cb0caa5e-ffb1-455e-b432-86a16eb8df9f.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/9c8f4680-cb59-4bdd-a337-edf386aae937.png",
+    image: "assets/figma/9c8f4680-cb59-4bdd-a337-edf386aae937.png",
+    statusIcon: "assets/figma/cb0caa5e-ffb1-455e-b432-86a16eb8df9f.svg",
+    previewImage: "assets/figma/9c8f4680-cb59-4bdd-a337-edf386aae937.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -367,9 +367,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "thepalettepost.co",
     category: "Uncategorized",
     date: "13 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/7aabd4ca-bdbf-4bab-ae31-34998e255071.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/04e7178b-e6b1-4eba-a668-d7626b54a65e.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/7aabd4ca-bdbf-4bab-ae31-34998e255071.png",
+    image: "assets/figma/7aabd4ca-bdbf-4bab-ae31-34998e255071.png",
+    statusIcon: "assets/figma/04e7178b-e6b1-4eba-a668-d7626b54a65e.svg",
+    previewImage: "assets/figma/7aabd4ca-bdbf-4bab-ae31-34998e255071.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -379,9 +379,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "spectrumsociety.com",
     category: "Arts & Culture",
     date: "12 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/adb416f5-76cd-4230-8f6a-1a3a1436e05b.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/75776a25-3554-401b-93c9-071f5e5f26a6.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/adb416f5-76cd-4230-8f6a-1a3a1436e05b.png",
+    image: "assets/figma/adb416f5-76cd-4230-8f6a-1a3a1436e05b.png",
+    statusIcon: "assets/figma/75776a25-3554-401b-93c9-071f5e5f26a6.svg",
+    previewImage: "assets/figma/adb416f5-76cd-4230-8f6a-1a3a1436e05b.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -391,9 +391,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "roamculture.com",
     category: "Arts & Culture",
     date: "10 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/a629c7ca-64f6-4c85-a3df-f47beca9ffe0.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/cb51745b-94b0-4b5b-845f-4c4f66d44134.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/a629c7ca-64f6-4c85-a3df-f47beca9ffe0.png",
+    image: "assets/figma/a629c7ca-64f6-4c85-a3df-f47beca9ffe0.png",
+    statusIcon: "assets/figma/cb51745b-94b0-4b5b-845f-4c4f66d44134.svg",
+    previewImage: "assets/figma/a629c7ca-64f6-4c85-a3df-f47beca9ffe0.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -403,9 +403,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "artechomag.com",
     category: "Arts & Culture",
     date: "10 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/3c45dbe8-d9f1-41ce-8e06-cab2fa7f1596.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/95e6684b-fa64-42f4-8ffa-509e7cc34dbb.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/3c45dbe8-d9f1-41ce-8e06-cab2fa7f1596.png",
+    image: "assets/figma/3c45dbe8-d9f1-41ce-8e06-cab2fa7f1596.png",
+    statusIcon: "assets/figma/95e6684b-fa64-42f4-8ffa-509e7cc34dbb.svg",
+    previewImage: "assets/figma/3c45dbe8-d9f1-41ce-8e06-cab2fa7f1596.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -415,9 +415,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "pixelforge.io",
     category: "Design Resources",
     date: "10 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/ccf1e6b8-9f42-4ff5-9aea-2b098ff50d50.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/85c1f65a-a181-4d13-be1d-c5f1de547b8a.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/ccf1e6b8-9f42-4ff5-9aea-2b098ff50d50.png",
+    image: "assets/figma/ccf1e6b8-9f42-4ff5-9aea-2b098ff50d50.png",
+    statusIcon: "assets/figma/85c1f65a-a181-4d13-be1d-c5f1de547b8a.svg",
+    previewImage: "assets/figma/ccf1e6b8-9f42-4ff5-9aea-2b098ff50d50.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -427,9 +427,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "culturenova.org",
     category: "Arts & Culture",
     date: "9 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/14419b43-be59-485f-85d2-5b83887ec53a.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/2b07e327-e81a-43a1-ae56-1b9e4b4875ce.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/14419b43-be59-485f-85d2-5b83887ec53a.png",
+    image: "assets/figma/14419b43-be59-485f-85d2-5b83887ec53a.png",
+    statusIcon: "assets/figma/2b07e327-e81a-43a1-ae56-1b9e4b4875ce.svg",
+    previewImage: "assets/figma/14419b43-be59-485f-85d2-5b83887ec53a.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -439,9 +439,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "trailbound.com",
     category: "Arts & Culture",
     date: "8 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/7ea8acbd-3e8c-4437-b5d5-470025d6c23c.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/59970dc9-1158-4c71-a8ba-a3e516475e0d.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/7ea8acbd-3e8c-4437-b5d5-470025d6c23c.png",
+    image: "assets/figma/7ea8acbd-3e8c-4437-b5d5-470025d6c23c.png",
+    statusIcon: "assets/figma/59970dc9-1158-4c71-a8ba-a3e516475e0d.svg",
+    previewImage: "assets/figma/7ea8acbd-3e8c-4437-b5d5-470025d6c23c.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -451,9 +451,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "apexathletics.org",
     category: "Sports",
     date: "8 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/79e0a34b-f2dd-4f05-9a60-e3b8ea40e36d.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/39f5eb10-50e3-4d25-9d44-4eaadc1825bb.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/79e0a34b-f2dd-4f05-9a60-e3b8ea40e36d.png",
+    image: "assets/figma/79e0a34b-f2dd-4f05-9a60-e3b8ea40e36d.png",
+    statusIcon: "assets/figma/39f5eb10-50e3-4d25-9d44-4eaadc1825bb.svg",
+    previewImage: "assets/figma/79e0a34b-f2dd-4f05-9a60-e3b8ea40e36d.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -463,9 +463,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "wpstreamline.com",
     category: "WP Resources",
     date: "5 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/88dbb4a0-468c-4c4e-bb4f-343c2345808c.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/a39b840e-0633-4a40-aae7-64a60a5645bc.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/88dbb4a0-468c-4c4e-bb4f-343c2345808c.png",
+    image: "assets/figma/88dbb4a0-468c-4c4e-bb4f-343c2345808c.png",
+    statusIcon: "assets/figma/a39b840e-0633-4a40-aae7-64a60a5645bc.svg",
+    previewImage: "assets/figma/88dbb4a0-468c-4c4e-bb4f-343c2345808c.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -475,9 +475,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "matchmindset.com",
     category: "Sports",
     date: "5 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/901ce4eb-29ef-4ff9-a123-1adc50b37660.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/afc76c8b-94ae-4ae8-8e07-6f0a6c4df1f2.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/901ce4eb-29ef-4ff9-a123-1adc50b37660.png",
+    image: "assets/figma/901ce4eb-29ef-4ff9-a123-1adc50b37660.png",
+    statusIcon: "assets/figma/afc76c8b-94ae-4ae8-8e07-6f0a6c4df1f2.svg",
+    previewImage: "assets/figma/901ce4eb-29ef-4ff9-a123-1adc50b37660.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -487,9 +487,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "mapmosaic.org",
     category: "Arts & Culture",
     date: "3 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/86638902-c3e8-4dac-b8e5-6972db47409f.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/bd2220e8-3443-4dd4-99cd-c6c302bc55cc.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/86638902-c3e8-4dac-b8e5-6972db47409f.png",
+    image: "assets/figma/86638902-c3e8-4dac-b8e5-6972db47409f.png",
+    statusIcon: "assets/figma/bd2220e8-3443-4dd4-99cd-c6c302bc55cc.svg",
+    previewImage: "assets/figma/86638902-c3e8-4dac-b8e5-6972db47409f.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -499,9 +499,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "creativeepoch.net",
     category: "Arts & Culture",
     date: "3 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/daf08ad0-099c-487f-86ec-5a00ecfb1117.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/9ed8a3c6-d431-44bb-ad41-fc7c5c0d6f08.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/daf08ad0-099c-487f-86ec-5a00ecfb1117.png",
+    image: "assets/figma/daf08ad0-099c-487f-86ec-5a00ecfb1117.png",
+    statusIcon: "assets/figma/9ed8a3c6-d431-44bb-ad41-fc7c5c0d6f08.svg",
+    previewImage: "assets/figma/daf08ad0-099c-487f-86ec-5a00ecfb1117.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -511,9 +511,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "thewanderingsoul.com",
     category: "Arts & Culture",
     date: "1 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/02e683be-5c60-402d-8e6b-8db336b3e68d.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/6ad7635d-abfb-4dea-9643-81b8697c1995.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/02e683be-5c60-402d-8e6b-8db336b3e68d.png",
+    image: "assets/figma/02e683be-5c60-402d-8e6b-8db336b3e68d.png",
+    statusIcon: "assets/figma/6ad7635d-abfb-4dea-9643-81b8697c1995.svg",
+    previewImage: "assets/figma/02e683be-5c60-402d-8e6b-8db336b3e68d.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -523,9 +523,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "pathwayplanet.org",
     category: "Arts & Culture",
     date: "1 Dec 2025",
-    image: "https://www.figma.com/api/mcp/asset/237933b0-6f15-439d-82fd-1e14e7b9ac74.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/2a43f4a2-8832-4020-8270-7ac32165dc11.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/237933b0-6f15-439d-82fd-1e14e7b9ac74.png",
+    image: "assets/figma/237933b0-6f15-439d-82fd-1e14e7b9ac74.png",
+    statusIcon: "assets/figma/2a43f4a2-8832-4020-8270-7ac32165dc11.svg",
+    previewImage: "assets/figma/237933b0-6f15-439d-82fd-1e14e7b9ac74.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -535,9 +535,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "wporbit.co",
     category: "WP Resources",
     date: "30 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/af97181b-7a50-4250-9742-d2fd072793d8.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/b91d707b-10eb-4bd9-899c-57fdcffd010b.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/af97181b-7a50-4250-9742-d2fd072793d8.png",
+    image: "assets/figma/af97181b-7a50-4250-9742-d2fd072793d8.png",
+    statusIcon: "assets/figma/b91d707b-10eb-4bd9-899c-57fdcffd010b.svg",
+    previewImage: "assets/figma/af97181b-7a50-4250-9742-d2fd072793d8.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -547,9 +547,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "trailbound.com",
     category: "Arts & Culture",
     date: "28 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/77b0e551-b6f8-4548-9187-9e26b3a79682.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/38a3cefe-ac8d-4e8a-b930-259f01d077bb.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/77b0e551-b6f8-4548-9187-9e26b3a79682.png",
+    image: "assets/figma/77b0e551-b6f8-4548-9187-9e26b3a79682.png",
+    statusIcon: "assets/figma/38a3cefe-ac8d-4e8a-b930-259f01d077bb.svg",
+    previewImage: "assets/figma/77b0e551-b6f8-4548-9187-9e26b3a79682.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -559,9 +559,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "creativeepoch.net",
     category: "Arts & Culture",
     date: "28 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/2ca51ee8-7619-4e5d-a7d5-10d7cb9d35e5.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/8cf6bf3d-62f9-4779-8144-f8e4bec2c57a.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/2ca51ee8-7619-4e5d-a7d5-10d7cb9d35e5.png",
+    image: "assets/figma/2ca51ee8-7619-4e5d-a7d5-10d7cb9d35e5.png",
+    statusIcon: "assets/figma/8cf6bf3d-62f9-4779-8144-f8e4bec2c57a.svg",
+    previewImage: "assets/figma/2ca51ee8-7619-4e5d-a7d5-10d7cb9d35e5.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -571,9 +571,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "26 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/ddfd82a3-9745-4bfd-bc4d-78fbae9c8668.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/dcb34474-6693-4b88-9191-7445a47e73bd.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/ddfd82a3-9745-4bfd-bc4d-78fbae9c8668.png",
+    image: "assets/figma/ddfd82a3-9745-4bfd-bc4d-78fbae9c8668.png",
+    statusIcon: "assets/figma/dcb34474-6693-4b88-9191-7445a47e73bd.svg",
+    previewImage: "assets/figma/ddfd82a3-9745-4bfd-bc4d-78fbae9c8668.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -583,9 +583,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "thereadingdesk.io",
     category: "Books",
     date: "24 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/dbadd18e-a9be-481b-bab9-b332f105d512.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/3340869c-05f8-47c2-ad41-525da9dc8855.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/dbadd18e-a9be-481b-bab9-b332f105d512.png",
+    image: "assets/figma/dbadd18e-a9be-481b-bab9-b332f105d512.png",
+    statusIcon: "assets/figma/3340869c-05f8-47c2-ad41-525da9dc8855.svg",
+    previewImage: "assets/figma/dbadd18e-a9be-481b-bab9-b332f105d512.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -595,9 +595,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "explorehorizon.com",
     category: "Arts & Culture",
     date: "24 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/5d819ddd-d5bc-4414-b31c-0e9d2f6b3f8b.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/40f71757-e297-4912-abbf-dd61c2c462a0.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/5d819ddd-d5bc-4414-b31c-0e9d2f6b3f8b.png",
+    image: "assets/figma/5d819ddd-d5bc-4414-b31c-0e9d2f6b3f8b.png",
+    statusIcon: "assets/figma/40f71757-e297-4912-abbf-dd61c2c462a0.svg",
+    previewImage: "assets/figma/5d819ddd-d5bc-4414-b31c-0e9d2f6b3f8b.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -607,9 +607,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "epicreadshelf.org",
     category: "Books",
     date: "24 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/bb47c457-0b15-4c10-956a-a64e79022bd8.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/bf7229d7-2cae-4f40-852a-63b2f1e6f255.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/bb47c457-0b15-4c10-956a-a64e79022bd8.png",
+    image: "assets/figma/bb47c457-0b15-4c10-956a-a64e79022bd8.png",
+    statusIcon: "assets/figma/bf7229d7-2cae-4f40-852a-63b2f1e6f255.svg",
+    previewImage: "assets/figma/bb47c457-0b15-4c10-956a-a64e79022bd8.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -619,9 +619,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "formadesigns.net",
     category: "Design Resources",
     date: "22 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/ef60e7e5-41ed-4abc-a235-6f6dfd596aa2.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/cf18a63b-4e80-487f-8abe-423aa1857981.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/ef60e7e5-41ed-4abc-a235-6f6dfd596aa2.png",
+    image: "assets/figma/ef60e7e5-41ed-4abc-a235-6f6dfd596aa2.png",
+    statusIcon: "assets/figma/cf18a63b-4e80-487f-8abe-423aa1857981.svg",
+    previewImage: "assets/figma/ef60e7e5-41ed-4abc-a235-6f6dfd596aa2.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -631,9 +631,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "powerplaynation.com",
     category: "Sports",
     date: "20 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/78c495f5-7951-44f1-b3ee-5f514472b5e7.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/922ecde2-3c34-431b-9967-28e42b2c6aa1.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/78c495f5-7951-44f1-b3ee-5f514472b5e7.png",
+    image: "assets/figma/78c495f5-7951-44f1-b3ee-5f514472b5e7.png",
+    statusIcon: "assets/figma/922ecde2-3c34-431b-9967-28e42b2c6aa1.svg",
+    previewImage: "assets/figma/78c495f5-7951-44f1-b3ee-5f514472b5e7.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -643,9 +643,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "codeandcontent.net",
     category: "WP Resources",
     date: "20 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/42b9f033-75ed-47fb-8cf0-50bce7de0c74.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/6d18ef9f-34b3-4b56-8d8d-c7e596cd6a54.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/42b9f033-75ed-47fb-8cf0-50bce7de0c74.png",
+    image: "assets/figma/42b9f033-75ed-47fb-8cf0-50bce7de0c74.png",
+    statusIcon: "assets/figma/6d18ef9f-34b3-4b56-8d8d-c7e596cd6a54.svg",
+    previewImage: "assets/figma/42b9f033-75ed-47fb-8cf0-50bce7de0c74.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -655,9 +655,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "proplayzone.com",
     category: "Sports",
     date: "18 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/b947aa12-fbc7-4efc-abf9-11ac3d4102b4.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/10e234e0-348d-4d4b-acfb-4c454d0427a7.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/b947aa12-fbc7-4efc-abf9-11ac3d4102b4.png",
+    image: "assets/figma/b947aa12-fbc7-4efc-abf9-11ac3d4102b4.png",
+    statusIcon: "assets/figma/10e234e0-348d-4d4b-acfb-4c454d0427a7.svg",
+    previewImage: "assets/figma/b947aa12-fbc7-4efc-abf9-11ac3d4102b4.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -667,9 +667,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "wplaunchlab.com",
     category: "WP Resources",
     date: "18 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/32845145-5eab-4a9f-91cc-b5c1cebd72b6.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/9743055c-fa4f-4ded-a4f4-ad0e8d8db094.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/32845145-5eab-4a9f-91cc-b5c1cebd72b6.png",
+    image: "assets/figma/32845145-5eab-4a9f-91cc-b5c1cebd72b6.png",
+    statusIcon: "assets/figma/9743055c-fa4f-4ded-a4f4-ad0e8d8db094.svg",
+    previewImage: "assets/figma/32845145-5eab-4a9f-91cc-b5c1cebd72b6.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -679,9 +679,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "culturevoyage.es",
     category: "Arts & Culture",
     date: "17 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/3f8492aa-7a3d-493f-852c-e4eaab6f89f9.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/99fce8d6-93c4-4413-9c58-38ba6e24e81b.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/3f8492aa-7a3d-493f-852c-e4eaab6f89f9.png",
+    image: "assets/figma/3f8492aa-7a3d-493f-852c-e4eaab6f89f9.png",
+    statusIcon: "assets/figma/99fce8d6-93c4-4413-9c58-38ba6e24e81b.svg",
+    previewImage: "assets/figma/3f8492aa-7a3d-493f-852c-e4eaab6f89f9.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -691,9 +691,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "17 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/7b734baf-1287-4d69-9ed3-7e22bb1e98f8.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/15dfb6f5-355c-4b77-8fdc-980c7b60109b.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/7b734baf-1287-4d69-9ed3-7e22bb1e98f8.png",
+    image: "assets/figma/7b734baf-1287-4d69-9ed3-7e22bb1e98f8.png",
+    statusIcon: "assets/figma/15dfb6f5-355c-4b77-8fdc-980c7b60109b.svg",
+    previewImage: "assets/figma/7b734baf-1287-4d69-9ed3-7e22bb1e98f8.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -703,9 +703,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "shapeandspace.com",
     category: "WP Resources",
     date: "15 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/7059f770-f572-401e-88da-5af4e5fb79e0.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/f18a8196-0830-4f17-96ea-e8a27f960ff8.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/7059f770-f572-401e-88da-5af4e5fb79e0.png",
+    image: "assets/figma/7059f770-f572-401e-88da-5af4e5fb79e0.png",
+    statusIcon: "assets/figma/f18a8196-0830-4f17-96ea-e8a27f960ff8.svg",
+    previewImage: "assets/figma/7059f770-f572-401e-88da-5af4e5fb79e0.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -715,9 +715,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "Uncategorized",
     date: "13 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/25adaeb9-aba5-4517-b0eb-b1058c7255e6.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/d952dd1c-3f1e-4bd3-9376-415c8d27eadc.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/25adaeb9-aba5-4517-b0eb-b1058c7255e6.png",
+    image: "assets/figma/25adaeb9-aba5-4517-b0eb-b1058c7255e6.png",
+    statusIcon: "assets/figma/d952dd1c-3f1e-4bd3-9376-415c8d27eadc.svg",
+    previewImage: "assets/figma/25adaeb9-aba5-4517-b0eb-b1058c7255e6.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -727,9 +727,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "pureinkheaven.com",
     category: "Books",
     date: "13 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/f2679305-5451-4527-865a-3ee78bb88aaa.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/10860fba-8942-4b7f-9c7e-524b3b9a4eba.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/f2679305-5451-4527-865a-3ee78bb88aaa.png",
+    image: "assets/figma/f2679305-5451-4527-865a-3ee78bb88aaa.png",
+    statusIcon: "assets/figma/10860fba-8942-4b7f-9c7e-524b3b9a4eba.svg",
+    previewImage: "assets/figma/f2679305-5451-4527-865a-3ee78bb88aaa.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -739,9 +739,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "pluginpulse.com",
     category: "WP Resources",
     date: "11 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/6a192104-2918-4a94-8c6b-f86ff3cc48c0.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/f203537c-b512-4493-8ced-01b7031abbd2.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/6a192104-2918-4a94-8c6b-f86ff3cc48c0.png",
+    image: "assets/figma/6a192104-2918-4a94-8c6b-f86ff3cc48c0.png",
+    statusIcon: "assets/figma/f203537c-b512-4493-8ced-01b7031abbd2.svg",
+    previewImage: "assets/figma/6a192104-2918-4a94-8c6b-f86ff3cc48c0.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -751,9 +751,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "8 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/b3384cae-3e25-46d2-9cd9-a91473dd4d40.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/8b00b85e-ce7f-45a8-b7c7-6938bcd497bc.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/b3384cae-3e25-46d2-9cd9-a91473dd4d40.png",
+    image: "assets/figma/b3384cae-3e25-46d2-9cd9-a91473dd4d40.png",
+    statusIcon: "assets/figma/8b00b85e-ce7f-45a8-b7c7-6938bcd497bc.svg",
+    previewImage: "assets/figma/b3384cae-3e25-46d2-9cd9-a91473dd4d40.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -763,9 +763,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "patterncore.design",
     category: "Design Resources",
     date: "6 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/47d5e558-5bc8-46d4-8786-301bbf96bd9f.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/e55377f4-5550-40b5-a8b0-607596259f61.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/47d5e558-5bc8-46d4-8786-301bbf96bd9f.png",
+    image: "assets/figma/47d5e558-5bc8-46d4-8786-301bbf96bd9f.png",
+    statusIcon: "assets/figma/e55377f4-5550-40b5-a8b0-607596259f61.svg",
+    previewImage: "assets/figma/47d5e558-5bc8-46d4-8786-301bbf96bd9f.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -775,9 +775,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "6 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/491c0171-30ec-4e0d-ab03-2f86f3253673.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/fcf1f6b2-fb73-4895-838e-868741ddc1f2.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/491c0171-30ec-4e0d-ab03-2f86f3253673.png",
+    image: "assets/figma/491c0171-30ec-4e0d-ab03-2f86f3253673.png",
+    statusIcon: "assets/figma/fcf1f6b2-fb73-4895-838e-868741ddc1f2.svg",
+    previewImage: "assets/figma/491c0171-30ec-4e0d-ab03-2f86f3253673.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -787,9 +787,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "Uncategorized",
     date: "3 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/5c6cb598-0d38-48de-a35d-ba5837b1b76d.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/005cd61d-f21e-4d75-a529-188e4bbc9f49.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/5c6cb598-0d38-48de-a35d-ba5837b1b76d.png",
+    image: "assets/figma/5c6cb598-0d38-48de-a35d-ba5837b1b76d.png",
+    statusIcon: "assets/figma/005cd61d-f21e-4d75-a529-188e4bbc9f49.svg",
+    previewImage: "assets/figma/5c6cb598-0d38-48de-a35d-ba5837b1b76d.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -799,9 +799,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "designverve.com",
     category: "Design Resources",
     date: "2 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/051c19de-f938-48a6-b758-44c081885360.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/bd3c0ee3-4a23-4edc-8c85-172b4016311d.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/051c19de-f938-48a6-b758-44c081885360.png",
+    image: "assets/figma/051c19de-f938-48a6-b758-44c081885360.png",
+    statusIcon: "assets/figma/bd3c0ee3-4a23-4edc-8c85-172b4016311d.svg",
+    previewImage: "assets/figma/051c19de-f938-48a6-b758-44c081885360.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -811,9 +811,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "pagealchemy.io",
     category: "Books",
     date: "2 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/f988b33f-30d6-4d09-a5f3-81cfadb4d7ef.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/23fb7e59-f782-4099-abc7-d7c482cc130b.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/f988b33f-30d6-4d09-a5f3-81cfadb4d7ef.png",
+    image: "assets/figma/f988b33f-30d6-4d09-a5f3-81cfadb4d7ef.png",
+    statusIcon: "assets/figma/23fb7e59-f782-4099-abc7-d7c482cc130b.svg",
+    previewImage: "assets/figma/f988b33f-30d6-4d09-a5f3-81cfadb4d7ef.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -823,9 +823,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "studioluma.com",
     category: "Design Resources",
     date: "1 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/7fda01c7-003b-4618-bff3-cff27c70bffa.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/93eb1420-416c-4828-9479-7ebaa4256ca7.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/7fda01c7-003b-4618-bff3-cff27c70bffa.png",
+    image: "assets/figma/7fda01c7-003b-4618-bff3-cff27c70bffa.png",
+    statusIcon: "assets/figma/93eb1420-416c-4828-9479-7ebaa4256ca7.svg",
+    previewImage: "assets/figma/7fda01c7-003b-4618-bff3-cff27c70bffa.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -835,9 +835,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "designdrift.co",
     category: "Design Resources",
     date: "1 Nov 2025",
-    image: "https://www.figma.com/api/mcp/asset/99374a85-5bd8-485d-a61a-b52471eef4c5.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/8034bc1c-c1e4-4eb9-ae08-be2bd3192f93.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/99374a85-5bd8-485d-a61a-b52471eef4c5.png",
+    image: "assets/figma/99374a85-5bd8-485d-a61a-b52471eef4c5.png",
+    statusIcon: "assets/figma/8034bc1c-c1e4-4eb9-ae08-be2bd3192f93.svg",
+    previewImage: "assets/figma/99374a85-5bd8-485d-a61a-b52471eef4c5.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -847,9 +847,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "shapeandspace.com",
     category: "Design Resources",
     date: "29 Oct 2025",
-    image: "https://www.figma.com/api/mcp/asset/18ad2cad-9d44-46dd-9eed-638ce494436f.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/a94c56a8-1b77-4632-9787-7eb8152cc347.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/18ad2cad-9d44-46dd-9eed-638ce494436f.png",
+    image: "assets/figma/18ad2cad-9d44-46dd-9eed-638ce494436f.png",
+    statusIcon: "assets/figma/a94c56a8-1b77-4632-9787-7eb8152cc347.svg",
+    previewImage: "assets/figma/18ad2cad-9d44-46dd-9eed-638ce494436f.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -859,9 +859,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "26 Oct 2025",
-    image: "https://www.figma.com/api/mcp/asset/8026712b-869b-4b53-9ef8-4b40b83896ee.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/9bdcb5db-1efd-415a-8426-0f50c74d5c2e.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/8026712b-869b-4b53-9ef8-4b40b83896ee.png",
+    image: "assets/figma/8026712b-869b-4b53-9ef8-4b40b83896ee.png",
+    statusIcon: "assets/figma/9bdcb5db-1efd-415a-8426-0f50c74d5c2e.svg",
+    previewImage: "assets/figma/8026712b-869b-4b53-9ef8-4b40b83896ee.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -871,9 +871,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "patterncore.design",
     category: "Design Resources",
     date: "28 Oct 2025",
-    image: "https://www.figma.com/api/mcp/asset/84752648-490f-4d2c-93de-7fa55a3a1c54.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/828df9ef-df0c-4ab8-9055-4b1ad8cef331.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/84752648-490f-4d2c-93de-7fa55a3a1c54.png",
+    image: "assets/figma/84752648-490f-4d2c-93de-7fa55a3a1c54.png",
+    statusIcon: "assets/figma/828df9ef-df0c-4ab8-9055-4b1ad8cef331.svg",
+    previewImage: "assets/figma/84752648-490f-4d2c-93de-7fa55a3a1c54.png",
     isFetchingImage: false,
     isPermanentCopy: true
   },
@@ -883,9 +883,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "22 Oct 2025",
-    image: "https://www.figma.com/api/mcp/asset/ce65d058-04d2-4837-8d8f-20b170de2ce1.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/6c128324-021e-4739-9ef9-44d94a795501.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/ce65d058-04d2-4837-8d8f-20b170de2ce1.png",
+    image: "assets/figma/ce65d058-04d2-4837-8d8f-20b170de2ce1.png",
+    statusIcon: "assets/figma/6c128324-021e-4739-9ef9-44d94a795501.svg",
+    previewImage: "assets/figma/ce65d058-04d2-4837-8d8f-20b170de2ce1.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -895,9 +895,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "youtube.com",
     category: "YouTube Channels",
     date: "19 Oct 2025",
-    image: "https://www.figma.com/api/mcp/asset/e0ecdfc1-849c-481c-924f-ac18d19f6b38.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/f26cf30a-0908-4103-bd07-ed00eafb8e92.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/e0ecdfc1-849c-481c-924f-ac18d19f6b38.png",
+    image: "assets/figma/e0ecdfc1-849c-481c-924f-ac18d19f6b38.png",
+    statusIcon: "assets/figma/f26cf30a-0908-4103-bd07-ed00eafb8e92.svg",
+    previewImage: "assets/figma/e0ecdfc1-849c-481c-924f-ac18d19f6b38.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -907,9 +907,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "theboundshelf.com",
     category: "Books",
     date: "19 Oct 2025",
-    image: "https://www.figma.com/api/mcp/asset/695ac2a9-2ac6-4549-af49-4e879be25938.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/390f875d-6d03-49fa-b583-1940df6a79c9.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/695ac2a9-2ac6-4549-af49-4e879be25938.png",
+    image: "assets/figma/695ac2a9-2ac6-4549-af49-4e879be25938.png",
+    statusIcon: "assets/figma/390f875d-6d03-49fa-b583-1940df6a79c9.svg",
+    previewImage: "assets/figma/695ac2a9-2ac6-4549-af49-4e879be25938.png",
     isFetchingImage: false,
     isPermanentCopy: false
   },
@@ -919,9 +919,9 @@ const FIGMA_BOOKMARK_GRID = [
     url: "wandernest.org",
     category: "Arts & Culture",
     date: "19 Oct 2025",
-    image: "https://www.figma.com/api/mcp/asset/40675bc2-46b7-4fac-b522-aae945a3560b.png",
-    statusIcon: "https://www.figma.com/api/mcp/asset/c2a1f6bb-ee20-4edd-8c95-94e072e51052.svg",
-    previewImage: "https://www.figma.com/api/mcp/asset/40675bc2-46b7-4fac-b522-aae945a3560b.png",
+    image: "assets/figma/40675bc2-46b7-4fac-b522-aae945a3560b.png",
+    statusIcon: "assets/figma/c2a1f6bb-ee20-4edd-8c95-94e072e51052.svg",
+    previewImage: "assets/figma/40675bc2-46b7-4fac-b522-aae945a3560b.png",
     isFetchingImage: false,
     isPermanentCopy: true
   }
@@ -1801,7 +1801,9 @@ function renderBookmarkContentHeader() {
                 <span class="bookmark-content-export-label">Export all items</span>
               </span>
               <span class="bookmark-content-export-chevron">
-                <img src="${CONTENT_HEADING_CHEVRON_ICON}" alt="" width="16" height="16" />
+                <span class="bookmark-content-export-chevron-icon">
+                  <img src="${CONTENT_HEADING_CHEVRON_ICON}" alt="" width="16" height="16" />
+                </span>
               </span>
             </button>
 
