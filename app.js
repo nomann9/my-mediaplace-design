@@ -52,6 +52,10 @@ const CONTENT_HEADING_ZOOM_OUT_ICON = "assets/figma/4ffe2a45-f7d2-45c0-b247-998b
 const CONTENT_HEADING_KEBAB_ICON = "assets/figma/f4287519-7129-4119-9586-362722a3a71c.svg";
 const CONTENT_HEADING_CHEVRON_ICON = "assets/figma/c8491e4a-2b0c-443f-892d-3aa72b88a697.svg";
 const CONTENT_HEADING_EXPORT_ICON = "assets/figma/3c693a14-1cd0-46a4-ab33-9b60f298a351.svg";
+const CONTENT_KEBAB_OPEN_ICON = "assets/figma/aecebe9a-2c29-4a7d-b0d9-b02da46c9acd.svg";
+const CONTENT_KEBAB_DUPLICATE_ICON = "assets/figma/489489a9-f697-4b5d-8109-56f5265b4a7e.svg";
+const CONTENT_KEBAB_READ_ICON = "assets/figma/e12e2637-8369-4937-ba1a-37dc1c548ddd.svg";
+const CONTENT_KEBAB_REVALIDATE_ICON = "assets/figma/c0a08e07-2ca3-4eed-a510-e734c1b8243a.svg";
 const CONTENT_SELECT_ALL_ICON = BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 const FIGMA_BOOKMARK_IMAGE_URLS = [
@@ -947,6 +951,7 @@ const appState = {
   activeSidebarCategory: "All Bookmarks",
   selectedBookmarkIds: [],
   activeContentView: "cards",
+  contentKebabOpen: false,
   previewBookmarkId: null,
   bookmarkDisplayMode: "grid",
   bookmarkZoomLevel: 1,
@@ -1459,38 +1464,19 @@ function syncBookmarkContentForActiveCategory() {
     return;
   }
 
-  const title = contentPanel.querySelector(".bookmark-content-title");
-  const count = contentPanel.querySelector(".bookmark-content-count");
-  const selectAllButton = contentPanel.querySelector("[data-action='select-all-bookmarks']");
-  const selectAllImage = selectAllButton?.querySelector(".bookmark-content-select-icon img");
+  const header = contentPanel.querySelector(".bookmark-content-header");
+  if (header) {
+    header.outerHTML = renderBookmarkContentHeader();
+  }
+
   const canvas = contentPanel.querySelector(".bookmark-card-canvas");
-  const selectAllActive = areAllVisibleBookmarksSelected();
-
-  if (title) {
-    title.textContent = appState.activeSidebarCategory;
-  }
-
-  if (count) {
-    count.textContent = `(${getCategoryBookmarkCount(appState.activeSidebarCategory)})`;
-  }
-
-  if (selectAllButton) {
-    selectAllButton.classList.toggle("is-selected", selectAllActive);
-    selectAllButton.setAttribute("aria-pressed", String(selectAllActive));
-  }
-
-  if (selectAllImage) {
-    const nextIcon = selectAllActive ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : CONTENT_SELECT_ALL_ICON;
-    if (selectAllImage.getAttribute("src") !== nextIcon) {
-      selectAllImage.src = nextIcon;
-    }
-  }
-
   if (canvas) {
     canvas.className = appState.bookmarkDisplayMode === "list" ? "bookmark-card-canvas is-list" : "bookmark-card-canvas";
     canvas.style.setProperty("--bookmark-card-scale", appState.bookmarkZoomLevel);
     canvas.innerHTML = renderVisibleBookmarkCardsMarkup();
   }
+
+  syncBookmarkSelectionUi();
 }
 
 function toggleBookmarkSelection(bookmarkId) {
@@ -1725,6 +1711,30 @@ function renderBookmarkCards() {
   `;
 }
 
+function renderContentKebabMenu() {
+  const items = [
+    { label: "Revalidate links", icon: CONTENT_KEBAB_REVALIDATE_ICON, value: "revalidate-links" },
+    { label: "Mark as read", icon: CONTENT_KEBAB_READ_ICON, value: "mark-as-read" },
+    { label: "Check for duplicates", icon: CONTENT_KEBAB_DUPLICATE_ICON, value: "check-duplicates" },
+    { label: "Open all links in browser", icon: CONTENT_KEBAB_OPEN_ICON, value: "open-all-links" }
+  ];
+
+  return `
+    <div class="bookmark-content-kebab-menu" data-role="content-kebab-menu">
+      ${items.map(
+        (item) => `
+          <button class="bookmark-content-kebab-link" type="button" data-action="content-kebab-item" data-kebab-item="${item.value}">
+            <span class="bookmark-content-kebab-link-icon">
+              <img src="${item.icon}" alt="" width="16" height="16" />
+            </span>
+            <span class="bookmark-content-kebab-link-label">${item.label}</span>
+          </button>
+        `
+      ).join("")}
+    </div>
+  `;
+}
+
 function renderBookmarkContentHeader() {
   const activeCategory = appState.activeSidebarCategory;
   const bookmarkCount = getCategoryBookmarkCount(activeCategory);
@@ -1732,6 +1742,7 @@ function renderBookmarkContentHeader() {
   const listActiveClass = appState.bookmarkDisplayMode === "list" ? " is-active" : "";
   const selectAllActive = areAllVisibleBookmarksSelected();
   const selectAllIcon = selectAllActive ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : CONTENT_SELECT_ALL_ICON;
+  const kebabMenuMarkup = appState.contentKebabOpen ? renderContentKebabMenu() : "";
 
   return `
     <section class="bookmark-content-header">
@@ -1807,11 +1818,14 @@ function renderBookmarkContentHeader() {
               </span>
             </button>
 
-            <button class="bookmark-content-kebab" type="button" data-action="open-content-kebab" aria-label="More options">
-              <span class="bookmark-content-icon bookmark-content-icon-kebab">
-                <span class="bookmark-content-kebab-dots" aria-hidden="true"></span>
-              </span>
-            </button>
+            <div class="bookmark-content-kebab-menu-anchor">
+              <button class="bookmark-content-kebab${appState.contentKebabOpen ? " is-open" : ""}" type="button" data-action="open-content-kebab" aria-label="More options" aria-expanded="${appState.contentKebabOpen}">
+                <span class="bookmark-content-icon bookmark-content-icon-kebab">
+                  <span class="bookmark-content-kebab-dots" aria-hidden="true"></span>
+                </span>
+              </button>
+              ${kebabMenuMarkup}
+            </div>
           </div>
         </div>
       </div>
@@ -2142,10 +2156,19 @@ function handleAppClick(event) {
       appState.newBookmarkExpanded = false;
       renderShell();
     }
+
+    if (appState.contentKebabOpen && !event.target.closest(".bookmark-content-kebab-menu-anchor")) {
+      appState.contentKebabOpen = false;
+      syncBookmarkContentForActiveCategory();
+    }
     return;
   }
 
   const action = actionTarget.getAttribute("data-action");
+
+  if (action !== "open-content-kebab" && action !== "content-kebab-item") {
+    appState.contentKebabOpen = false;
+  }
 
   if (action === "toggle-new-bookmark") {
     appState.newBookmarkExpanded = !appState.newBookmarkExpanded;
@@ -2204,6 +2227,7 @@ function handleAppClick(event) {
       appState.activeContentView = "cards";
       appState.previewBookmarkId = null;
       appState.selectedBookmarkIds = [];
+      appState.contentKebabOpen = false;
       syncSidebarCategoryUi();
       syncBookmarkContentForActiveCategory();
     }
@@ -2233,6 +2257,18 @@ function handleAppClick(event) {
   if (action === "zoom-bookmarks-out") {
     appState.bookmarkZoomLevel = Math.max(0.85, Number((appState.bookmarkZoomLevel - 0.05).toFixed(2)));
     renderShell();
+    return;
+  }
+
+  if (action === "open-content-kebab") {
+    appState.contentKebabOpen = !appState.contentKebabOpen;
+    syncBookmarkContentForActiveCategory();
+    return;
+  }
+
+  if (action === "content-kebab-item") {
+    appState.contentKebabOpen = false;
+    syncBookmarkContentForActiveCategory();
     return;
   }
 
