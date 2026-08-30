@@ -955,6 +955,7 @@ const appState = {
   isCreatingCategory: false,
   newCategoryName: "New Category",
   createdCategoryNames: [],
+  activeGlobalSidebarItem: "Bookmarks",
   activeSidebarCategory: "All Bookmarks",
   selectedBookmarkIds: [],
   activeContentView: "cards",
@@ -1176,10 +1177,11 @@ function setCssVars(tokens) {
 
 function renderSidebarSection(section, index) {
   const icon = typeof section.icon === "string" ? { src: section.icon, className: "", frameClassName: "" } : section.icon;
+  const isSectionActive = isGlobalSidebarSectionActive(section);
   const sectionLinks = section.links
     .map(
       (link) => `
-        <button class="sidebar-submenu-link${link.state === "active" ? " is-active" : ""}" type="button">
+        <button class="sidebar-submenu-link${appState.activeGlobalSidebarItem === link.label ? " is-active" : ""}" type="button" data-action="select-global-sidebar-item" data-sidebar-item="${escapeHtml(link.label)}" aria-pressed="${appState.activeGlobalSidebarItem === link.label}">
           <span class="sidebar-submenu-indicator">
             <img class="sidebar-submenu-indicator-active" src="${SUBMENU_ACTIVE_ICON}" alt="" width="9" height="7" />
             <img class="sidebar-submenu-indicator-hover" src="${SUBMENU_HOVER_ICON}" alt="" width="9" height="7" />
@@ -1191,19 +1193,23 @@ function renderSidebarSection(section, index) {
     .join("");
 
   return `
-    <section class="sidebar-section">
-      <div class="sidebar-section-header">
+    <section class="sidebar-section${isSectionActive ? " is-active-section" : ""}" data-sidebar-section="${escapeHtml(section.title)}">
+      <button class="sidebar-section-header sidebar-section-header-button" type="button" data-action="select-global-sidebar-item" data-sidebar-item="${escapeHtml(section.title)}" aria-pressed="${appState.activeGlobalSidebarItem === section.title}">
         <span class="sidebar-section-icon ${icon.className || ""}">
           <span class="sidebar-section-icon-frame ${icon.frameClassName || ""}">
             <img src="${icon.src}" alt="" width="20" height="20" />
           </span>
         </span>
         <span class="sidebar-section-title">${section.title}</span>
-      </div>
+      </button>
       ${section.links.length ? `<div class="sidebar-section-links">${sectionLinks}</div>` : ""}
     </section>
     ${index < SIDEBAR_SECTIONS.length - 1 ? `<span class="sidebar-divider" aria-hidden="true"></span>` : ""}
   `;
+}
+
+function isGlobalSidebarSectionActive(section) {
+  return section.title === appState.activeGlobalSidebarItem || section.links.some((link) => link.label === appState.activeGlobalSidebarItem);
 }
 
 function renderNewBookmarkControl() {
@@ -1455,6 +1461,25 @@ function syncSidebarCategoryUi() {
     if (count && !link.closest(".bookmark-sidebar-group-filter")) {
       count.textContent = String(getCategoryBookmarkCount(categoryName));
     }
+  });
+}
+
+function syncGlobalSidebarUi() {
+  app.querySelectorAll("[data-sidebar-section]").forEach((section) => {
+    const sectionTitle = section.getAttribute("data-sidebar-section");
+    const sidebarSection = SIDEBAR_SECTIONS.find((item) => item.title === sectionTitle);
+    if (!sidebarSection) {
+      return;
+    }
+
+    section.classList.toggle("is-active-section", isGlobalSidebarSectionActive(sidebarSection));
+  });
+
+  app.querySelectorAll("[data-action='select-global-sidebar-item']").forEach((item) => {
+    const value = item.getAttribute("data-sidebar-item");
+    const isActive = value === appState.activeGlobalSidebarItem;
+    item.classList.toggle("is-active", isActive);
+    item.setAttribute("aria-pressed", String(isActive));
   });
 }
 
@@ -2411,6 +2436,15 @@ function handleAppClick(event) {
   if (action === "toggle-bookmark-selection") {
     const bookmarkId = actionTarget.getAttribute("data-bookmark-id");
     toggleBookmarkSelection(bookmarkId);
+    return;
+  }
+
+  if (action === "select-global-sidebar-item") {
+    const sidebarItem = actionTarget.getAttribute("data-sidebar-item");
+    if (sidebarItem) {
+      appState.activeGlobalSidebarItem = sidebarItem;
+      syncGlobalSidebarUi();
+    }
     return;
   }
 
