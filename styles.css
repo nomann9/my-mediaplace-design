@@ -1473,6 +1473,119 @@ input {
   width: 268px;
 }
 
+.bookmark-delete-modal {
+  animation: bookmark-delete-modal-enter 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--bg-panel, #1d1d2c);
+  border-radius: 14px 14px 0 0;
+  bottom: 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
+  height: 181px;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  width: 300px;
+  z-index: 4;
+}
+
+.bookmark-delete-modal-title {
+  color: var(--text-heading, #d9d9d9);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  height: 19px;
+  left: 16px;
+  line-height: 19px;
+  letter-spacing: 0;
+  position: absolute;
+  top: 40px;
+  width: 268px;
+}
+
+.bookmark-delete-modal-copy {
+  color: var(--text-muted, #7d7d87);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  height: 15px;
+  left: 16px;
+  line-height: 15px;
+  letter-spacing: 0;
+  position: absolute;
+  top: 63px;
+  white-space: nowrap;
+  width: 236px;
+}
+
+.bookmark-delete-modal-link {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-muted, #7d7d87);
+  cursor: pointer;
+  display: inline;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 15px;
+  margin: 0;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  vertical-align: baseline;
+}
+
+.bookmark-delete-modal-actions {
+  display: flex;
+  gap: 20px;
+  left: 16px;
+  position: absolute;
+  top: 110px;
+  width: 268px;
+}
+
+.bookmark-delete-modal-button {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(53, 53, 74, 0.6);
+  border-radius: 4px;
+  color: var(--text-body, #bfbfbf);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  height: 31px;
+  justify-content: center;
+  line-height: 15px;
+  letter-spacing: 0;
+  padding: 8px 0;
+  width: 124px;
+}
+
+.bookmark-delete-modal-button-confirm {
+  background: #874040;
+  border-color: #874040;
+  color: var(--text-heading, #d9d9d9);
+}
+
+.bookmark-delete-modal-button-cancel {
+  background: transparent;
+}
+
+@keyframes bookmark-delete-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .content-panel {
   background: transparent;
   height: 858px;

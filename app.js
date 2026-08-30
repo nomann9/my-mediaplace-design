@@ -983,6 +983,8 @@ const appState = {
   uncategorizedTagDraft: "",
   uncategorizedNote: "",
   activeInspectorBookmarkId: null,
+  deleteBookmarkModalOpen: false,
+  pendingDeleteBookmarkId: null,
   previewBookmarkId: null,
   bookmarkDisplayMode: "grid",
   bookmarkZoomLevel: 1,
@@ -1171,6 +1173,9 @@ appState.bookmarks = FIGMA_BOOKMARK_GRID.map((bookmark, index) => ({
   type: inferBookmarkType(bookmark),
   modifiedDate: bookmark.modifiedDate || bookmark.date,
   isFavourite: Boolean(bookmark.isFavourite),
+  isDeleted: Boolean(bookmark.isDeleted),
+  deletedAt: bookmark.deletedAt || "",
+  deletedFromCategory: bookmark.deletedFromCategory || "",
   tags: Array.isArray(bookmark.tags) ? bookmark.tags : [],
   tagDraft: bookmark.tagDraft || "",
   note: bookmark.note || "",
@@ -1465,15 +1470,17 @@ function getBookmarkStatusIcon(bookmark) {
 
 function getBookmarksForCategory(categoryName) {
   if (categoryName === "All Bookmarks") {
-    return appState.bookmarks;
+    return appState.bookmarks.filter((bookmark) => !bookmark.isDeleted);
   }
 
   if (categoryName === "Deleted Items") {
-    return [];
+    return appState.bookmarks.filter((bookmark) => bookmark.isDeleted);
   }
 
   const normalizedCategoryName = normalizeBookmarkCategory(categoryName);
-  return appState.bookmarks.filter((bookmark) => normalizeBookmarkCategory(bookmark.category) === normalizedCategoryName);
+  return appState.bookmarks.filter(
+    (bookmark) => !bookmark.isDeleted && normalizeBookmarkCategory(bookmark.category) === normalizedCategoryName
+  );
 }
 
 function getCategoryBookmarkCount(categoryName) {
@@ -1771,6 +1778,62 @@ function getBookmarkInspectorTypeLabel(bookmark) {
   return bookmark?.type || inferBookmarkType(bookmark || {});
 }
 
+function closeDeleteBookmarkModal() {
+  appState.deleteBookmarkModalOpen = false;
+  appState.pendingDeleteBookmarkId = null;
+}
+
+function moveBookmarkToDeletedItems(bookmarkId) {
+  const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
+  if (!bookmark) {
+    closeDeleteBookmarkModal();
+    return;
+  }
+
+  const now = new Date();
+  bookmark.isDeleted = true;
+  bookmark.deletedAt = formatBookmarkDate(now);
+  bookmark.deletedFromCategory = bookmark.deletedFromCategory || bookmark.category;
+  bookmark.modifiedDate = formatBookmarkDate(now);
+
+  if (appState.previewBookmarkId === bookmark.id) {
+    appState.previewBookmarkId = null;
+    appState.activeContentView = "cards";
+  }
+
+  if (appState.activeInspectorBookmarkId === bookmark.id) {
+    appState.activeInspectorBookmarkId = null;
+  }
+
+  appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => id !== bookmark.id);
+  closeDeleteBookmarkModal();
+  updateRelatedInspectorModifiedDates(bookmark.category, now);
+}
+
+function renderDeleteBookmarkModal() {
+  if (!appState.deleteBookmarkModalOpen || !appState.pendingDeleteBookmarkId) {
+    return "";
+  }
+
+  return `
+    <div class="bookmark-delete-modal" role="dialog" aria-modal="true" aria-labelledby="bookmark-delete-modal-title">
+      <div class="bookmark-delete-modal-title" id="bookmark-delete-modal-title">Are you sure you want to delete it?</div>
+      <div class="bookmark-delete-modal-copy">
+        You can still recover it from
+        <button class="bookmark-delete-modal-link" type="button" data-action="go-to-deleted-items">Deleted Items</button>
+      </div>
+      <div class="bookmark-delete-modal-actions">
+        <button class="bookmark-delete-modal-button bookmark-delete-modal-button-confirm" type="button" data-action="confirm-delete-bookmark">
+          <span>Yes, delete it</span>
+        </button>
+        <button class="bookmark-delete-modal-button bookmark-delete-modal-button-cancel" type="button" data-action="cancel-delete-bookmark">
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
 function updateInspectorLastSaved(categoryName = appState.activeSidebarCategory, date = new Date()) {
   if (!getSupportedInspectorCategory(categoryName)) {
     return;
@@ -1876,6 +1939,9 @@ function createBookmarkFromUrl(rawUrl) {
     isFetchingImage: true,
     isPermanentCopy: false,
     isFavourite: false,
+    isDeleted: false,
+    deletedAt: "",
+    deletedFromCategory: "",
     modifiedDate: formatBookmarkDate(now),
     tags: [],
     tagDraft: "",
@@ -2554,12 +2620,14 @@ function renderInspectorPanel() {
           </div>
         </div>
 
-        <button class="inspector-panel-delete-button" type="button">
+        <button class="inspector-panel-delete-button" type="button" data-action="open-delete-bookmark-modal" data-bookmark-id="${activeInspectorBookmark.id}">
           <span class="inspector-panel-delete-icon">
             <img src="${INSPECTOR_TRASH_ICON}" alt="" width="16" height="16" />
           </span>
           <span class="inspector-panel-delete-label">Delete bookmark</span>
         </button>
+
+        ${renderDeleteBookmarkModal()}
       </div>
     `;
   }
@@ -2977,6 +3045,11 @@ function handleAppClick(event) {
       renderShell();
     }
 
+    if (appState.deleteBookmarkModalOpen && !event.target.closest(".bookmark-delete-modal, [data-action='open-delete-bookmark-modal']")) {
+      closeDeleteBookmarkModal();
+      syncInspectorPanel();
+    }
+
     if (appState.contentKebabOpen && !event.target.closest(".bookmark-content-kebab-menu-anchor")) {
       appState.contentKebabOpen = false;
       syncBookmarkContentForActiveCategory();
@@ -3030,6 +3103,7 @@ function handleAppClick(event) {
     const categoryName = actionTarget.getAttribute("data-category");
     if (categoryName) {
       appState.activeInspectorBookmarkId = null;
+      closeDeleteBookmarkModal();
       appState.activeSidebarCategory = categoryName;
       appState.activeContentView = "cards";
       appState.previewBookmarkId = null;
@@ -3094,6 +3168,7 @@ function handleAppClick(event) {
     const bookmarkId = actionTarget.closest("[data-bookmark-id]")?.getAttribute("data-bookmark-id") || appState.previewBookmarkId;
     if (bookmarkId) {
       appState.activeInspectorBookmarkId = bookmarkId;
+      closeDeleteBookmarkModal();
       syncInspectorPanel();
     }
     return;
@@ -3101,11 +3176,51 @@ function handleAppClick(event) {
 
   if (action === "close-bookmark-inspector") {
     appState.activeInspectorBookmarkId = null;
+    closeDeleteBookmarkModal();
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "open-delete-bookmark-modal") {
+    const bookmarkId = actionTarget.getAttribute("data-bookmark-id");
+    if (bookmarkId) {
+      appState.pendingDeleteBookmarkId = bookmarkId;
+      appState.deleteBookmarkModalOpen = true;
+      syncInspectorPanel();
+    }
+    return;
+  }
+
+  if (action === "cancel-delete-bookmark") {
+    closeDeleteBookmarkModal();
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "confirm-delete-bookmark") {
+    moveBookmarkToDeletedItems(appState.pendingDeleteBookmarkId);
+    syncSidebarCategoryUi();
+    syncBookmarkContentForActiveCategory();
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "go-to-deleted-items") {
+    closeDeleteBookmarkModal();
+    appState.activeInspectorBookmarkId = null;
+    appState.activeSidebarCategory = "Deleted Items";
+    appState.activeContentView = "cards";
+    appState.previewBookmarkId = null;
+    appState.selectedBookmarkIds = [];
+    appState.contentKebabOpen = false;
+    syncSidebarCategoryUi();
+    syncBookmarkContentForActiveCategory();
     syncInspectorPanel();
     return;
   }
 
   if (action === "close-preview") {
+    closeDeleteBookmarkModal();
     appState.activeContentView = "cards";
     appState.previewBookmarkId = null;
     renderShell();
