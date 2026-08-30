@@ -64,6 +64,10 @@ const INSPECTOR_CHECKBOX_ICON = "assets/figma/0548e8d9-018c-45ae-8de8-debe33b518
 const INSPECTOR_TOP_DIVIDER = "assets/figma/9b662299-5edb-469b-aad4-fa474e830878.svg";
 const INSPECTOR_BOTTOM_DIVIDER = "assets/figma/2177d70d-534f-437a-913d-cffa16184fd5.svg";
 const INSPECTOR_TAG_REMOVE_ICON = "assets/figma/560a6dcf-447f-4cf1-8cee-340a0622405b.svg";
+const INSPECTOR_FAVOURITE_DEFAULT_ICON = "assets/figma/inspector-favourite-default.svg";
+const INSPECTOR_FAVOURITE_ACTIVE_ICON = "assets/figma/inspector-favourite-active.svg";
+const INSPECTOR_MOVE_CATEGORY_ICON = "assets/figma/inspector-move-category.svg";
+const INSPECTOR_MOVE_CHEVRON_ICON = "assets/figma/inspector-move-chevron.svg";
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 const FIGMA_BOOKMARK_IMAGE_URLS = [
   "assets/figma/e63e0d1d-dd75-4111-8cc7-0c913c0394ac.png",
@@ -967,6 +971,15 @@ const appState = {
   allBookmarksTags: [],
   allBookmarksTagDraft: "",
   allBookmarksNote: "",
+  categoryInspectorStates: {},
+  uncategorizedLastSaved: "",
+  uncategorizedLastModified: "",
+  uncategorizedIsFavourite: false,
+  uncategorizedSavePermanentCopy: false,
+  uncategorizedPasswordProtected: false,
+  uncategorizedTags: [],
+  uncategorizedTagDraft: "",
+  uncategorizedNote: "",
   previewBookmarkId: null,
   bookmarkDisplayMode: "grid",
   bookmarkZoomLevel: 1,
@@ -1110,16 +1123,70 @@ const BOOKMARK_FILTER_LINKS = [
   { label: "Untagged", count: "56", icon: BOOKMARK_UNTAGGED_ICON, iconClass: "bookmark-untagged-icon", iconFrameClass: "bookmark-untagged-frame" }
 ];
 
+const SUPPORTED_INSPECTOR_CATEGORIES = new Set(["All Bookmarks", "Uncategorized"]);
+const BOOKMARK_TYPE_ORDER = ["Article", "Audio", "Link", "Video"];
+const BOOKMARK_AUDIO_IDS = new Set([
+  "figma-bookmark-echoes-of-rain",
+  "figma-bookmark-before-you-knew",
+  "figma-bookmark-a-season-of-paper-butterflies"
+]);
+const BOOKMARK_LINK_IDS = new Set([
+  "figma-bookmark-the-atlas-of-forgotten-dreams",
+  "figma-bookmark-best-strawberry-cake-recipe",
+  "figma-bookmark-tracking-down-the-maneater",
+  "figma-bookmark-cycling-three-continents",
+  "figma-bookmark-just-pick-a-damn-sport",
+  "figma-bookmark-a-designers-collection"
+]);
+const INSPECTOR_STATE_PATHS = {
+  "All Bookmarks": {
+    lastSaved: "allBookmarksLastSaved",
+    lastModified: "allBookmarksLastModified",
+    savePermanentCopy: "allBookmarksSavePermanentCopy",
+    passwordProtected: "allBookmarksPasswordProtected",
+    tags: "allBookmarksTags",
+    tagDraft: "allBookmarksTagDraft",
+    note: "allBookmarksNote"
+  },
+  Uncategorized: {
+    lastSaved: "uncategorizedLastSaved",
+    lastModified: "uncategorizedLastModified",
+    isFavourite: "uncategorizedIsFavourite",
+    savePermanentCopy: "uncategorizedSavePermanentCopy",
+    passwordProtected: "uncategorizedPasswordProtected",
+    tags: "uncategorizedTags",
+    tagDraft: "uncategorizedTagDraft",
+    note: "uncategorizedNote"
+  }
+};
+
 appState.bookmarks = FIGMA_BOOKMARK_GRID.map((bookmark, index) => ({
   ...bookmark,
   image: FIGMA_BOOKMARK_IMAGE_URLS[index] || bookmark.image,
   previewImage: FIGMA_BOOKMARK_IMAGE_URLS[index] || bookmark.previewImage || bookmark.image,
   statusIcon: getBookmarkStatusIcon(bookmark),
+  type: inferBookmarkType(bookmark),
   articleHtml: buildPreviewArticle(bookmark.title, bookmark.url)
 }));
 
 function getByPath(object, path) {
   return path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), object);
+}
+
+function inferBookmarkType(bookmark) {
+  if (BOOKMARK_AUDIO_IDS.has(bookmark.id)) {
+    return "Audio";
+  }
+
+  if (BOOKMARK_LINK_IDS.has(bookmark.id)) {
+    return "Link";
+  }
+
+  if (bookmark.url === "youtube.com") {
+    return "Video";
+  }
+
+  return "Article";
 }
 
 function resolveValue(value, root) {
@@ -1555,12 +1622,154 @@ function formatBookmarkDate(date) {
   });
 }
 
-function updateAllBookmarksLastSaved(date = new Date()) {
-  appState.allBookmarksLastSaved = formatBookmarkDate(date);
+function parseBookmarkDate(dateString) {
+  const match = /^(\d{1,2})\s([A-Za-z]{3})\s(\d{4})$/.exec(String(dateString).trim());
+  if (!match) {
+    return null;
+  }
+
+  const [, day, month, year] = match;
+  const parsedDate = new Date(`${day} ${month} ${year} 00:00:00`);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
 
-function updateAllBookmarksLastModified(date = new Date()) {
-  appState.allBookmarksLastModified = formatBookmarkDate(date);
+function getSupportedInspectorCategory(categoryName = appState.activeSidebarCategory) {
+  if (categoryName === "All Bookmarks") {
+    return categoryName;
+  }
+
+  if (isCategoryInspectorCategory(categoryName)) {
+    ensureCategoryInspectorState(categoryName);
+    return categoryName;
+  }
+
+  return null;
+}
+
+function getInspectorStatePath(fieldName, categoryName = appState.activeSidebarCategory) {
+  const supportedCategory = getSupportedInspectorCategory(categoryName);
+  if (!supportedCategory || supportedCategory !== "All Bookmarks") {
+    return null;
+  }
+
+  return INSPECTOR_STATE_PATHS[supportedCategory]?.[fieldName] || null;
+}
+
+function getInspectorStateValue(fieldName, categoryName = appState.activeSidebarCategory) {
+  const supportedCategory = getSupportedInspectorCategory(categoryName);
+  if (!supportedCategory) {
+    return undefined;
+  }
+
+  if (supportedCategory === "All Bookmarks") {
+    const path = getInspectorStatePath(fieldName, categoryName);
+    return path ? appState[path] : undefined;
+  }
+
+  return appState.categoryInspectorStates[supportedCategory]?.[fieldName];
+}
+
+function setInspectorStateValue(fieldName, value, categoryName = appState.activeSidebarCategory) {
+  const supportedCategory = getSupportedInspectorCategory(categoryName);
+  if (!supportedCategory) {
+    return;
+  }
+
+  if (supportedCategory === "All Bookmarks") {
+    const path = getInspectorStatePath(fieldName, categoryName);
+    if (path) {
+      appState[path] = value;
+    }
+    return;
+  }
+
+  appState.categoryInspectorStates[supportedCategory][fieldName] = value;
+}
+
+function isCategoryInspectorCategory(categoryName) {
+  return Boolean(categoryName) && categoryName !== "All Bookmarks" && categoryName !== "Deleted Items";
+}
+
+function createCategoryInspectorState(categoryName) {
+  const lastSaved = getMostRecentBookmarkDateForCategory(categoryName);
+
+  return {
+    lastSaved,
+    lastModified: lastSaved,
+    isFavourite: false,
+    savePermanentCopy: false,
+    passwordProtected: false,
+    tags: [],
+    tagDraft: "",
+    note: ""
+  };
+}
+
+function ensureCategoryInspectorState(categoryName) {
+  if (!isCategoryInspectorCategory(categoryName)) {
+    return null;
+  }
+
+  if (!appState.categoryInspectorStates[categoryName]) {
+    appState.categoryInspectorStates[categoryName] = createCategoryInspectorState(categoryName);
+  }
+
+  return appState.categoryInspectorStates[categoryName];
+}
+
+function getMostRecentBookmarkDateForCategory(categoryName) {
+  const bookmarks = getBookmarksForCategory(categoryName);
+  if (!bookmarks.length) {
+    return "";
+  }
+
+  const mostRecentDate = bookmarks.reduce((latest, bookmark) => {
+    const parsedDate = parseBookmarkDate(bookmark.date);
+    if (!parsedDate) {
+      return latest;
+    }
+
+    if (!latest || parsedDate > latest) {
+      return parsedDate;
+    }
+
+    return latest;
+  }, null);
+
+  return mostRecentDate ? formatBookmarkDate(mostRecentDate) : "";
+}
+
+function getBookmarkTypesForCategory(categoryName) {
+  const bookmarkTypes = new Set(
+    getBookmarksForCategory(categoryName)
+      .map((bookmark) => bookmark.type || inferBookmarkType(bookmark))
+      .filter(Boolean)
+  );
+
+  return BOOKMARK_TYPE_ORDER.filter((type) => bookmarkTypes.has(type));
+}
+
+function updateInspectorLastSaved(categoryName = appState.activeSidebarCategory, date = new Date()) {
+  if (!getSupportedInspectorCategory(categoryName)) {
+    return;
+  }
+
+  setInspectorStateValue("lastSaved", formatBookmarkDate(date), categoryName);
+}
+
+function updateInspectorLastModified(categoryName = appState.activeSidebarCategory, date = new Date()) {
+  if (!getSupportedInspectorCategory(categoryName)) {
+    return;
+  }
+
+  setInspectorStateValue("lastModified", formatBookmarkDate(date), categoryName);
+}
+
+function updateRelatedInspectorModifiedDates(categoryName, date = new Date()) {
+  updateInspectorLastModified("All Bookmarks", date);
+  if (categoryName !== "All Bookmarks") {
+    updateInspectorLastModified(categoryName, date);
+  }
 }
 
 function syncInspectorPanel() {
@@ -1573,27 +1782,38 @@ function syncInspectorPanel() {
 }
 
 function syncInspectorMetadataUi() {
+  const activeInspectorCategory = getSupportedInspectorCategory();
   const lastSaved = app.querySelector("[data-role='inspector-last-saved']");
   const lastModified = app.querySelector("[data-role='inspector-last-modified']");
+  const types = app.querySelector("[data-role='inspector-types']");
+
+  if (!activeInspectorCategory) {
+    return;
+  }
 
   if (lastSaved) {
-    lastSaved.textContent = appState.allBookmarksLastSaved;
+    lastSaved.textContent = getInspectorStateValue("lastSaved", activeInspectorCategory);
   }
 
   if (lastModified) {
-    lastModified.textContent = appState.allBookmarksLastModified;
+    lastModified.textContent = getInspectorStateValue("lastModified", activeInspectorCategory);
+  }
+
+  if (types) {
+    types.textContent = getBookmarkTypesForCategory(activeInspectorCategory).join(", ");
   }
 }
 
 function syncInspectorTagsUi() {
-  const tagsContainer = app.querySelector("[data-role='all-bookmarks-tags-list']");
-  const tagsInput = app.querySelector("[data-role='all-bookmarks-tags-input']");
-  if (!tagsContainer || !tagsInput) {
+  const activeInspectorCategory = getSupportedInspectorCategory();
+  const tagsContainer = app.querySelector("[data-role='inspector-tags-list']");
+  const tagsInput = app.querySelector("[data-role='inspector-tags-input']");
+  if (!activeInspectorCategory || !tagsContainer || !tagsInput) {
     return;
   }
 
-  tagsContainer.innerHTML = renderInspectorSavedTags();
-  tagsInput.value = appState.allBookmarksTagDraft;
+  tagsContainer.innerHTML = renderInspectorSavedTags(activeInspectorCategory);
+  tagsInput.value = getInspectorStateValue("tagDraft", activeInspectorCategory) || "";
 }
 
 function createBookmarkFromUrl(rawUrl) {
@@ -1612,6 +1832,7 @@ function createBookmarkFromUrl(rawUrl) {
     isFetchingImage: true,
     isPermanentCopy: false,
     statusIcon: BOOKMARK_CARD_STATUS_ICON,
+    type: /^youtube\.com$/i.test(bookmarkUrl) ? "Video" : "Article",
     articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
   };
 }
@@ -1625,7 +1846,8 @@ function addBookmarkFromCurrentInput() {
   appState.bookmarks.unshift(nextBookmark);
   appState.bookmarkUrl = "";
   appState.newBookmarkExpanded = false;
-  updateAllBookmarksLastSaved();
+  updateInspectorLastSaved("All Bookmarks");
+  updateInspectorLastSaved(nextBookmark.category);
   renderShell();
   queueBookmarkImageReveal(nextBookmark.id);
   return true;
@@ -1635,9 +1857,11 @@ function normalizeTagLabel(value) {
   return value.trim().replace(/\s+/g, " ");
 }
 
-function renderInspectorSavedTags() {
-  return appState.allBookmarksTags.map((tag) => `
-    <button class="inspector-panel-tag-chip" type="button" data-action="remove-all-bookmarks-tag" data-tag="${escapeHtml(tag)}" aria-label="Remove ${escapeHtml(tag)} tag">
+function renderInspectorSavedTags(categoryName = appState.activeSidebarCategory) {
+  const tags = getInspectorStateValue("tags", categoryName) || [];
+
+  return tags.map((tag) => `
+    <button class="inspector-panel-tag-chip" type="button" data-action="remove-inspector-tag" data-tag="${escapeHtml(tag)}" aria-label="Remove ${escapeHtml(tag)} tag">
       <span class="inspector-panel-tag-chip-label">${escapeHtml(tag)}</span>
       <span class="inspector-panel-tag-chip-icon">
         <img src="${INSPECTOR_TAG_REMOVE_ICON}" alt="" width="8" height="8" />
@@ -1646,21 +1870,29 @@ function renderInspectorSavedTags() {
   `).join("");
 }
 
-function commitAllBookmarksTag() {
-  const normalizedTag = normalizeTagLabel(appState.allBookmarksTagDraft);
+function commitInspectorTag(categoryName = appState.activeSidebarCategory) {
+  const supportedCategory = getSupportedInspectorCategory(categoryName);
+  const currentDraft = getInspectorStateValue("tagDraft", categoryName);
+  const normalizedTag = normalizeTagLabel(currentDraft || "");
+
+  if (!supportedCategory) {
+    return false;
+  }
+
   if (!normalizedTag) {
-    appState.allBookmarksTagDraft = "";
+    setInspectorStateValue("tagDraft", "", supportedCategory);
     syncInspectorTagsUi();
     return false;
   }
 
-  if (!appState.allBookmarksTags.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())) {
-    appState.allBookmarksTags = [...appState.allBookmarksTags, normalizedTag];
-    updateAllBookmarksLastModified();
+  const currentTags = getInspectorStateValue("tags", supportedCategory) || [];
+  if (!currentTags.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())) {
+    setInspectorStateValue("tags", [...currentTags, normalizedTag], supportedCategory);
+    updateRelatedInspectorModifiedDates(supportedCategory);
     syncInspectorMetadataUi();
   }
 
-  appState.allBookmarksTagDraft = "";
+  setInspectorStateValue("tagDraft", "", supportedCategory);
   syncInspectorTagsUi();
   return true;
 }
@@ -2114,10 +2346,125 @@ function renderContentPanel() {
 }
 
 function renderInspectorPanel() {
-  if (appState.activeSidebarCategory !== "All Bookmarks") {
+  const activeInspectorCategory = getSupportedInspectorCategory();
+  if (!activeInspectorCategory) {
     return `
       <div class="scaffold-block">
         <span class="scaffold-label">Right Details Panel</span>
+      </div>
+    `;
+  }
+
+  const lastSaved = getInspectorStateValue("lastSaved", activeInspectorCategory);
+  const lastModified = getInspectorStateValue("lastModified", activeInspectorCategory);
+  const typesText = getBookmarkTypesForCategory(activeInspectorCategory).join(", ");
+  const tagDraft = getInspectorStateValue("tagDraft", activeInspectorCategory) || "";
+  const noteValue = getInspectorStateValue("note", activeInspectorCategory) || "";
+
+  if (activeInspectorCategory !== "All Bookmarks") {
+    const isFavourite = Boolean(getInspectorStateValue("isFavourite", activeInspectorCategory));
+    const savePermanentCopy = Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory));
+    const passwordProtected = Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory));
+
+    return `
+      <div class="inspector-panel inspector-panel-category">
+        <div class="inspector-panel-title">${escapeHtml(activeInspectorCategory)}</div>
+
+        <div class="inspector-panel-metadata">
+          <div class="inspector-panel-meta-row">
+            <span class="inspector-panel-meta-label">Types</span>
+            <span class="inspector-panel-meta-value inspector-panel-meta-value-types" data-role="inspector-types">${escapeHtml(typesText)}</span>
+          </div>
+          <div class="inspector-panel-meta-row">
+            <span class="inspector-panel-meta-label">Last Saved</span>
+            <span class="inspector-panel-meta-value" data-role="inspector-last-saved">${escapeHtml(lastSaved)}</span>
+          </div>
+          <div class="inspector-panel-meta-row">
+            <span class="inspector-panel-meta-label">Last Modified</span>
+            <span class="inspector-panel-meta-value" data-role="inspector-last-modified">${escapeHtml(lastModified)}</span>
+          </div>
+        </div>
+
+        <div class="inspector-panel-divider">
+          <img src="${INSPECTOR_TOP_DIVIDER}" alt="" width="300" height="1" />
+        </div>
+
+        <div class="inspector-panel-category-actions">
+          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category" type="button" data-action="toggle-inspector-favourite" aria-pressed="${isFavourite}">
+            <span class="inspector-panel-favourite-icon">
+              <img src="${isFavourite ? INSPECTOR_FAVOURITE_ACTIVE_ICON : INSPECTOR_FAVOURITE_DEFAULT_ICON}" alt="" width="16" height="16" />
+            </span>
+            <span class="inspector-panel-toggle-label">Mark all as favourite</span>
+          </button>
+
+          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category" type="button" data-action="toggle-inspector-permanent-copy" aria-pressed="${savePermanentCopy}">
+            <span class="inspector-panel-checkbox">
+              <img src="${savePermanentCopy ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
+            </span>
+            <span class="inspector-panel-toggle-label">Save all as permanent copy</span>
+          </button>
+
+          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category" type="button" data-action="toggle-inspector-password" aria-pressed="${passwordProtected}">
+            <span class="inspector-panel-checkbox">
+              <img src="${passwordProtected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
+            </span>
+            <span class="inspector-panel-toggle-label">Password-protect this view</span>
+          </button>
+        </div>
+
+        <div class="inspector-panel-divider inspector-panel-divider-category-bottom">
+          <img src="${INSPECTOR_BOTTOM_DIVIDER}" alt="" width="300" height="1" />
+        </div>
+
+        <div class="inspector-panel-fields inspector-panel-fields-category">
+          <div class="inspector-panel-field inspector-panel-field-move">
+            <button class="inspector-panel-move-button" type="button" aria-expanded="false">
+              <span class="inspector-panel-move-label">
+                <span class="inspector-panel-move-icon">
+                  <img src="${INSPECTOR_MOVE_CATEGORY_ICON}" alt="" width="12.7" height="12.7" />
+                </span>
+                <span class="inspector-panel-move-text">Move to</span>
+              </span>
+              <span class="inspector-panel-move-chevron">
+                <img src="${INSPECTOR_MOVE_CHEVRON_ICON}" alt="" width="9.5" height="5.5" />
+              </span>
+            </button>
+          </div>
+
+          <div class="inspector-panel-field">
+            <div class="inspector-panel-field-label-row">
+              <span class="inspector-panel-field-icon">
+                <img src="${INSPECTOR_TAG_ICON}" alt="" width="16" height="16" />
+              </span>
+              <span class="inspector-panel-field-label">Add tags</span>
+            </div>
+            <div class="inspector-panel-field-box inspector-panel-field-box-tags inspector-panel-field-box-resizable">
+              <div class="inspector-panel-tags-field">
+                <div class="inspector-panel-tags-list" data-role="inspector-tags-list">${renderInspectorSavedTags(activeInspectorCategory)}</div>
+                <input class="inspector-panel-input inspector-panel-input-tags" type="text" value="${escapeHtml(tagDraft).replace(/"/g, "&quot;")}" data-role="inspector-tags-input" />
+              </div>
+            </div>
+          </div>
+
+          <div class="inspector-panel-field">
+            <div class="inspector-panel-field-label-row">
+              <span class="inspector-panel-field-icon">
+                <img src="${INSPECTOR_NOTE_ICON}" alt="" width="16" height="16" />
+              </span>
+              <span class="inspector-panel-field-label">Add a note</span>
+            </div>
+            <label class="inspector-panel-field-box inspector-panel-field-box-note inspector-panel-field-box-resizable">
+              <textarea class="inspector-panel-input inspector-panel-input-note" data-role="inspector-note-input">${escapeHtml(noteValue)}</textarea>
+            </label>
+          </div>
+        </div>
+
+        <button class="inspector-panel-delete-button" type="button">
+          <span class="inspector-panel-delete-icon">
+            <img src="${INSPECTOR_TRASH_ICON}" alt="" width="16" height="16" />
+          </span>
+          <span class="inspector-panel-delete-label">Delete Category</span>
+        </button>
       </div>
     `;
   }
@@ -2129,15 +2476,15 @@ function renderInspectorPanel() {
       <div class="inspector-panel-metadata">
         <div class="inspector-panel-meta-row">
           <span class="inspector-panel-meta-label">Types</span>
-          <span class="inspector-panel-meta-value inspector-panel-meta-value-types">Article, Audio, Link, Video</span>
+          <span class="inspector-panel-meta-value inspector-panel-meta-value-types" data-role="inspector-types">${escapeHtml(typesText)}</span>
         </div>
         <div class="inspector-panel-meta-row">
           <span class="inspector-panel-meta-label">Last Saved</span>
-          <span class="inspector-panel-meta-value" data-role="inspector-last-saved">${escapeHtml(appState.allBookmarksLastSaved)}</span>
+          <span class="inspector-panel-meta-value" data-role="inspector-last-saved">${escapeHtml(lastSaved)}</span>
         </div>
         <div class="inspector-panel-meta-row">
           <span class="inspector-panel-meta-label">Last Modified</span>
-          <span class="inspector-panel-meta-value" data-role="inspector-last-modified">${escapeHtml(appState.allBookmarksLastModified)}</span>
+          <span class="inspector-panel-meta-value" data-role="inspector-last-modified">${escapeHtml(lastModified)}</span>
         </div>
       </div>
 
@@ -2145,17 +2492,17 @@ function renderInspectorPanel() {
         <img src="${INSPECTOR_TOP_DIVIDER}" alt="" width="300" height="1" />
       </div>
 
-      <button class="inspector-panel-toggle-row inspector-panel-toggle-row-primary" type="button" data-action="toggle-all-bookmarks-permanent-copy" aria-pressed="${appState.allBookmarksSavePermanentCopy}">
+      <button class="inspector-panel-toggle-row inspector-panel-toggle-row-primary" type="button" data-action="toggle-inspector-permanent-copy" aria-pressed="${Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory))}">
         <span class="inspector-panel-checkbox">
-          <img src="${appState.allBookmarksSavePermanentCopy ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
+          <img src="${getInspectorStateValue("savePermanentCopy", activeInspectorCategory) ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
         </span>
         <span class="inspector-panel-toggle-label">Save all as permanent copy</span>
       </button>
 
       <div class="inspector-panel-password-block">
-        <button class="inspector-panel-toggle-row" type="button" data-action="toggle-all-bookmarks-password" aria-pressed="${appState.allBookmarksPasswordProtected}">
+        <button class="inspector-panel-toggle-row" type="button" data-action="toggle-inspector-password" aria-pressed="${Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory))}">
           <span class="inspector-panel-checkbox">
-            <img src="${appState.allBookmarksPasswordProtected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
+            <img src="${getInspectorStateValue("passwordProtected", activeInspectorCategory) ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
           </span>
           <span class="inspector-panel-toggle-label">Password-protect this view</span>
         </button>
@@ -2175,8 +2522,8 @@ function renderInspectorPanel() {
           </div>
           <div class="inspector-panel-field-box inspector-panel-field-box-tags inspector-panel-field-box-resizable">
             <div class="inspector-panel-tags-field">
-              <div class="inspector-panel-tags-list" data-role="all-bookmarks-tags-list">${renderInspectorSavedTags()}</div>
-              <input class="inspector-panel-input inspector-panel-input-tags" type="text" value="${escapeHtml(appState.allBookmarksTagDraft).replace(/"/g, "&quot;")}" data-role="all-bookmarks-tags-input" />
+              <div class="inspector-panel-tags-list" data-role="inspector-tags-list">${renderInspectorSavedTags(activeInspectorCategory)}</div>
+              <input class="inspector-panel-input inspector-panel-input-tags" type="text" value="${escapeHtml(tagDraft).replace(/"/g, "&quot;")}" data-role="inspector-tags-input" />
             </div>
           </div>
         </div>
@@ -2189,7 +2536,7 @@ function renderInspectorPanel() {
             <span class="inspector-panel-field-label">Add a note</span>
           </div>
           <label class="inspector-panel-field-box inspector-panel-field-box-note inspector-panel-field-box-resizable">
-            <textarea class="inspector-panel-input inspector-panel-input-note" data-role="all-bookmarks-note-input">${escapeHtml(appState.allBookmarksNote)}</textarea>
+            <textarea class="inspector-panel-input inspector-panel-input-note" data-role="inspector-note-input">${escapeHtml(noteValue)}</textarea>
           </label>
         </div>
       </div>
@@ -2386,8 +2733,8 @@ function handleAppClick(event) {
       return;
     }
 
-    if (appState.allBookmarksTagDraft && !event.target.closest("[data-role='all-bookmarks-tags-input']")) {
-      commitAllBookmarksTag();
+    if (getInspectorStateValue("tagDraft") && !event.target.closest("[data-role='inspector-tags-input']")) {
+      commitInspectorTag();
     }
 
     if (appState.isCreatingCategory && !event.target.closest("[data-role='new-category-input']")) {
@@ -2523,34 +2870,45 @@ function handleAppClick(event) {
 
     if (bookmark) {
       bookmark.isPermanentCopy = true;
-      updateAllBookmarksLastModified();
+      updateRelatedInspectorModifiedDates(bookmark.category);
       syncInspectorPanel();
     }
 
     return;
   }
 
-  if (action === "toggle-all-bookmarks-permanent-copy") {
-    appState.allBookmarksSavePermanentCopy = !appState.allBookmarksSavePermanentCopy;
-    updateAllBookmarksLastModified();
+  if (action === "toggle-inspector-favourite") {
+    const isFavourite = Boolean(getInspectorStateValue("isFavourite"));
+    setInspectorStateValue("isFavourite", !isFavourite);
+    updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
     syncInspectorPanel();
     return;
   }
 
-  if (action === "toggle-all-bookmarks-password") {
-    appState.allBookmarksPasswordProtected = !appState.allBookmarksPasswordProtected;
-    updateAllBookmarksLastModified();
+  if (action === "toggle-inspector-permanent-copy") {
+    const savePermanentCopy = Boolean(getInspectorStateValue("savePermanentCopy"));
+    setInspectorStateValue("savePermanentCopy", !savePermanentCopy);
+    updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
     syncInspectorPanel();
     return;
   }
 
-  if (action === "remove-all-bookmarks-tag") {
+  if (action === "toggle-inspector-password") {
+    const passwordProtected = Boolean(getInspectorStateValue("passwordProtected"));
+    setInspectorStateValue("passwordProtected", !passwordProtected);
+    updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "remove-inspector-tag") {
     const tag = actionTarget.getAttribute("data-tag");
     if (!tag) {
       return;
     }
-    appState.allBookmarksTags = appState.allBookmarksTags.filter((item) => item !== tag);
-    updateAllBookmarksLastModified();
+    const tags = getInspectorStateValue("tags") || [];
+    setInspectorStateValue("tags", tags.filter((item) => item !== tag));
+    updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
     syncInspectorPanel();
     return;
   }
@@ -2562,7 +2920,9 @@ function handleAppClick(event) {
 
 function finalizeNewCategory() {
   const trimmedName = appState.newCategoryName.trim();
-  appState.createdCategoryNames.push(trimmedName || "New Category");
+  const categoryName = trimmedName || "New Category";
+  appState.createdCategoryNames.push(categoryName);
+  ensureCategoryInspectorState(categoryName);
   appState.createCategoryState = "default";
   appState.isCreatingCategory = false;
   appState.newCategoryName = "New Category";
@@ -2584,28 +2944,28 @@ function handleAppInput(event) {
     return;
   }
 
-  if (event.target.matches("[data-role='all-bookmarks-tags-input']")) {
-    appState.allBookmarksTagDraft = event.target.value;
+  if (event.target.matches("[data-role='inspector-tags-input']")) {
+    setInspectorStateValue("tagDraft", event.target.value);
     return;
   }
 
-  if (event.target.matches("[data-role='all-bookmarks-note-input']")) {
-    appState.allBookmarksNote = event.target.value;
-    updateAllBookmarksLastModified();
+  if (event.target.matches("[data-role='inspector-note-input']")) {
+    setInspectorStateValue("note", event.target.value);
+    updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
     syncInspectorMetadataUi();
   }
 }
 
 function handleAppKeydown(event) {
   if (!event.target.matches("[data-role='new-bookmark-input']")) {
-    if (event.target.matches("[data-role='all-bookmarks-tags-input']")) {
+    if (event.target.matches("[data-role='inspector-tags-input']")) {
       if (event.key === "Enter" || event.key === ",") {
         event.preventDefault();
-        commitAllBookmarksTag();
+        commitInspectorTag();
       }
 
       if (event.key === "Escape") {
-        appState.allBookmarksTagDraft = "";
+        setInspectorStateValue("tagDraft", "");
         syncInspectorTagsUi();
       }
       return;

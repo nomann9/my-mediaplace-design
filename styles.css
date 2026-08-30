@@ -954,6 +954,20 @@ input {
   width: 268px;
 }
 
+.inspector-panel-category-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  left: 16px;
+  position: absolute;
+  top: 177px;
+  width: 268px;
+}
+
+.inspector-panel-toggle-row-category {
+  width: 268px;
+}
+
 .inspector-panel-checkbox,
 .inspector-panel-field-icon,
 .inspector-panel-delete-icon {
@@ -965,12 +979,32 @@ input {
   width: 16px;
 }
 
+.inspector-panel-favourite-icon,
+.inspector-panel-move-icon,
+.inspector-panel-move-chevron {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.inspector-panel-favourite-icon {
+  flex: 0 0 16px;
+  height: 16px;
+  width: 16px;
+}
+
 .inspector-panel-checkbox img,
 .inspector-panel-field-icon img,
 .inspector-panel-delete-icon img {
   display: block;
   height: 16px;
   width: 16px;
+}
+
+.inspector-panel-favourite-icon img {
+  display: block;
+  height: 15.261px;
+  width: 15.994px;
 }
 
 .inspector-panel-toggle-label,
@@ -987,6 +1021,10 @@ input {
   top: 245px;
 }
 
+.inspector-panel-divider-category-bottom {
+  top: 277px;
+}
+
 .inspector-panel-fields {
   display: flex;
   flex-direction: column;
@@ -997,11 +1035,19 @@ input {
   width: 268px;
 }
 
+.inspector-panel-fields-category {
+  top: 297px;
+}
+
 .inspector-panel-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 268px;
+}
+
+.inspector-panel-field-move {
+  gap: 0;
 }
 
 .inspector-panel-field-label-row {
@@ -1017,6 +1063,59 @@ input {
   display: block;
   overflow: hidden;
   width: 268px;
+}
+
+.inspector-panel-move-button {
+  align-items: center;
+  appearance: none;
+  background: var(--bg-panel, #1d1d2c);
+  border: 1px solid rgba(53, 53, 74, 0.6);
+  border-radius: 4px;
+  color: var(--text-body, #bfbfbf);
+  cursor: pointer;
+  display: flex;
+  height: 40px;
+  justify-content: space-between;
+  padding: 12px;
+  width: 268px;
+}
+
+.inspector-panel-move-label {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.inspector-panel-move-icon {
+  flex: 0 0 16px;
+  height: 16px;
+  width: 16px;
+}
+
+.inspector-panel-move-icon img {
+  display: block;
+  height: 12.7px;
+  width: 12.7px;
+}
+
+.inspector-panel-move-text {
+  color: var(--text-body, #bfbfbf);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.inspector-panel-move-chevron {
+  flex: 0 0 16px;
+  height: 16px;
+  width: 16px;
+}
+
+.inspector-panel-move-chevron img {
+  display: block;
+  height: 5.5px;
+  width: 9.5px;
 }
 
 .inspector-panel-field-box-tags {
