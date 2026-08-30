@@ -70,6 +70,12 @@ const INSPECTOR_MOVE_CATEGORY_ICON = "assets/figma/inspector-move-category.svg";
 const INSPECTOR_MOVE_CHEVRON_ICON = "assets/figma/inspector-move-chevron.svg";
 const INSPECTOR_BOOKMARK_CLOSE_ICON = "assets/figma/inspector-bookmark-close.svg";
 const INSPECTOR_REMINDER_BELL_ICON = "assets/figma/inspector-reminder-bell.svg";
+const IMPORT_BOOKMARKS_RINGS_IMAGE = "assets/figma/import-bookmarks-circles.svg";
+const IMPORT_BOOKMARKS_MAIN_ICON = "assets/figma/import-bookmarks-main.svg";
+const IMPORT_BOOKMARKS_DOC_1 = "assets/figma/import-bookmarks-doc-1.svg";
+const IMPORT_BOOKMARKS_DOC_2 = "assets/figma/import-bookmarks-doc-2.svg";
+const IMPORT_BOOKMARKS_DOC_3 = "assets/figma/import-bookmarks-doc-3.svg";
+const IMPORT_BOOKMARKS_DOC_4 = "assets/figma/import-bookmarks-doc-4.svg";
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 const FIGMA_BOOKMARK_IMAGE_URLS = [
   "assets/figma/e63e0d1d-dd75-4111-8cc7-0c913c0394ac.png",
@@ -966,6 +972,7 @@ const appState = {
   selectedBookmarkIds: [],
   activeContentView: "cards",
   contentKebabOpen: false,
+  importBookmarksModalOpen: false,
   allBookmarksLastSaved: "29 Dec 2025",
   allBookmarksLastModified: "21 Dec 2025",
   allBookmarksSavePermanentCopy: false,
@@ -1832,6 +1839,89 @@ function renderDeleteBookmarkModal() {
       </div>
     </div>
   `;
+}
+
+function renderImportBookmarksModal() {
+  if (!appState.importBookmarksModalOpen) {
+    return "";
+  }
+
+  return `
+    <div class="import-bookmarks-overlay" role="dialog" aria-modal="true" aria-labelledby="import-bookmarks-title">
+      <div class="import-bookmarks-modal">
+        <div class="import-bookmarks-modal-header">
+          <div class="import-bookmarks-modal-heading">
+            <h2 class="import-bookmarks-modal-title" id="import-bookmarks-title">Import bookmarks</h2>
+            <p class="import-bookmarks-modal-subtitle">Bring your bookmarks from another app or browser</p>
+          </div>
+          <button class="import-bookmarks-modal-cancel" type="button" data-action="close-import-bookmarks-modal">
+            <span class="import-bookmarks-modal-cancel-icon">
+              <img src="${PREVIEW_CANCEL_ICON}" alt="" width="12" height="12" />
+            </span>
+            <span class="import-bookmarks-modal-cancel-label">Cancel</span>
+          </button>
+        </div>
+
+        <div class="import-bookmarks-modal-content">
+          <div class="import-bookmarks-modal-rings" aria-hidden="true">
+            <img class="import-bookmarks-modal-rings-image" src="${IMPORT_BOOKMARKS_RINGS_IMAGE}" alt="" width="520" height="520" />
+          </div>
+
+          <div class="import-bookmarks-modal-illustration" aria-hidden="true">
+            <span class="import-bookmarks-modal-doc-wrap import-bookmarks-modal-doc-wrap-3">
+              <span class="import-bookmarks-modal-doc-rotate import-bookmarks-modal-doc-rotate-3">
+                <span class="import-bookmarks-modal-doc-frame import-bookmarks-modal-doc-frame-40">
+                  <img src="${IMPORT_BOOKMARKS_DOC_3}" alt="" width="23.33" height="30" />
+                </span>
+              </span>
+            </span>
+            <span class="import-bookmarks-modal-doc-wrap import-bookmarks-modal-doc-wrap-2">
+              <span class="import-bookmarks-modal-doc-rotate import-bookmarks-modal-doc-rotate-2">
+                <span class="import-bookmarks-modal-doc-frame import-bookmarks-modal-doc-frame-40">
+                  <img src="${IMPORT_BOOKMARKS_DOC_2}" alt="" width="23.33" height="30" />
+                </span>
+              </span>
+            </span>
+            <span class="import-bookmarks-modal-doc-wrap import-bookmarks-modal-doc-wrap-1">
+              <span class="import-bookmarks-modal-doc-rotate import-bookmarks-modal-doc-rotate-1">
+                <span class="import-bookmarks-modal-doc-frame import-bookmarks-modal-doc-frame-32">
+                  <img src="${IMPORT_BOOKMARKS_DOC_1}" alt="" width="18.67" height="24" />
+                </span>
+              </span>
+            </span>
+            <span class="import-bookmarks-modal-doc-wrap import-bookmarks-modal-doc-wrap-4">
+              <span class="import-bookmarks-modal-doc-rotate import-bookmarks-modal-doc-rotate-4">
+                <span class="import-bookmarks-modal-doc-frame import-bookmarks-modal-doc-frame-32">
+                  <img src="${IMPORT_BOOKMARKS_DOC_4}" alt="" width="18.67" height="24" />
+                </span>
+              </span>
+            </span>
+            <span class="import-bookmarks-modal-main-icon">
+              <img src="${IMPORT_BOOKMARKS_MAIN_ICON}" alt="" width="100" height="100" />
+            </span>
+          </div>
+
+          <div class="import-bookmarks-modal-copy">
+            <p class="import-bookmarks-modal-copy-line">
+              <span>Drag and drop to upload, or </span>
+              <button class="import-bookmarks-modal-browse" type="button" data-action="browse-import-bookmarks-file">click to browse your file</button>
+            </p>
+            <p class="import-bookmarks-modal-copy-support">Supported formats: HTML, JSON, CSV and Markdown</p>
+          </div>
+
+          <input class="import-bookmarks-file-input" type="file" hidden data-role="import-bookmarks-file-input" accept=".html,.json,.csv,.md,.markdown,text/html,application/json,text/csv,text/markdown" />
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function closeImportBookmarksModal() {
+  if (!appState.importBookmarksModalOpen) {
+    return;
+  }
+
+  appState.importBookmarksModalOpen = false;
 }
 
 function updateInspectorLastSaved(categoryName = appState.activeSidebarCategory, date = new Date()) {
@@ -2973,7 +3063,7 @@ function renderShell() {
                   </span>
                 </label>
 
-                <button class="import-bookmarks-button" type="button">
+                <button class="import-bookmarks-button" type="button" data-action="open-import-bookmarks-modal" aria-haspopup="dialog" aria-expanded="${appState.importBookmarksModalOpen}">
                   <img class="import-bookmarks-icon" src="${IMPORT_BOOKMARKS_ICON}" alt="" width="20" height="20" />
                   <span>Import bookmarks</span>
                 </button>
@@ -2992,6 +3082,8 @@ function renderShell() {
               <aside class="panel inspector-host">
                 ${renderInspectorPanel()}
               </aside>
+
+              ${renderImportBookmarksModal()}
             </div>
           </div>
         </section>
@@ -3045,6 +3137,11 @@ function handleAppClick(event) {
       renderShell();
     }
 
+    if (appState.importBookmarksModalOpen && !event.target.closest(".import-bookmarks-modal")) {
+      closeImportBookmarksModal();
+      renderShell();
+    }
+
     if (appState.deleteBookmarkModalOpen && !event.target.closest(".bookmark-delete-modal, [data-action='open-delete-bookmark-modal']")) {
       closeDeleteBookmarkModal();
       syncInspectorPanel();
@@ -3061,6 +3158,23 @@ function handleAppClick(event) {
 
   if (action !== "open-content-kebab" && action !== "content-kebab-item") {
     appState.contentKebabOpen = false;
+  }
+
+  if (action === "open-import-bookmarks-modal") {
+    appState.importBookmarksModalOpen = true;
+    renderShell();
+    return;
+  }
+
+  if (action === "close-import-bookmarks-modal") {
+    closeImportBookmarksModal();
+    renderShell();
+    return;
+  }
+
+  if (action === "browse-import-bookmarks-file") {
+    app.querySelector("[data-role='import-bookmarks-file-input']")?.click();
+    return;
   }
 
   if (action === "toggle-new-bookmark") {
@@ -3394,6 +3508,12 @@ function handleAppInput(event) {
 }
 
 function handleAppKeydown(event) {
+  if (event.key === "Escape" && appState.importBookmarksModalOpen) {
+    closeImportBookmarksModal();
+    renderShell();
+    return;
+  }
+
   if (!event.target.matches("[data-role='new-bookmark-input']")) {
     if (event.target.matches("[data-role='bookmark-inspector-tags-input']")) {
       if (event.key === "Enter" || event.key === ",") {
