@@ -68,6 +68,8 @@ const INSPECTOR_FAVOURITE_DEFAULT_ICON = "assets/figma/inspector-favourite-defau
 const INSPECTOR_FAVOURITE_ACTIVE_ICON = "assets/figma/inspector-favourite-active.svg";
 const INSPECTOR_MOVE_CATEGORY_ICON = "assets/figma/inspector-move-category.svg";
 const INSPECTOR_MOVE_CHEVRON_ICON = "assets/figma/inspector-move-chevron.svg";
+const INSPECTOR_BOOKMARK_CLOSE_ICON = "assets/figma/inspector-bookmark-close.svg";
+const INSPECTOR_REMINDER_BELL_ICON = "assets/figma/inspector-reminder-bell.svg";
 const BOOKMARK_IMAGE_FETCH_DURATION_MS = 1800;
 const FIGMA_BOOKMARK_IMAGE_URLS = [
   "assets/figma/e63e0d1d-dd75-4111-8cc7-0c913c0394ac.png",
@@ -980,6 +982,7 @@ const appState = {
   uncategorizedTags: [],
   uncategorizedTagDraft: "",
   uncategorizedNote: "",
+  activeInspectorBookmarkId: null,
   previewBookmarkId: null,
   bookmarkDisplayMode: "grid",
   bookmarkZoomLevel: 1,
@@ -1166,6 +1169,13 @@ appState.bookmarks = FIGMA_BOOKMARK_GRID.map((bookmark, index) => ({
   previewImage: FIGMA_BOOKMARK_IMAGE_URLS[index] || bookmark.previewImage || bookmark.image,
   statusIcon: getBookmarkStatusIcon(bookmark),
   type: inferBookmarkType(bookmark),
+  modifiedDate: bookmark.modifiedDate || bookmark.date,
+  isFavourite: Boolean(bookmark.isFavourite),
+  tags: Array.isArray(bookmark.tags) ? bookmark.tags : [],
+  tagDraft: bookmark.tagDraft || "",
+  note: bookmark.note || "",
+  priority: bookmark.priority || "normal",
+  reminder: bookmark.reminder || "",
   articleHtml: buildPreviewArticle(bookmark.title, bookmark.url)
 }));
 
@@ -1634,6 +1644,10 @@ function parseBookmarkDate(dateString) {
 }
 
 function getSupportedInspectorCategory(categoryName = appState.activeSidebarCategory) {
+  if (appState.activeInspectorBookmarkId) {
+    return null;
+  }
+
   if (categoryName === "All Bookmarks") {
     return categoryName;
   }
@@ -1749,6 +1763,14 @@ function getBookmarkTypesForCategory(categoryName) {
   return BOOKMARK_TYPE_ORDER.filter((type) => bookmarkTypes.has(type));
 }
 
+function getActiveInspectorBookmark() {
+  return appState.bookmarks.find((bookmark) => bookmark.id === appState.activeInspectorBookmarkId) || null;
+}
+
+function getBookmarkInspectorTypeLabel(bookmark) {
+  return bookmark?.type || inferBookmarkType(bookmark || {});
+}
+
 function updateInspectorLastSaved(categoryName = appState.activeSidebarCategory, date = new Date()) {
   if (!getSupportedInspectorCategory(categoryName)) {
     return;
@@ -1782,6 +1804,15 @@ function syncInspectorPanel() {
 }
 
 function syncInspectorMetadataUi() {
+  const activeInspectorBookmark = getActiveInspectorBookmark();
+  if (activeInspectorBookmark) {
+    const modifiedDate = app.querySelector("[data-role='bookmark-inspector-modified-date']");
+    if (modifiedDate) {
+      modifiedDate.textContent = activeInspectorBookmark.modifiedDate || activeInspectorBookmark.date;
+    }
+    return;
+  }
+
   const activeInspectorCategory = getSupportedInspectorCategory();
   const lastSaved = app.querySelector("[data-role='inspector-last-saved']");
   const lastModified = app.querySelector("[data-role='inspector-last-modified']");
@@ -1805,6 +1836,19 @@ function syncInspectorMetadataUi() {
 }
 
 function syncInspectorTagsUi() {
+  const activeInspectorBookmark = getActiveInspectorBookmark();
+  if (activeInspectorBookmark) {
+    const tagsContainer = app.querySelector("[data-role='bookmark-inspector-tags-list']");
+    const tagsInput = app.querySelector("[data-role='bookmark-inspector-tags-input']");
+    if (!tagsContainer || !tagsInput) {
+      return;
+    }
+
+    tagsContainer.innerHTML = renderBookmarkInspectorSavedTags(activeInspectorBookmark);
+    tagsInput.value = activeInspectorBookmark.tagDraft || "";
+    return;
+  }
+
   const activeInspectorCategory = getSupportedInspectorCategory();
   const tagsContainer = app.querySelector("[data-role='inspector-tags-list']");
   const tagsInput = app.querySelector("[data-role='inspector-tags-input']");
@@ -1831,6 +1875,13 @@ function createBookmarkFromUrl(rawUrl) {
     previewImage: PREVIEW_SAMPLE_IMAGE,
     isFetchingImage: true,
     isPermanentCopy: false,
+    isFavourite: false,
+    modifiedDate: formatBookmarkDate(now),
+    tags: [],
+    tagDraft: "",
+    note: "",
+    priority: "normal",
+    reminder: "",
     statusIcon: BOOKMARK_CARD_STATUS_ICON,
     type: /^youtube\.com$/i.test(bookmarkUrl) ? "Video" : "Article",
     articleHtml: buildPreviewArticle(bookmarkTitle, bookmarkUrl)
@@ -1870,7 +1921,42 @@ function renderInspectorSavedTags(categoryName = appState.activeSidebarCategory)
   `).join("");
 }
 
+function renderBookmarkInspectorSavedTags(bookmark) {
+  const tags = Array.isArray(bookmark?.tags) ? bookmark.tags : [];
+
+  return tags.map((tag) => `
+    <button class="inspector-panel-tag-chip" type="button" data-action="remove-bookmark-tag" data-tag="${escapeHtml(tag)}" data-bookmark-id="${bookmark.id}" aria-label="Remove ${escapeHtml(tag)} tag">
+      <span class="inspector-panel-tag-chip-label">${escapeHtml(tag)}</span>
+      <span class="inspector-panel-tag-chip-icon">
+        <img src="${INSPECTOR_TAG_REMOVE_ICON}" alt="" width="8" height="8" />
+      </span>
+    </button>
+  `).join("");
+}
+
 function commitInspectorTag(categoryName = appState.activeSidebarCategory) {
+  const activeInspectorBookmark = getActiveInspectorBookmark();
+  if (activeInspectorBookmark) {
+    const normalizedTag = normalizeTagLabel(activeInspectorBookmark.tagDraft || "");
+
+    if (!normalizedTag) {
+      activeInspectorBookmark.tagDraft = "";
+      syncInspectorTagsUi();
+      return false;
+    }
+
+    if (!activeInspectorBookmark.tags.some((tag) => tag.toLowerCase() === normalizedTag.toLowerCase())) {
+      activeInspectorBookmark.tags = [...activeInspectorBookmark.tags, normalizedTag];
+      activeInspectorBookmark.modifiedDate = formatBookmarkDate(new Date());
+      updateRelatedInspectorModifiedDates(activeInspectorBookmark.category);
+      syncInspectorMetadataUi();
+    }
+
+    activeInspectorBookmark.tagDraft = "";
+    syncInspectorTagsUi();
+    return true;
+  }
+
   const supportedCategory = getSupportedInspectorCategory(categoryName);
   const currentDraft = getInspectorStateValue("tagDraft", categoryName);
   const normalizedTag = normalizeTagLabel(currentDraft || "");
@@ -2346,6 +2432,138 @@ function renderContentPanel() {
 }
 
 function renderInspectorPanel() {
+  const activeInspectorBookmark = getActiveInspectorBookmark();
+  if (activeInspectorBookmark) {
+    const tagDraft = activeInspectorBookmark.tagDraft || "";
+    const noteValue = activeInspectorBookmark.note || "";
+    const reminderValue = activeInspectorBookmark.reminder || "No reminder set";
+    const priority = activeInspectorBookmark.priority || "normal";
+
+    return `
+      <div class="inspector-panel inspector-panel-bookmark">
+        <div class="inspector-panel-bookmark-header">
+          <div class="inspector-panel-title inspector-panel-bookmark-title">${escapeHtml(activeInspectorBookmark.title)}</div>
+          <button class="inspector-panel-bookmark-close" type="button" data-action="close-bookmark-inspector" aria-label="Close bookmark details">
+            <img src="${INSPECTOR_BOOKMARK_CLOSE_ICON}" alt="" width="9.5" height="9.5" />
+          </button>
+        </div>
+
+        <div class="inspector-panel-metadata inspector-panel-metadata-bookmark">
+          <div class="inspector-panel-meta-row">
+            <span class="inspector-panel-meta-label inspector-panel-meta-label-bookmark">Type</span>
+            <span class="inspector-panel-meta-value inspector-panel-meta-value-bookmark inspector-panel-meta-value-types">${escapeHtml(getBookmarkInspectorTypeLabel(activeInspectorBookmark))}</span>
+          </div>
+          <div class="inspector-panel-meta-row">
+            <span class="inspector-panel-meta-label inspector-panel-meta-label-bookmark">Date Saved</span>
+            <span class="inspector-panel-meta-value inspector-panel-meta-value-bookmark">${escapeHtml(activeInspectorBookmark.date)}</span>
+          </div>
+          <div class="inspector-panel-meta-row">
+            <span class="inspector-panel-meta-label inspector-panel-meta-label-bookmark">Date Modified</span>
+            <span class="inspector-panel-meta-value inspector-panel-meta-value-bookmark" data-role="bookmark-inspector-modified-date">${escapeHtml(activeInspectorBookmark.modifiedDate || activeInspectorBookmark.date)}</span>
+          </div>
+        </div>
+
+        <div class="inspector-panel-divider inspector-panel-divider-bookmark-top">
+          <img src="${INSPECTOR_TOP_DIVIDER}" alt="" width="300" height="1" />
+        </div>
+
+        <div class="inspector-panel-bookmark-actions">
+          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-bookmark" type="button" data-action="toggle-bookmark-favourite" data-bookmark-id="${activeInspectorBookmark.id}" aria-pressed="${Boolean(activeInspectorBookmark.isFavourite)}">
+            <span class="inspector-panel-favourite-icon">
+              <img src="${activeInspectorBookmark.isFavourite ? INSPECTOR_FAVOURITE_ACTIVE_ICON : INSPECTOR_FAVOURITE_DEFAULT_ICON}" alt="" width="16" height="16" />
+            </span>
+            <span class="inspector-panel-toggle-label">Mark as favourite</span>
+          </button>
+
+          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-bookmark" type="button" data-action="toggle-bookmark-permanent-copy" data-bookmark-id="${activeInspectorBookmark.id}" aria-pressed="${Boolean(activeInspectorBookmark.isPermanentCopy)}">
+            <span class="inspector-panel-checkbox">
+              <img src="${activeInspectorBookmark.isPermanentCopy ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
+            </span>
+            <span class="inspector-panel-toggle-label">Save a permanent copy</span>
+          </button>
+        </div>
+
+        <div class="inspector-panel-divider inspector-panel-divider-bookmark-bottom">
+          <img src="${INSPECTOR_BOTTOM_DIVIDER}" alt="" width="300" height="1" />
+        </div>
+
+        <div class="inspector-panel-fields inspector-panel-fields-bookmark">
+          <div class="inspector-panel-field inspector-panel-field-move">
+            <button class="inspector-panel-move-button" type="button" aria-expanded="false">
+              <span class="inspector-panel-move-label">
+                <span class="inspector-panel-move-icon">
+                  <img src="${INSPECTOR_MOVE_CATEGORY_ICON}" alt="" width="12.7" height="12.7" />
+                </span>
+                <span class="inspector-panel-move-text">Move to</span>
+              </span>
+              <span class="inspector-panel-move-chevron">
+                <img src="${INSPECTOR_MOVE_CHEVRON_ICON}" alt="" width="9.5" height="5.5" />
+              </span>
+            </button>
+          </div>
+
+          <div class="inspector-panel-field">
+            <div class="inspector-panel-field-label-row">
+              <span class="inspector-panel-field-icon">
+                <img src="${INSPECTOR_TAG_ICON}" alt="" width="16" height="16" />
+              </span>
+              <span class="inspector-panel-field-label">Add tags</span>
+            </div>
+            <div class="inspector-panel-field-box inspector-panel-field-box-tags inspector-panel-field-box-resizable">
+              <div class="inspector-panel-tags-field">
+                <div class="inspector-panel-tags-list" data-role="bookmark-inspector-tags-list">${renderBookmarkInspectorSavedTags(activeInspectorBookmark)}</div>
+                <input class="inspector-panel-input inspector-panel-input-tags" type="text" value="${escapeHtml(tagDraft).replace(/"/g, "&quot;")}" data-role="bookmark-inspector-tags-input" />
+              </div>
+            </div>
+          </div>
+
+          <div class="inspector-panel-field">
+            <div class="inspector-panel-field-label-row">
+              <span class="inspector-panel-field-icon">
+                <img src="${INSPECTOR_NOTE_ICON}" alt="" width="16" height="16" />
+              </span>
+              <span class="inspector-panel-field-label">Add a note</span>
+            </div>
+            <label class="inspector-panel-field-box inspector-panel-field-box-note inspector-panel-field-box-resizable">
+              <textarea class="inspector-panel-input inspector-panel-input-note" data-role="bookmark-inspector-note-input">${escapeHtml(noteValue)}</textarea>
+            </label>
+          </div>
+
+          <div class="inspector-panel-bookmark-priority">
+            <div class="inspector-panel-bookmark-priority-label">Assign Priority</div>
+            <div class="inspector-panel-bookmark-priority-options">
+              ${renderBookmarkPriorityOption(activeInspectorBookmark.id, "high", "High", priority === "high")}
+              ${renderBookmarkPriorityOption(activeInspectorBookmark.id, "normal", "Normal", priority === "normal")}
+              ${renderBookmarkPriorityOption(activeInspectorBookmark.id, "low", "Low", priority === "low")}
+            </div>
+          </div>
+
+          <div class="inspector-panel-bookmark-reminder">
+            <div class="inspector-panel-field-label-row inspector-panel-bookmark-reminder-label">
+              <span class="inspector-panel-bookmark-reminder-icon">
+                <img src="${INSPECTOR_REMINDER_BELL_ICON}" alt="" width="12.5246" height="14.5" />
+              </span>
+              <span class="inspector-panel-field-label">Add a reminder</span>
+            </div>
+            <button class="inspector-panel-move-button inspector-panel-bookmark-reminder-button" type="button" aria-expanded="false">
+              <span class="inspector-panel-bookmark-reminder-text">${escapeHtml(reminderValue)}</span>
+              <span class="inspector-panel-move-chevron">
+                <img src="${INSPECTOR_MOVE_CHEVRON_ICON}" alt="" width="9.5" height="5.5" />
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <button class="inspector-panel-delete-button" type="button">
+          <span class="inspector-panel-delete-icon">
+            <img src="${INSPECTOR_TRASH_ICON}" alt="" width="16" height="16" />
+          </span>
+          <span class="inspector-panel-delete-label">Delete bookmark</span>
+        </button>
+      </div>
+    `;
+  }
+
   const activeInspectorCategory = getSupportedInspectorCategory();
   if (!activeInspectorCategory) {
     return `
@@ -2551,6 +2769,15 @@ function renderInspectorPanel() {
   `;
 }
 
+function renderBookmarkPriorityOption(bookmarkId, value, label, isSelected) {
+  return `
+    <button class="inspector-panel-bookmark-priority-option${isSelected ? " is-selected" : ""}" type="button" data-action="set-bookmark-priority" data-bookmark-id="${bookmarkId}" data-priority="${value}" aria-pressed="${isSelected}">
+      <span class="inspector-panel-bookmark-priority-radio" aria-hidden="true"></span>
+      <span class="inspector-panel-bookmark-priority-text">${label}</span>
+    </button>
+  `;
+}
+
 function setupPreviewPaneScroll() {
   const previewPane = app.querySelector(".preview-pane");
   const scrollContainer = app.querySelector(".preview-pane-content-shell");
@@ -2737,6 +2964,10 @@ function handleAppClick(event) {
       commitInspectorTag();
     }
 
+    if (getActiveInspectorBookmark()?.tagDraft && !event.target.closest("[data-role='bookmark-inspector-tags-input']")) {
+      commitInspectorTag();
+    }
+
     if (appState.isCreatingCategory && !event.target.closest("[data-role='new-category-input']")) {
       finalizeNewCategory();
     }
@@ -2798,6 +3029,7 @@ function handleAppClick(event) {
   if (action === "select-sidebar-category") {
     const categoryName = actionTarget.getAttribute("data-category");
     if (categoryName) {
+      appState.activeInspectorBookmarkId = null;
       appState.activeSidebarCategory = categoryName;
       appState.activeContentView = "cards";
       appState.previewBookmarkId = null;
@@ -2858,6 +3090,21 @@ function handleAppClick(event) {
     return;
   }
 
+  if (action === "edit-bookmark") {
+    const bookmarkId = actionTarget.closest("[data-bookmark-id]")?.getAttribute("data-bookmark-id") || appState.previewBookmarkId;
+    if (bookmarkId) {
+      appState.activeInspectorBookmarkId = bookmarkId;
+      syncInspectorPanel();
+    }
+    return;
+  }
+
+  if (action === "close-bookmark-inspector") {
+    appState.activeInspectorBookmarkId = null;
+    syncInspectorPanel();
+    return;
+  }
+
   if (action === "close-preview") {
     appState.activeContentView = "cards";
     appState.previewBookmarkId = null;
@@ -2870,6 +3117,7 @@ function handleAppClick(event) {
 
     if (bookmark) {
       bookmark.isPermanentCopy = true;
+      bookmark.modifiedDate = formatBookmarkDate(new Date());
       updateRelatedInspectorModifiedDates(bookmark.category);
       syncInspectorPanel();
     }
@@ -2882,6 +3130,33 @@ function handleAppClick(event) {
     setInspectorStateValue("isFavourite", !isFavourite);
     updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
     syncInspectorPanel();
+    return;
+  }
+
+  if (action === "toggle-bookmark-favourite") {
+    const bookmark = appState.bookmarks.find((item) => item.id === actionTarget.getAttribute("data-bookmark-id"));
+    if (!bookmark) {
+      return;
+    }
+
+    bookmark.isFavourite = !bookmark.isFavourite;
+    bookmark.modifiedDate = formatBookmarkDate(new Date());
+    updateRelatedInspectorModifiedDates(bookmark.category);
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "toggle-bookmark-permanent-copy") {
+    const bookmark = appState.bookmarks.find((item) => item.id === actionTarget.getAttribute("data-bookmark-id"));
+    if (!bookmark) {
+      return;
+    }
+
+    bookmark.isPermanentCopy = !bookmark.isPermanentCopy;
+    bookmark.modifiedDate = formatBookmarkDate(new Date());
+    updateRelatedInspectorModifiedDates(bookmark.category);
+    syncInspectorPanel();
+    syncBookmarkContentForActiveCategory();
     return;
   }
 
@@ -2913,7 +3188,35 @@ function handleAppClick(event) {
     return;
   }
 
-  if (action === "open-bookmark-browser" || action === "export-bookmark" || action === "edit-bookmark") {
+  if (action === "remove-bookmark-tag") {
+    const bookmark = appState.bookmarks.find((item) => item.id === actionTarget.getAttribute("data-bookmark-id"));
+    const tag = actionTarget.getAttribute("data-tag");
+    if (!bookmark || !tag) {
+      return;
+    }
+
+    bookmark.tags = bookmark.tags.filter((item) => item !== tag);
+    bookmark.modifiedDate = formatBookmarkDate(new Date());
+    updateRelatedInspectorModifiedDates(bookmark.category);
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "set-bookmark-priority") {
+    const bookmark = appState.bookmarks.find((item) => item.id === actionTarget.getAttribute("data-bookmark-id"));
+    const priority = actionTarget.getAttribute("data-priority");
+    if (!bookmark || !["high", "normal", "low"].includes(priority)) {
+      return;
+    }
+
+    bookmark.priority = priority;
+    bookmark.modifiedDate = formatBookmarkDate(new Date());
+    updateRelatedInspectorModifiedDates(bookmark.category);
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "open-bookmark-browser" || action === "export-bookmark") {
     return;
   }
 }
@@ -2949,15 +3252,50 @@ function handleAppInput(event) {
     return;
   }
 
+  if (event.target.matches("[data-role='bookmark-inspector-tags-input']")) {
+    const bookmark = getActiveInspectorBookmark();
+    if (bookmark) {
+      bookmark.tagDraft = event.target.value;
+    }
+    return;
+  }
+
   if (event.target.matches("[data-role='inspector-note-input']")) {
     setInspectorStateValue("note", event.target.value);
     updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
     syncInspectorMetadataUi();
+    return;
+  }
+
+  if (event.target.matches("[data-role='bookmark-inspector-note-input']")) {
+    const bookmark = getActiveInspectorBookmark();
+    if (bookmark) {
+      bookmark.note = event.target.value;
+      bookmark.modifiedDate = formatBookmarkDate(new Date());
+      updateRelatedInspectorModifiedDates(bookmark.category);
+      syncInspectorMetadataUi();
+    }
   }
 }
 
 function handleAppKeydown(event) {
   if (!event.target.matches("[data-role='new-bookmark-input']")) {
+    if (event.target.matches("[data-role='bookmark-inspector-tags-input']")) {
+      if (event.key === "Enter" || event.key === ",") {
+        event.preventDefault();
+        commitInspectorTag();
+      }
+
+      if (event.key === "Escape") {
+        const bookmark = getActiveInspectorBookmark();
+        if (bookmark) {
+          bookmark.tagDraft = "";
+          syncInspectorTagsUi();
+        }
+      }
+      return;
+    }
+
     if (event.target.matches("[data-role='inspector-tags-input']")) {
       if (event.key === "Enter" || event.key === ",") {
         event.preventDefault();
