@@ -963,6 +963,12 @@ const SIDEBAR_SECTIONS = [
 const WP_RESOURCES_PARENT_CATEGORY = "WP Resources";
 let newBookmarkPhaseTimerId = null;
 let newBookmarkCloseTimerId = null;
+const EXPORT_FORMATS = [
+  { value: "html", label: "HTML (.html)", description: "Import into any browser" },
+  { value: "json", label: "JSON (.json)", description: "For developers & automation" },
+  { value: "csv", label: "CSV (.csv)", description: "For spreadsheets & analysis" },
+  { value: "markdown", label: "Markdown (.md)", description: "For notes & knowledge bases" }
+];
 
 const appState = {
   newBookmarkExpanded: false,
@@ -980,6 +986,7 @@ const appState = {
   selectedBookmarkIds: [],
   activeContentView: "cards",
   contentKebabOpen: false,
+  exportFormatsOpen: false,
   importBookmarksModalOpen: false,
   allBookmarksLastSaved: "29 Dec 2025",
   allBookmarksLastModified: "21 Dec 2025",
@@ -1854,8 +1861,147 @@ function getCategoryBookmarkCount(categoryName) {
   return getBookmarksForCategory(categoryName).length;
 }
 
+function getVisibleBookmarks() {
+  return getBookmarksForCategory(appState.activeSidebarCategory);
+}
+
 function getVisibleBookmarkIds() {
-  return getBookmarksForCategory(appState.activeSidebarCategory).map((bookmark) => bookmark.id);
+  return getVisibleBookmarks().map((bookmark) => bookmark.id);
+}
+
+function closeExportFormatsMenu() {
+  appState.exportFormatsOpen = false;
+}
+
+function getExportFileStem() {
+  const categoryLabel = appState.activeSidebarCategory === "All Bookmarks"
+    ? "all-bookmarks"
+    : appState.activeSidebarCategory.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  return categoryLabel || "bookmarks";
+}
+
+function escapeCsvValue(value) {
+  const stringValue = String(value ?? "");
+  return `"${stringValue.replace(/"/g, "\"\"")}"`;
+}
+
+function buildExportBookmarkPayload(bookmark) {
+  return {
+    title: bookmark.title,
+    url: bookmark.url,
+    category: bookmark.category,
+    subcategory: bookmark.subcategory || "",
+    type: bookmark.type || "",
+    dateSaved: bookmark.date || "",
+    dateModified: bookmark.modifiedDate || bookmark.date || "",
+    tags: Array.isArray(bookmark.tags) ? bookmark.tags.join(", ") : "",
+    note: bookmark.note || "",
+    priority: bookmark.priority || "",
+    reminder: bookmark.reminder || "",
+    favourite: Boolean(bookmark.isFavourite),
+    permanentCopy: Boolean(bookmark.savePermanentCopy),
+    passwordProtected: Boolean(bookmark.passwordProtected)
+  };
+}
+
+function buildExportDocument(format, bookmarks) {
+  const payload = bookmarks.map(buildExportBookmarkPayload);
+
+  if (format === "json") {
+    return {
+      blob: new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" }),
+      extension: "json"
+    };
+  }
+
+  if (format === "csv") {
+    const headers = ["Title", "URL", "Category", "Subcategory", "Type", "Date Saved", "Date Modified", "Tags", "Note", "Priority", "Reminder", "Favourite", "Permanent Copy", "Password Protected"];
+    const rows = payload.map((item) => [
+      item.title,
+      item.url,
+      item.category,
+      item.subcategory,
+      item.type,
+      item.dateSaved,
+      item.dateModified,
+      item.tags,
+      item.note,
+      item.priority,
+      item.reminder,
+      item.favourite,
+      item.permanentCopy,
+      item.passwordProtected
+    ]);
+    const csv = [headers, ...rows].map((row) => row.map(escapeCsvValue).join(",")).join("\r\n");
+    return {
+      blob: new Blob([csv], { type: "text/csv;charset=utf-8" }),
+      extension: "csv"
+    };
+  }
+
+  if (format === "markdown") {
+    const markdown = payload.map((item) => `## ${item.title}
+
+- URL: ${item.url}
+- Category: ${item.category}${item.subcategory ? ` / ${item.subcategory}` : ""}
+- Type: ${item.type || "Bookmark"}
+- Saved: ${item.dateSaved}
+- Modified: ${item.dateModified}
+- Tags: ${item.tags || "None"}
+- Priority: ${item.priority || "None"}
+- Reminder: ${item.reminder || "None"}
+- Favourite: ${item.favourite ? "Yes" : "No"}
+- Permanent Copy: ${item.permanentCopy ? "Yes" : "No"}
+- Password Protected: ${item.passwordProtected ? "Yes" : "No"}
+
+${item.note ? `${item.note}\n` : ""}`).join("\n");
+    return {
+      blob: new Blob([markdown], { type: "text/markdown;charset=utf-8" }),
+      extension: "md"
+    };
+  }
+
+  const htmlBookmarks = payload.map((item) => `  <li>
+    <a href="${escapeHtml(item.url)}">${escapeHtml(item.title)}</a>
+    <div>Category: ${escapeHtml(item.category)}${item.subcategory ? ` / ${escapeHtml(item.subcategory)}` : ""}</div>
+    <div>Saved: ${escapeHtml(item.dateSaved)}</div>
+  </li>`).join("\n");
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>MediaPlace Export</title>
+</head>
+<body>
+  <h1>${escapeHtml(appState.activeSidebarCategory)}</h1>
+  <ul>
+${htmlBookmarks}
+  </ul>
+</body>
+</html>`;
+  return {
+    blob: new Blob([html], { type: "text/html;charset=utf-8" }),
+    extension: "html"
+  };
+}
+
+function downloadVisibleBookmarks(format) {
+  const bookmarks = getVisibleBookmarks();
+  if (!bookmarks.length) {
+    return false;
+  }
+
+  const { blob, extension } = buildExportDocument(format, bookmarks);
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.download = `${getExportFileStem()}.${extension}`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(objectUrl);
+  closeExportFormatsMenu();
+  return true;
 }
 
 function areAllVisibleBookmarksSelected() {
@@ -2741,6 +2887,22 @@ function renderContentKebabMenu() {
   `;
 }
 
+function renderExportFormatsMenu() {
+  return `
+    <div class="bookmark-content-export-menu" data-role="export-formats-menu">
+      <div class="bookmark-content-export-menu-header">Choose a format to download</div>
+      <div class="bookmark-content-export-menu-options">
+        ${EXPORT_FORMATS.map((item) => `
+          <button class="bookmark-content-export-menu-option" type="button" data-action="export-bookmarks-format" data-export-format="${item.value}">
+            <span class="bookmark-content-export-menu-option-label">${item.label}</span>
+            <span class="bookmark-content-export-menu-option-description">${item.description}</span>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function renderBookmarkContentHeader() {
   const activeCategory = appState.activeSidebarCategory;
   const bookmarkCount = getCategoryBookmarkCount(activeCategory);
@@ -2749,6 +2911,8 @@ function renderBookmarkContentHeader() {
   const selectAllActive = areAllVisibleBookmarksSelected();
   const selectAllIcon = selectAllActive ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : CONTENT_SELECT_ALL_ICON;
   const kebabMenuMarkup = appState.contentKebabOpen ? renderContentKebabMenu() : "";
+  const exportDisabled = bookmarkCount === 0;
+  const exportMenuMarkup = appState.exportFormatsOpen && !exportDisabled ? renderExportFormatsMenu() : "";
 
   return `
     <section class="bookmark-content-header">
@@ -2810,7 +2974,7 @@ function renderBookmarkContentHeader() {
           </div>
 
           <div class="bookmark-content-export-group">
-            <button class="bookmark-content-export-button" type="button" data-action="export-all-items">
+            <button class="bookmark-content-export-button${exportDisabled ? " is-disabled" : ""}${appState.exportFormatsOpen && !exportDisabled ? " is-open" : ""}" type="button" data-action="toggle-export-formats"${exportDisabled ? " disabled aria-disabled=\"true\"" : ""} aria-expanded="${appState.exportFormatsOpen && !exportDisabled}">
               <span class="bookmark-content-export-main">
                 <span class="bookmark-content-icon bookmark-content-icon-export-all">
                   <img src="${CONTENT_HEADING_EXPORT_ICON}" alt="" width="20" height="20" />
@@ -2823,6 +2987,7 @@ function renderBookmarkContentHeader() {
                 </span>
               </span>
             </button>
+            ${exportMenuMarkup}
 
             <div class="bookmark-content-kebab-menu-anchor">
               <button class="bookmark-content-kebab${appState.contentKebabOpen ? " is-open" : ""}" type="button" data-action="open-content-kebab" aria-label="More options" aria-expanded="${appState.contentKebabOpen}">
@@ -3577,13 +3742,29 @@ function handleAppClick(event) {
       appState.contentKebabOpen = false;
       syncBookmarkContentForActiveCategory();
     }
+
+    if (appState.exportFormatsOpen && !event.target.closest(".bookmark-content-export-group")) {
+      closeExportFormatsMenu();
+      syncBookmarkContentForActiveCategory();
+    }
     return;
   }
 
   const action = actionTarget.getAttribute("data-action");
+  let didCloseHeaderPopover = false;
 
-  if (action !== "open-content-kebab" && action !== "content-kebab-item") {
+  if (action !== "open-content-kebab" && action !== "content-kebab-item" && appState.contentKebabOpen) {
     appState.contentKebabOpen = false;
+    didCloseHeaderPopover = true;
+  }
+
+  if (action !== "toggle-export-formats" && action !== "export-bookmarks-format" && appState.exportFormatsOpen) {
+    closeExportFormatsMenu();
+    didCloseHeaderPopover = true;
+  }
+
+  if (didCloseHeaderPopover) {
+    syncBookmarkContentForActiveCategory();
   }
 
   if (action === "open-import-bookmarks-modal") {
@@ -3659,6 +3840,7 @@ function handleAppClick(event) {
       appState.previewBookmarkId = null;
       appState.selectedBookmarkIds = [];
       appState.contentKebabOpen = false;
+      closeExportFormatsMenu();
       syncSidebarCategoryUi();
       syncBookmarkContentForActiveCategory();
       syncInspectorPanel();
@@ -3693,6 +3875,7 @@ function handleAppClick(event) {
   }
 
   if (action === "open-content-kebab") {
+    closeExportFormatsMenu();
     appState.contentKebabOpen = !appState.contentKebabOpen;
     syncBookmarkContentForActiveCategory();
     return;
@@ -3701,6 +3884,26 @@ function handleAppClick(event) {
   if (action === "content-kebab-item") {
     appState.contentKebabOpen = false;
     syncBookmarkContentForActiveCategory();
+    return;
+  }
+
+  if (action === "toggle-export-formats") {
+    if (!getVisibleBookmarks().length) {
+      closeExportFormatsMenu();
+      return;
+    }
+    appState.exportFormatsOpen = !appState.exportFormatsOpen;
+    appState.contentKebabOpen = false;
+    syncBookmarkContentForActiveCategory();
+    return;
+  }
+
+  if (action === "export-bookmarks-format") {
+    const exportFormat = actionTarget.getAttribute("data-export-format");
+    if (exportFormat) {
+      downloadVisibleBookmarks(exportFormat);
+      syncBookmarkContentForActiveCategory();
+    }
     return;
   }
 
@@ -3718,6 +3921,7 @@ function handleAppClick(event) {
     const bookmarkId = actionTarget.closest("[data-bookmark-id]")?.getAttribute("data-bookmark-id") || appState.previewBookmarkId;
     if (bookmarkId) {
       appState.activeInspectorBookmarkId = bookmarkId;
+      closeExportFormatsMenu();
       closeBookmarkMoveMenu();
       closeDeleteBookmarkModal();
       syncInspectorPanel();
@@ -3727,6 +3931,7 @@ function handleAppClick(event) {
 
   if (action === "close-bookmark-inspector") {
     appState.activeInspectorBookmarkId = null;
+    closeExportFormatsMenu();
     closeBookmarkMoveMenu();
     closeDeleteBookmarkModal();
     syncInspectorPanel();

@@ -2474,6 +2474,7 @@ input {
   align-items: center;
   display: flex;
   gap: 8px;
+  position: relative;
 }
 
 .bookmark-content-kebab-menu-anchor {
@@ -2492,7 +2493,30 @@ input {
   height: 32px;
   justify-content: space-between;
   padding: 0;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
   width: 166px;
+}
+
+.bookmark-content-export-button:hover:not(:disabled),
+.bookmark-content-export-button:focus-visible:not(:disabled) {
+  background: #27273b;
+  border-color: #27273b;
+}
+
+.bookmark-content-export-button.is-open:not(:disabled) {
+  background: #27273b;
+  border-color: #27273b;
+}
+
+.bookmark-content-export-button.is-disabled,
+.bookmark-content-export-button:disabled {
+  background: #12121b;
+  border-color: rgba(53, 53, 74, 0.4);
+  cursor: default;
+  opacity: 0.7;
 }
 
 .bookmark-content-export-main {
@@ -2501,6 +2525,13 @@ input {
   gap: 8px;
   padding: 6px 8px;
   width: 134px;
+}
+
+.bookmark-content-export-button.is-disabled .bookmark-content-export-main,
+.bookmark-content-export-button:disabled .bookmark-content-export-main,
+.bookmark-content-export-button.is-disabled .bookmark-content-export-chevron,
+.bookmark-content-export-button:disabled .bookmark-content-export-chevron {
+  opacity: 0.35;
 }
 
 .bookmark-content-export-label {
@@ -2537,7 +2568,86 @@ input {
 .bookmark-content-export-chevron img {
   display: block;
   height: 16px;
+  transition: transform 160ms ease;
   width: 16px;
+}
+
+.bookmark-content-export-button.is-open .bookmark-content-export-chevron img {
+  transform: rotate(180deg);
+}
+
+.bookmark-content-export-menu {
+  background: #1d1d2c;
+  border: 1px solid #1d1d2c;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  right: 40px;
+  overflow: hidden;
+  position: absolute;
+  top: calc(100% + 8px);
+  width: 220px;
+  z-index: 30;
+}
+
+.bookmark-content-export-menu-header {
+  align-items: center;
+  background: #32324d;
+  box-sizing: border-box;
+  color: #bfbfbf;
+  display: flex;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  height: 23px;
+  line-height: normal;
+  padding: 4px 12px;
+}
+
+.bookmark-content-export-menu-options {
+  background: #1d1d2c;
+  display: flex;
+  flex-direction: column;
+}
+
+.bookmark-content-export-menu-option {
+  align-items: flex-start;
+  appearance: none;
+  background: #1d1d2c;
+  border: 0;
+  box-sizing: border-box;
+  color: #bfbfbf;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 54px;
+  padding: 10px 12px;
+  text-align: left;
+  transition: background-color 150ms ease;
+  width: 220px;
+}
+
+.bookmark-content-export-menu-option:hover,
+.bookmark-content-export-menu-option:focus-visible {
+  background: #27273b;
+}
+
+.bookmark-content-export-menu-option-label,
+.bookmark-content-export-menu-option-description {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.bookmark-content-export-menu-option-label {
+  color: #bfbfbf;
+}
+
+.bookmark-content-export-menu-option-description {
+  color: #65656e;
 }
 
 .bookmark-content-kebab {
