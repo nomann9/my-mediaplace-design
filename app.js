@@ -961,9 +961,12 @@ const SIDEBAR_SECTIONS = [
 ];
 
 const WP_RESOURCES_PARENT_CATEGORY = "WP Resources";
+let newBookmarkPhaseTimerId = null;
+let newBookmarkCloseTimerId = null;
 
 const appState = {
   newBookmarkExpanded: false,
+  newBookmarkPhase: "default",
   bookmarkUrl: "",
   createCategoryState: "default",
   isCreatingCategory: false,
@@ -1299,28 +1302,113 @@ function isGlobalSidebarSectionActive(section) {
   return section.title === appState.activeGlobalSidebarItem || section.links.some((link) => link.label === appState.activeGlobalSidebarItem);
 }
 
+function clearNewBookmarkTimers() {
+  if (newBookmarkPhaseTimerId) {
+    clearTimeout(newBookmarkPhaseTimerId);
+    newBookmarkPhaseTimerId = null;
+  }
+
+  if (newBookmarkCloseTimerId) {
+    clearTimeout(newBookmarkCloseTimerId);
+    newBookmarkCloseTimerId = null;
+  }
+}
+
+function openNewBookmarkControl() {
+  clearNewBookmarkTimers();
+  appState.newBookmarkExpanded = true;
+  appState.newBookmarkPhase = "expand";
+
+  newBookmarkPhaseTimerId = setTimeout(() => {
+    appState.newBookmarkPhase = "postactive";
+    renderShell();
+  }, 420);
+}
+
+function resetNewBookmarkControl({ clearValue = false } = {}) {
+  clearNewBookmarkTimers();
+  appState.newBookmarkExpanded = false;
+  appState.newBookmarkPhase = "default";
+
+  if (clearValue) {
+    appState.bookmarkUrl = "";
+  }
+}
+
+function playNewBookmarkSavedState() {
+  clearNewBookmarkTimers();
+  appState.newBookmarkPhase = "saving";
+  renderShell();
+
+  newBookmarkPhaseTimerId = setTimeout(() => {
+    appState.newBookmarkPhase = "saved";
+    renderShell();
+
+    newBookmarkCloseTimerId = setTimeout(() => {
+      resetNewBookmarkControl({ clearValue: true });
+      renderShell();
+    }, 900);
+  }, 180);
+}
+
 function renderNewBookmarkControl() {
-  const expandedClass = appState.newBookmarkExpanded ? " is-expanded" : "";
   const inputValue = appState.bookmarkUrl.replace(/"/g, "&quot;");
-  const saveDisabled = appState.bookmarkUrl.trim() ? "" : " is-disabled";
+  const hasBookmarkUrl = Boolean(appState.bookmarkUrl.trim());
+  const isExpanded = appState.newBookmarkExpanded;
+  const controlState = isExpanded ? appState.newBookmarkPhase : "default";
+  const saveStateClass = controlState === "saved"
+    ? " is-saved"
+    : controlState === "saving"
+      ? " is-saving"
+      : hasBookmarkUrl
+        ? ""
+        : " is-disabled";
+  const placeholderText = controlState === "postactive" || controlState === "saving"
+    ? "Type or paste a URL, then hit Enter or Save. Press Esc to cancel"
+    : "Type or paste a URL, then hit Enter or Save";
+  const saveLabel = controlState === "saved" ? "Saved" : "Save bookmark";
+  const expandedClass = isExpanded ? " is-expanded" : "";
+  const phaseClass = ` is-${controlState}`;
+
+  if (!isExpanded) {
+    return `
+      <div class="new-bookmark-control${expandedClass}${phaseClass}">
+        <button class="new-bookmark-trigger" type="button" data-action="toggle-new-bookmark" aria-expanded="false">
+          <span class="new-bookmark-trigger-main">
+            <img class="new-bookmark-icon" src="${ADD_BOOKMARK_ICON}" alt="" width="20" height="20" />
+            <span class="new-bookmark-label">New bookmark</span>
+          </span>
+        </button>
+      </div>
+    `;
+  }
 
   return `
-    <div class="new-bookmark-control${expandedClass}">
-      <button class="new-bookmark-trigger" type="button" data-action="toggle-new-bookmark" aria-expanded="${appState.newBookmarkExpanded}">
-        <span class="new-bookmark-trigger-main">
-          <img class="new-bookmark-icon" src="${ADD_BOOKMARK_ICON}" alt="" width="20" height="20" />
-          <span class="new-bookmark-label">New bookmark</span>
-        </span>
-      </button>
-      <div class="new-bookmark-expand-shell">
-        <input
-          class="new-bookmark-url-input"
-          type="text"
-          placeholder="Type or paste a URL, then hit Enter or Save"
-          value="${inputValue}"
-          data-role="new-bookmark-input"
-        />
-        <button class="new-bookmark-save${saveDisabled}" type="button" data-action="save-bookmark">Save bookmark</button>
+    <div class="new-bookmark-control${expandedClass}${phaseClass}">
+      ${controlState === "expand" ? `
+        <button class="new-bookmark-trigger new-bookmark-trigger-expanded" type="button" data-action="toggle-new-bookmark" aria-expanded="true">
+          <span class="new-bookmark-trigger-main">
+            <img class="new-bookmark-icon" src="${ADD_BOOKMARK_ICON}" alt="" width="20" height="20" />
+            <span class="new-bookmark-label">New bookmark</span>
+          </span>
+        </button>
+      ` : ""}
+      <div class="new-bookmark-field-row" aria-hidden="${controlState === "expand"}">
+        <div class="new-bookmark-url-shell">
+          <input
+            class="new-bookmark-url-input"
+            type="text"
+            placeholder="${placeholderText}"
+            value="${inputValue}"
+            data-role="new-bookmark-input"
+            ${controlState === "saved" ? "disabled" : ""}
+          />
+        </div>
+        <button class="new-bookmark-save${saveStateClass}" type="button" data-action="save-bookmark"${controlState === "saved" || controlState === "saving" || !hasBookmarkUrl ? " disabled" : ""}>
+          ${controlState === "saving" ? `<span class="new-bookmark-save-progress-icon" aria-hidden="true"></span>` : ""}
+          ${controlState === "saved" ? `<span class="new-bookmark-save-success-icon" aria-hidden="true"></span>` : ""}
+          <span class="new-bookmark-save-label">${saveLabel}</span>
+        </button>
       </div>
     </div>
   `;
@@ -2298,11 +2386,10 @@ function addBookmarkFromCurrentInput() {
   const nextBookmark = createBookmarkFromUrl(appState.bookmarkUrl.trim());
   appState.bookmarks.unshift(nextBookmark);
   appState.bookmarkUrl = "";
-  appState.newBookmarkExpanded = false;
   updateInspectorLastSaved("All Bookmarks");
   updateInspectorLastSaved(nextBookmark.category);
-  renderShell();
   queueBookmarkImageReveal(nextBookmark.id);
+  playNewBookmarkSavedState();
   return true;
 }
 
@@ -3338,7 +3425,7 @@ function renderShell() {
   `;
 
   const newBookmarkInput = app.querySelector("[data-role='new-bookmark-input']");
-  if (appState.newBookmarkExpanded && newBookmarkInput) {
+  if (appState.newBookmarkExpanded && appState.newBookmarkPhase !== "expand" && appState.newBookmarkPhase !== "saved" && newBookmarkInput) {
     newBookmarkInput.focus();
     const valueLength = newBookmarkInput.value.length;
     newBookmarkInput.setSelectionRange(valueLength, valueLength);
@@ -3379,7 +3466,7 @@ function handleAppClick(event) {
     }
 
     if (appState.newBookmarkExpanded && !event.target.closest(".new-bookmark-control")) {
-      appState.newBookmarkExpanded = false;
+      resetNewBookmarkControl();
       renderShell();
     }
 
@@ -3424,7 +3511,11 @@ function handleAppClick(event) {
   }
 
   if (action === "toggle-new-bookmark") {
-    appState.newBookmarkExpanded = !appState.newBookmarkExpanded;
+    if (appState.newBookmarkExpanded) {
+      resetNewBookmarkControl();
+    } else {
+      openNewBookmarkControl();
+    }
     renderShell();
     return;
   }
@@ -3808,7 +3899,9 @@ function handleAppInput(event) {
     appState.bookmarkUrl = event.target.value;
     const saveButton = app.querySelector(".new-bookmark-save");
     if (saveButton) {
-      saveButton.classList.toggle("is-disabled", !appState.bookmarkUrl.trim());
+      const hasBookmarkUrl = Boolean(appState.bookmarkUrl.trim());
+      saveButton.classList.toggle("is-disabled", !hasBookmarkUrl);
+      saveButton.disabled = !hasBookmarkUrl;
     }
     return;
   }
@@ -3901,7 +3994,7 @@ function handleAppKeydown(event) {
     }
 
     if (event.key === "Escape" && appState.newBookmarkExpanded) {
-      appState.newBookmarkExpanded = false;
+      resetNewBookmarkControl();
       renderShell();
     }
     return;
@@ -3912,7 +4005,7 @@ function handleAppKeydown(event) {
   }
 
   if (event.key === "Escape") {
-    appState.newBookmarkExpanded = false;
+    resetNewBookmarkControl();
     renderShell();
   }
 }

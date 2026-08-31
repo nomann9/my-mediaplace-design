@@ -359,13 +359,22 @@ input {
   position: absolute;
   left: 0;
   top: 0;
-  transition: width 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  transition: width 180ms ease, background-color 180ms ease, opacity 160ms ease;
   width: 240px;
 }
 
 .new-bookmark-control.is-expanded {
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%), #4b2a8c;
   width: 540px;
+}
+
+.new-bookmark-control.is-expand {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%), #4b2a8c;
+}
+
+.new-bookmark-control.is-postactive,
+.new-bookmark-control.is-saving,
+.new-bookmark-control.is-saved {
+  background: transparent;
 }
 
 .new-bookmark-trigger {
@@ -382,15 +391,14 @@ input {
   padding: 6px 8px;
   position: relative;
   width: 240px;
-  z-index: 2;
 }
 
 .new-bookmark-trigger:hover {
   background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%);
 }
 
-.new-bookmark-control.is-expanded .new-bookmark-trigger:hover {
-  background: transparent;
+.new-bookmark-trigger-expanded {
+  width: 540px;
 }
 
 .new-bookmark-trigger-main {
@@ -415,35 +423,60 @@ input {
   text-transform: none;
 }
 
-.new-bookmark-expand-shell {
+.new-bookmark-field-row {
   align-items: center;
   display: flex;
-  gap: 0;
   height: 32px;
-  left: 128px;
-  opacity: 0;
-  pointer-events: none;
   position: absolute;
+  right: 0;
   top: 0;
-  transition: opacity 120ms ease;
-  width: 404px;
-  z-index: 1;
+  transition: opacity 140ms ease;
+  width: 540px;
 }
 
-.new-bookmark-control.is-expanded .new-bookmark-expand-shell {
+.new-bookmark-control.is-expand .new-bookmark-field-row {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.new-bookmark-control.is-postactive .new-bookmark-field-row,
+.new-bookmark-control.is-saving .new-bookmark-field-row,
+.new-bookmark-control.is-saved .new-bookmark-field-row {
   opacity: 1;
-  pointer-events: auto;
+}
+
+.new-bookmark-url-shell {
+  align-items: center;
+  background: #12121b;
+  box-sizing: border-box;
+  display: flex;
+  height: 32px;
+  overflow: hidden;
+  width: 428px;
+}
+
+.new-bookmark-control.is-postactive .new-bookmark-url-shell {
+  border-bottom: 2px solid rgba(101, 101, 110, 0.5);
+  border-left: 2px solid rgba(101, 101, 110, 0.5);
+  border-top: 2px solid rgba(101, 101, 110, 0.5);
+  border-bottom-left-radius: 4px;
+  border-top-left-radius: 4px;
 }
 
 .new-bookmark-url-input {
   appearance: none;
-  background: #12121b;
+  background: transparent;
   border: 0;
+  box-sizing: border-box;
   color: var(--text-body, #bfbfbf);
-  height: 32px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  height: 100%;
+  line-height: normal;
   outline: none;
-  padding: 8px 16px;
-  width: 292px;
+  padding: 1px 14px 0;
+  width: 100%;
 }
 
 .new-bookmark-url-input::placeholder {
@@ -464,13 +497,16 @@ input {
   color: var(--text-body, #bfbfbf);
   cursor: pointer;
   display: inline-flex;
+  gap: 10px;
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
   height: 32px;
   justify-content: center;
   line-height: normal;
+  opacity: 1;
   padding: 8px 12px;
+  position: relative;
   white-space: nowrap;
   width: 112px;
 }
@@ -478,6 +514,61 @@ input {
 .new-bookmark-save.is-disabled {
   cursor: default;
   opacity: 0.35;
+}
+
+.new-bookmark-save:not(.is-disabled):hover {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%), #4b2a8c;
+}
+
+.new-bookmark-save.is-saving {
+  overflow: hidden;
+}
+
+.new-bookmark-save.is-saving .new-bookmark-save-progress-icon {
+  background: #f1f2f4;
+  border-radius: 999px;
+  height: 16px;
+  left: -16px;
+  position: absolute;
+  top: 8px;
+  width: 16px;
+}
+
+.new-bookmark-save.is-saving .new-bookmark-save-progress-icon::before {
+  border-bottom: 2px solid #4b2a8c;
+  border-right: 2px solid #4b2a8c;
+  content: "";
+  height: 6px;
+  left: 5px;
+  position: absolute;
+  top: 3px;
+  transform: rotate(45deg);
+  width: 3px;
+}
+
+.new-bookmark-save.is-saved {
+  background: #1a5d48;
+  cursor: default;
+}
+
+.new-bookmark-save-success-icon {
+  background: #f1f2f4;
+  border-radius: 999px;
+  height: 16px;
+  position: relative;
+  width: 16px;
+}
+
+.new-bookmark-save-success-icon::before {
+  border-bottom: 2px solid #1a5d48;
+  border-right: 2px solid #1a5d48;
+  content: "";
+  height: 6px;
+  left: 5px;
+  position: absolute;
+  top: 3px;
+  transform: rotate(45deg);
+  width: 3px;
 }
 
 .search-wrapper {
