@@ -892,6 +892,7 @@ input {
   overflow-y: auto;
   scrollbar-color: rgba(101, 101, 110, 0.55) transparent;
   scrollbar-width: thin;
+  width: 280px;
 }
 
 .bookmark-sidebar-group-categories::-webkit-scrollbar {
@@ -915,6 +916,7 @@ input {
   align-items: center;
   appearance: none;
   background: transparent;
+  box-sizing: border-box;
   border: 0;
   color: var(--text-body, #bfbfbf);
   cursor: pointer;
@@ -927,7 +929,54 @@ input {
 }
 
 .bookmark-sidebar-parent-group {
+  box-sizing: border-box;
   width: 280px;
+}
+
+.bookmark-sidebar-group-categories > .bookmark-sidebar-link,
+.bookmark-sidebar-group-categories > .bookmark-sidebar-parent-group {
+  width: 280px;
+}
+
+.bookmark-sidebar-group-categories > .bookmark-sidebar-link,
+.bookmark-sidebar-parent-group > .bookmark-sidebar-link {
+  border-radius: 0;
+  height: 36px;
+  min-height: 36px;
+  padding: 8px 20px;
+  width: 280px;
+}
+
+.bookmark-sidebar-group-categories > .bookmark-sidebar-link .bookmark-sidebar-link-main,
+.bookmark-sidebar-parent-group > .bookmark-sidebar-link .bookmark-sidebar-link-main {
+  gap: 6px;
+  max-width: 208px;
+}
+
+.bookmark-sidebar-group-categories > .bookmark-sidebar-link .bookmark-sidebar-link-icon,
+.bookmark-sidebar-parent-group > .bookmark-sidebar-link .bookmark-sidebar-link-icon {
+  flex: 0 0 20px;
+  height: 20px;
+  width: 20px;
+}
+
+.bookmark-sidebar-group-categories > .bookmark-sidebar-link .bookmark-sidebar-link-icon-frame,
+.bookmark-sidebar-parent-group > .bookmark-sidebar-link .bookmark-sidebar-link-icon-frame {
+  height: 20px;
+  width: 20px;
+}
+
+.bookmark-sidebar-group-categories > .bookmark-sidebar-link .bookmark-sidebar-link-icon img,
+.bookmark-sidebar-parent-group > .bookmark-sidebar-link .bookmark-sidebar-link-icon img {
+  height: 20px;
+  width: 20px;
+}
+
+.bookmark-sidebar-group-categories > .bookmark-sidebar-link.is-active,
+.bookmark-sidebar-group-categories > .bookmark-sidebar-link:hover,
+.bookmark-sidebar-parent-group > .bookmark-sidebar-link.is-active,
+.bookmark-sidebar-parent-group > .bookmark-sidebar-link:hover {
+  border-radius: 0;
 }
 
 .bookmark-sidebar-parent-children-shell {
@@ -943,23 +992,31 @@ input {
 }
 
 .bookmark-sidebar-parent-children {
-  align-items: flex-start;
-  display: flex;
-  gap: 6px;
+  display: block;
   min-height: 0;
   overflow: hidden;
   padding: 0 0 0 22px;
   width: 280px;
 }
 
-.bookmark-sidebar-parent-connector {
-  flex: 0 0 10px;
-  height: 68px;
-  position: relative;
-  width: 10px;
+.bookmark-sidebar-child-parent-group {
+  width: 242px;
 }
 
-.bookmark-sidebar-parent-connector::before {
+.bookmark-sidebar-parent-child-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 0;
+  position: relative;
+  width: 258px;
+}
+
+.bookmark-sidebar-child-parent-group .bookmark-sidebar-parent-child-list {
+  width: 242px;
+}
+
+.bookmark-sidebar-parent-child-list::before {
   background: #5b5b6e;
   border-radius: 999px;
   content: "";
@@ -967,35 +1024,33 @@ input {
   position: absolute;
   top: 0;
   width: 1px;
-  height: 56px;
+  bottom: 12px;
 }
 
-.bookmark-sidebar-parent-child-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 4px 0 0 6px;
-  width: 242px;
+.bookmark-sidebar-child-slot {
+  padding-left: 16px;
+  position: relative;
+  width: 258px;
+}
+
+.bookmark-sidebar-child-slot::before {
+  background: #5b5b6e;
+  border-radius: 999px;
+  content: "";
+  height: 1px;
+  left: 3px;
+  position: absolute;
+  top: 19.5px;
+  width: 13px;
 }
 
 .bookmark-sidebar-child-link {
   border-radius: 4px;
   height: 32px;
+  min-height: 32px;
   padding: 8px 20px 8px 10px;
   position: relative;
   width: 242px;
-}
-
-.bookmark-sidebar-child-link::before {
-  background: #5b5b6e;
-  border-radius: 999px;
-  content: "";
-  height: 1px;
-  left: -18px;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 12px;
 }
 
 .bookmark-sidebar-child-link .bookmark-sidebar-link-main {
@@ -1062,7 +1117,9 @@ input {
 .bookmark-sidebar-link-icon-frame {
   display: block;
   flex: 0 0 auto;
+  height: 20px;
   position: relative;
+  width: 20px;
 }
 
 .bookmark-sidebar-link-icon img {
@@ -1071,13 +1128,24 @@ input {
   width: 100%;
 }
 
-.bookmark-sidebar-link-label,
+.bookmark-sidebar-link-label {
+  color: var(--text-body, #bfbfbf);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  text-align: left;
+  white-space: nowrap;
+}
+
 .bookmark-sidebar-link-count {
   color: var(--text-body, #bfbfbf);
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
+  min-width: 15px;
+  text-align: right;
   white-space: nowrap;
 }
 
@@ -1118,6 +1186,14 @@ input {
 
 .bookmark-sidebar-parent-group.is-expanded .bookmark-sidebar-link-chevron img {
   transform: rotate(180deg);
+}
+
+.bookmark-sidebar-link.is-dragging {
+  opacity: 0.55;
+}
+
+.bookmark-sidebar-link.is-drop-target {
+  box-shadow: inset 0 0 0 1px rgba(217, 217, 217, 0.28);
 }
 
 .bookmark-trash-icon img,

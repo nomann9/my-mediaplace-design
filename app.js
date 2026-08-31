@@ -960,16 +960,20 @@ const SIDEBAR_SECTIONS = [
   { title: "Download", icon: DOWNLOAD_ICON, links: [{ label: "Web Browser", state: "default" }, { label: "Bookmarks", state: "active" }, { label: "Free Media", state: "default" }] }
 ];
 
+const WP_RESOURCES_PARENT_CATEGORY = "WP Resources";
+
 const appState = {
   newBookmarkExpanded: false,
   bookmarkUrl: "",
   createCategoryState: "default",
   isCreatingCategory: false,
   newCategoryName: "New Category",
-  createdCategoryNames: [],
+  categoryLinks: createInitialCategoryLinks(),
+  expandedCategoryIds: [],
   activeGlobalSidebarItem: "Bookmarks",
   activeSidebarCategory: "All Bookmarks",
-  wpResourcesExpanded: false,
+  draggedCategoryId: null,
+  dropTargetCategoryId: null,
   selectedBookmarkIds: [],
   activeContentView: "cards",
   contentKebabOpen: false,
@@ -1118,25 +1122,6 @@ const BOOKMARK_PRIMARY_LINKS = [
   { label: "Deleted Items", count: "0", state: "default", icon: BOOKMARK_TRASH_ICON, iconClass: "bookmark-trash-icon", iconFrameClass: "bookmark-trash-frame" }
 ];
 
-const BOOKMARK_CATEGORY_LINKS = [
-  { label: "Books", count: "57", state: "default", icon: BOOKMARK_FOLDER_ICON },
-  {
-    label: "WP Resources",
-    count: "41",
-    state: "default",
-    icon: BOOKMARK_FOLDER_ICON,
-    chevron: true,
-    children: [
-      { label: "Themes", count: "8", icon: BOOKMARK_FOLDER_ICON },
-      { label: "Premium Plugins", count: "33", icon: BOOKMARK_FOLDER_ICON }
-    ]
-  },
-  { label: "YouTube Channels", count: "77", state: "default", icon: BOOKMARK_FOLDER_ICON },
-  { label: "Arts and Culture", count: "172", state: "default", icon: BOOKMARK_LOCKED_ICON, iconClass: "bookmark-locked-icon" },
-  { label: "Sports", count: "47", state: "default", icon: BOOKMARK_FOLDER_ICON },
-  { label: "Design Resources", count: "64", state: "default", icon: BOOKMARK_FOLDER_ICON }
-];
-
 const BOOKMARK_FILTER_LINKS = [
   { label: "Favourites", count: "52", icon: BOOKMARK_STAR_ICON },
   { label: "Links", count: "71", icon: BOOKMARK_LINK_ICON },
@@ -1145,12 +1130,6 @@ const BOOKMARK_FILTER_LINKS = [
   { label: "Videos", count: "168", icon: BOOKMARK_VIDEO_ICON, iconClass: "bookmark-video-icon", iconFrameClass: "bookmark-video-frame" },
   { label: "Untagged", count: "56", icon: BOOKMARK_UNTAGGED_ICON, iconClass: "bookmark-untagged-icon", iconFrameClass: "bookmark-untagged-frame" }
 ];
-
-const WP_RESOURCES_PARENT_CATEGORY = "WP Resources";
-const WP_RESOURCES_CHILD_CATEGORY_COUNTS = {
-  Themes: 8,
-  "Premium Plugins": 33
-};
 
 const SUPPORTED_INSPECTOR_CATEGORIES = new Set(["All Bookmarks", "Uncategorized"]);
 const BOOKMARK_TYPE_ORDER = ["Article", "Audio", "Link", "Video"];
@@ -1348,17 +1327,28 @@ function renderNewBookmarkControl() {
 }
 
 function renderBookmarkSidebarLink(link) {
+  const isChild = Boolean(link.isChild);
   const isActive = isSidebarCategoryActive(link.label);
   const stateClass = isActive ? " is-active" : "";
   const isExpandable = Boolean(link.children?.length);
-  const chevronMarkup = link.chevron
+  const dragStateClass = appState.draggedCategoryId === link.id ? " is-dragging" : "";
+  const dropTargetClass = appState.dropTargetCategoryId === link.id ? " is-drop-target" : "";
+  const chevronMarkup = isExpandable
     ? `<span class="bookmark-sidebar-link-chevron"><img src="${BOOKMARK_CHEVRON_ICON}" alt="" width="8.249" height="4.448" /></span>`
     : "";
   const linkCount = link.group === "filter" ? link.count : String(getCategoryBookmarkCount(link.label));
-  const ariaExpanded = isExpandable ? ` aria-expanded="${appState.wpResourcesExpanded}"` : "";
+  const ariaExpanded = isExpandable ? ` aria-expanded="${isCategoryExpanded(link.id)}"` : "";
+  const childClass = isChild ? " bookmark-sidebar-child-link" : "";
+  const rootClass = !isChild && link.group === "category" ? " bookmark-sidebar-root-link" : "";
 
   return `
-    <button class="bookmark-sidebar-link${stateClass}" type="button" data-action="select-sidebar-category" data-category="${escapeHtml(link.label)}"${ariaExpanded}>
+    <button
+      class="bookmark-sidebar-link${rootClass}${childClass}${stateClass}${dragStateClass}${dropTargetClass}"
+      type="button"
+      data-action="select-sidebar-category"
+      data-category="${escapeHtml(link.label)}"
+      data-category-id="${escapeHtml(link.id)}"
+      draggable="true"${ariaExpanded}>
       <span class="bookmark-sidebar-link-main">
         <span class="bookmark-sidebar-link-icon ${link.iconClass || ""}">
           <span class="bookmark-sidebar-link-icon-frame ${link.iconFrameClass || ""}">
@@ -1373,39 +1363,23 @@ function renderBookmarkSidebarLink(link) {
   `;
 }
 
-function renderBookmarkSidebarChildLink(link) {
-  const isActive = isSidebarCategoryActive(link.label);
-  const linkCount = String(getCategoryBookmarkCount(link.label));
-
-  return `
-    <button class="bookmark-sidebar-link bookmark-sidebar-child-link${isActive ? " is-active" : ""}" type="button" data-action="select-sidebar-category" data-category="${escapeHtml(link.label)}">
-      <span class="bookmark-sidebar-link-main">
-        <span class="bookmark-sidebar-link-icon ${link.iconClass || ""}">
-          <span class="bookmark-sidebar-link-icon-frame ${link.iconFrameClass || ""}">
-            <img src="${link.icon}" alt="" width="20" height="20" />
-          </span>
-        </span>
-        <span class="bookmark-sidebar-link-label">${link.label}</span>
-      </span>
-      <span class="bookmark-sidebar-link-count">${linkCount}</span>
-    </button>
-  `;
-}
-
-function renderBookmarkSidebarEntry(link) {
+function renderBookmarkSidebarEntry(link, depth = 0) {
+  const isChild = depth > 0;
+  const linkWithMeta = { ...link, isChild };
   if (!link.children?.length) {
-    return renderBookmarkSidebarLink(link);
+    return renderBookmarkSidebarLink(linkWithMeta);
   }
 
-  const childLinks = link.children.map(renderBookmarkSidebarChildLink).join("");
-  const expandedClass = appState.wpResourcesExpanded ? " is-expanded" : "";
+  const childLinks = link.children
+    .map((child) => `<div class="bookmark-sidebar-child-slot">${renderBookmarkSidebarEntry(child, depth + 1)}</div>`)
+    .join("");
+  const expandedClass = isCategoryExpanded(link.id) ? " is-expanded" : "";
 
   return `
-    <div class="bookmark-sidebar-parent-group${expandedClass}" data-parent-category="${escapeHtml(link.label)}">
-      ${renderBookmarkSidebarLink(link)}
-      <div class="bookmark-sidebar-parent-children-shell" aria-hidden="${appState.wpResourcesExpanded ? "false" : "true"}">
+    <div class="bookmark-sidebar-parent-group${expandedClass}${isChild ? " bookmark-sidebar-child-parent-group" : ""}" data-parent-category-id="${escapeHtml(link.id)}">
+      ${renderBookmarkSidebarLink(linkWithMeta)}
+      <div class="bookmark-sidebar-parent-children-shell" aria-hidden="${isCategoryExpanded(link.id) ? "false" : "true"}">
         <div class="bookmark-sidebar-parent-children">
-          <span class="bookmark-sidebar-parent-connector" aria-hidden="true"></span>
           <div class="bookmark-sidebar-parent-child-list">
             ${childLinks}
           </div>
@@ -1445,7 +1419,7 @@ function renderBookmarkSidebar() {
   const categoryContent = appState.isCreatingCategory
     ? `${categoryLinks}${renderNewCategoryDraftRow()}`
     : categoryLinks;
-  const categoryCount = String(BOOKMARK_CATEGORY_LINKS.length + appState.createdCategoryNames.length);
+  const categoryCount = String(countCategoryLinks(appState.categoryLinks));
 
   return `
     <div class="bookmark-sidebar-panel">
@@ -1502,18 +1476,11 @@ function escapeHtml(value) {
 
 function getSidebarCategoryLinks() {
   const primaryLinks = BOOKMARK_PRIMARY_LINKS.map((link) => ({ ...link, group: "primary" }));
-  const categoryLinks = BOOKMARK_CATEGORY_LINKS.map((link) => ({ ...link, group: "category" }));
-  const createdCategoryLinks = appState.createdCategoryNames.map((name) => ({
-    label: name,
-    count: "0",
-    icon: BOOKMARK_FOLDER_ICON,
-    group: "category"
-  }));
   const filterLinks = BOOKMARK_FILTER_LINKS.map((link) => ({ ...link, group: "filter" }));
 
   return {
     primaryLinks,
-    categoryLinks: [...categoryLinks, ...createdCategoryLinks],
+    categoryLinks: appState.categoryLinks.map((link) => ({ ...link, group: "category" })),
     filterLinks
   };
 }
@@ -1526,25 +1493,186 @@ function normalizeBookmarkCategory(categoryName) {
   return categoryName;
 }
 
-function isWpResourcesChildCategory(categoryName) {
-  return Object.prototype.hasOwnProperty.call(WP_RESOURCES_CHILD_CATEGORY_COUNTS, categoryName);
-}
-
 function isSidebarCategoryActive(categoryName) {
-  if (categoryName === WP_RESOURCES_PARENT_CATEGORY) {
-    return appState.activeSidebarCategory === WP_RESOURCES_PARENT_CATEGORY || isWpResourcesChildCategory(appState.activeSidebarCategory);
+  const categoryLink = findCategoryLinkByLabel(categoryName);
+  if (!categoryLink) {
+    return appState.activeSidebarCategory === categoryName;
   }
 
-  return appState.activeSidebarCategory === categoryName;
+  return categoryLink.label === appState.activeSidebarCategory || hasDescendantCategoryLabel(categoryLink, appState.activeSidebarCategory);
 }
 
 function assignWpResourceSubcategories(bookmarks) {
   const wpBookmarks = bookmarks.filter((bookmark) => normalizeBookmarkCategory(bookmark.category) === WP_RESOURCES_PARENT_CATEGORY);
-  const themeCount = WP_RESOURCES_CHILD_CATEGORY_COUNTS.Themes;
-
   wpBookmarks.forEach((bookmark, index) => {
-    bookmark.subcategory = index < themeCount ? "Themes" : "Premium Plugins";
+    bookmark.subcategory = index < 8 ? "Themes" : "Premium Plugins";
   });
+}
+
+function createInitialCategoryLinks() {
+  return [
+    createCategoryLink({ id: "books", label: "Books", icon: BOOKMARK_FOLDER_ICON }),
+    createCategoryLink({
+      id: "wp-resources",
+      label: "WP Resources",
+      icon: BOOKMARK_FOLDER_ICON,
+      children: [
+        createCategoryLink({
+          id: "wp-resources-themes",
+          label: "Themes",
+          icon: BOOKMARK_FOLDER_ICON,
+          bookmarkFilter: { type: "subcategory", parentCategory: WP_RESOURCES_PARENT_CATEGORY, value: "Themes" }
+        }),
+        createCategoryLink({
+          id: "wp-resources-premium-plugins",
+          label: "Premium Plugins",
+          icon: BOOKMARK_FOLDER_ICON,
+          bookmarkFilter: { type: "subcategory", parentCategory: WP_RESOURCES_PARENT_CATEGORY, value: "Premium Plugins" }
+        })
+      ]
+    }),
+    createCategoryLink({ id: "youtube-channels", label: "YouTube Channels", icon: BOOKMARK_FOLDER_ICON }),
+    createCategoryLink({ id: "arts-and-culture", label: "Arts and Culture", icon: BOOKMARK_LOCKED_ICON, iconClass: "bookmark-locked-icon" }),
+    createCategoryLink({ id: "sports", label: "Sports", icon: BOOKMARK_FOLDER_ICON }),
+    createCategoryLink({ id: "design-resources", label: "Design Resources", icon: BOOKMARK_FOLDER_ICON })
+  ];
+}
+
+function createCategoryLink({ id, label, icon, iconClass = "", iconFrameClass = "", bookmarkFilter = null, children = [] }) {
+  return {
+    id,
+    label,
+    icon,
+    iconClass,
+    iconFrameClass,
+    bookmarkFilter,
+    children
+  };
+}
+
+function countCategoryLinks(links) {
+  return links.reduce((count, link) => count + 1 + countCategoryLinks(link.children || []), 0);
+}
+
+function findCategoryLinkByLabel(label, links = appState.categoryLinks) {
+  for (const link of links) {
+    if (link.label === label) {
+      return link;
+    }
+
+    const childMatch = findCategoryLinkByLabel(label, link.children || []);
+    if (childMatch) {
+      return childMatch;
+    }
+  }
+
+  return null;
+}
+
+function findCategoryLinkById(id, links = appState.categoryLinks) {
+  for (const link of links) {
+    if (link.id === id) {
+      return link;
+    }
+
+    const childMatch = findCategoryLinkById(id, link.children || []);
+    if (childMatch) {
+      return childMatch;
+    }
+  }
+
+  return null;
+}
+
+function hasDescendantCategoryLabel(link, targetLabel) {
+  return (link.children || []).some((child) => child.label === targetLabel || hasDescendantCategoryLabel(child, targetLabel));
+}
+
+function isCategoryExpanded(categoryId) {
+  return appState.expandedCategoryIds.includes(categoryId);
+}
+
+function setCategoryExpanded(categoryId, expanded) {
+  if (expanded) {
+    if (!appState.expandedCategoryIds.includes(categoryId)) {
+      appState.expandedCategoryIds.push(categoryId);
+    }
+    return;
+  }
+
+  appState.expandedCategoryIds = appState.expandedCategoryIds.filter((id) => id !== categoryId);
+}
+
+function removeCategoryLinkById(links, targetId) {
+  let removedLink = null;
+  const nextLinks = [];
+
+  links.forEach((link) => {
+    if (link.id === targetId) {
+      removedLink = link;
+      return;
+    }
+
+    if (link.children?.length) {
+      const result = removeCategoryLinkById(link.children, targetId);
+      if (result.removedLink) {
+        removedLink = result.removedLink;
+        nextLinks.push({ ...link, children: result.links });
+        return;
+      }
+    }
+
+    nextLinks.push(link);
+  });
+
+  return { links: nextLinks, removedLink };
+}
+
+function insertCategoryLinkAsChild(links, parentId, childLink) {
+  return links.map((link) => {
+    if (link.id === parentId) {
+      return { ...link, children: [...(link.children || []), childLink] };
+    }
+
+    if (!link.children?.length) {
+      return link;
+    }
+
+    return { ...link, children: insertCategoryLinkAsChild(link.children, parentId, childLink) };
+  });
+}
+
+function isDescendantCategoryId(link, targetId) {
+  return (link.children || []).some((child) => child.id === targetId || isDescendantCategoryId(child, targetId));
+}
+
+function canDropCategoryOnTarget(draggedId, targetId) {
+  if (!draggedId || !targetId || draggedId === targetId) {
+    return false;
+  }
+
+  const draggedLink = findCategoryLinkById(draggedId);
+  const targetLink = findCategoryLinkById(targetId);
+  if (!draggedLink || !targetLink) {
+    return false;
+  }
+
+  return !isDescendantCategoryId(draggedLink, targetId);
+}
+
+function moveCategoryLink(draggedId, targetId) {
+  if (!canDropCategoryOnTarget(draggedId, targetId)) {
+    return false;
+  }
+
+  const removalResult = removeCategoryLinkById(appState.categoryLinks, draggedId);
+  if (!removalResult.removedLink) {
+    return false;
+  }
+
+  appState.categoryLinks = insertCategoryLinkAsChild(removalResult.links, targetId, removalResult.removedLink);
+  setCategoryExpanded(targetId, true);
+  return true;
 }
 
 function getBookmarkStatusIcon(bookmark) {
@@ -1568,12 +1696,13 @@ function getBookmarksForCategory(categoryName) {
     return appState.bookmarks.filter((bookmark) => bookmark.isDeleted);
   }
 
-  if (isWpResourcesChildCategory(categoryName)) {
+  const categoryLink = findCategoryLinkByLabel(categoryName);
+  if (categoryLink?.bookmarkFilter?.type === "subcategory") {
     return appState.bookmarks.filter(
       (bookmark) =>
         !bookmark.isDeleted &&
-        normalizeBookmarkCategory(bookmark.category) === WP_RESOURCES_PARENT_CATEGORY &&
-        bookmark.subcategory === categoryName
+        normalizeBookmarkCategory(bookmark.category) === categoryLink.bookmarkFilter.parentCategory &&
+        bookmark.subcategory === categoryLink.bookmarkFilter.value
     );
   }
 
@@ -1637,13 +1766,21 @@ function syncBookmarkSelectionUi() {
 function syncSidebarCategoryUi() {
   app.querySelectorAll("[data-action='select-sidebar-category']").forEach((link) => {
     const categoryName = link.getAttribute("data-category");
+    const categoryId = link.getAttribute("data-category-id");
     const isActive = isSidebarCategoryActive(categoryName);
     const count = link.querySelector(".bookmark-sidebar-link-count");
 
     link.classList.toggle("is-active", isActive);
+    link.classList.toggle("is-dragging", categoryId === appState.draggedCategoryId);
+    link.classList.toggle("is-drop-target", categoryId === appState.dropTargetCategoryId);
 
-    if (categoryName === WP_RESOURCES_PARENT_CATEGORY) {
-      link.setAttribute("aria-expanded", String(appState.wpResourcesExpanded));
+    if (categoryId) {
+      const categoryLink = findCategoryLinkById(categoryId);
+      if (categoryLink?.children?.length) {
+        link.setAttribute("aria-expanded", String(isCategoryExpanded(categoryId)));
+      } else {
+        link.removeAttribute("aria-expanded");
+      }
     }
 
     if (count && !link.closest(".bookmark-sidebar-group-filter")) {
@@ -1651,10 +1788,15 @@ function syncSidebarCategoryUi() {
     }
   });
 
-  app.querySelectorAll("[data-parent-category]").forEach((group) => {
-    const categoryName = group.getAttribute("data-parent-category");
-    if (categoryName === WP_RESOURCES_PARENT_CATEGORY) {
-      group.classList.toggle("is-expanded", appState.wpResourcesExpanded);
+  app.querySelectorAll("[data-parent-category-id]").forEach((group) => {
+    const categoryId = group.getAttribute("data-parent-category-id");
+    if (categoryId) {
+      const isExpanded = isCategoryExpanded(categoryId);
+      group.classList.toggle("is-expanded", isExpanded);
+      const childShell = group.querySelector(".bookmark-sidebar-parent-children-shell");
+      if (childShell) {
+        childShell.setAttribute("aria-hidden", String(!isExpanded));
+      }
     }
   });
 }
@@ -3319,11 +3461,11 @@ function handleAppClick(event) {
 
   if (action === "select-sidebar-category") {
     const categoryName = actionTarget.getAttribute("data-category");
+    const categoryId = actionTarget.getAttribute("data-category-id");
     if (categoryName) {
-      if (categoryName === WP_RESOURCES_PARENT_CATEGORY) {
-        appState.wpResourcesExpanded = !appState.wpResourcesExpanded;
-      } else if (isWpResourcesChildCategory(categoryName)) {
-        appState.wpResourcesExpanded = true;
+      const categoryLink = categoryId ? findCategoryLinkById(categoryId) : findCategoryLinkByLabel(categoryName);
+      if (categoryLink?.children?.length) {
+        setCategoryExpanded(categoryLink.id, !isCategoryExpanded(categoryLink.id));
       }
 
       appState.activeInspectorBookmarkId = null;
@@ -3563,12 +3705,102 @@ function handleAppClick(event) {
 function finalizeNewCategory() {
   const trimmedName = appState.newCategoryName.trim();
   const categoryName = trimmedName || "New Category";
-  appState.createdCategoryNames.push(categoryName);
+  appState.categoryLinks.push(
+    createCategoryLink({
+      id: `category-${Date.now()}`,
+      label: categoryName,
+      icon: BOOKMARK_FOLDER_ICON
+    })
+  );
   ensureCategoryInspectorState(categoryName);
   appState.createCategoryState = "default";
   appState.isCreatingCategory = false;
   appState.newCategoryName = "New Category";
   renderShell();
+}
+
+function syncSidebarDragUi() {
+  app.querySelectorAll("[data-category-id]").forEach((link) => {
+    const categoryId = link.getAttribute("data-category-id");
+    link.classList.toggle("is-dragging", categoryId === appState.draggedCategoryId);
+    link.classList.toggle("is-drop-target", categoryId === appState.dropTargetCategoryId);
+  });
+}
+
+function handleAppDragStart(event) {
+  const categoryLink = event.target.closest("[data-category-id]");
+  if (!categoryLink) {
+    return;
+  }
+
+  const categoryId = categoryLink.getAttribute("data-category-id");
+  if (!categoryId) {
+    return;
+  }
+
+  appState.draggedCategoryId = categoryId;
+  appState.dropTargetCategoryId = null;
+
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", categoryId);
+  }
+
+  syncSidebarDragUi();
+}
+
+function handleAppDragOver(event) {
+  const categoryLink = event.target.closest("[data-category-id]");
+  if (!categoryLink) {
+    return;
+  }
+
+  const targetId = categoryLink.getAttribute("data-category-id");
+  if (!canDropCategoryOnTarget(appState.draggedCategoryId, targetId)) {
+    if (appState.dropTargetCategoryId) {
+      appState.dropTargetCategoryId = null;
+      syncSidebarDragUi();
+    }
+    return;
+  }
+
+  event.preventDefault();
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = "move";
+  }
+
+  if (appState.dropTargetCategoryId !== targetId) {
+    appState.dropTargetCategoryId = targetId;
+    syncSidebarDragUi();
+  }
+}
+
+function handleAppDrop(event) {
+  const categoryLink = event.target.closest("[data-category-id]");
+  if (!categoryLink) {
+    return;
+  }
+
+  const targetId = categoryLink.getAttribute("data-category-id");
+  if (!canDropCategoryOnTarget(appState.draggedCategoryId, targetId)) {
+    return;
+  }
+
+  event.preventDefault();
+  moveCategoryLink(appState.draggedCategoryId, targetId);
+  appState.dropTargetCategoryId = null;
+  appState.draggedCategoryId = null;
+  renderShell();
+}
+
+function handleAppDragEnd() {
+  if (!appState.draggedCategoryId && !appState.dropTargetCategoryId) {
+    return;
+  }
+
+  appState.draggedCategoryId = null;
+  appState.dropTargetCategoryId = null;
+  syncSidebarDragUi();
 }
 
 function handleAppInput(event) {
@@ -3700,6 +3932,10 @@ async function init() {
     queueBookmarkImageReveal(sampleBookmark.id);
   }
   app.addEventListener("click", handleAppClick);
+  app.addEventListener("dragstart", handleAppDragStart);
+  app.addEventListener("dragover", handleAppDragOver);
+  app.addEventListener("drop", handleAppDrop);
+  app.addEventListener("dragend", handleAppDragEnd);
   app.addEventListener("input", handleAppInput);
   app.addEventListener("keydown", handleAppKeydown);
 }
