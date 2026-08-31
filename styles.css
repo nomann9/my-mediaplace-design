@@ -926,6 +926,111 @@ input {
   width: 280px;
 }
 
+.bookmark-sidebar-parent-group {
+  width: 280px;
+}
+
+.bookmark-sidebar-parent-children-shell {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 240ms ease, opacity 240ms ease;
+}
+
+.bookmark-sidebar-parent-group.is-expanded .bookmark-sidebar-parent-children-shell {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.bookmark-sidebar-parent-children {
+  align-items: flex-start;
+  display: flex;
+  gap: 6px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 0 0 22px;
+  width: 280px;
+}
+
+.bookmark-sidebar-parent-connector {
+  flex: 0 0 10px;
+  height: 68px;
+  position: relative;
+  width: 10px;
+}
+
+.bookmark-sidebar-parent-connector::before {
+  background: #5b5b6e;
+  border-radius: 999px;
+  content: "";
+  left: 3px;
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 56px;
+}
+
+.bookmark-sidebar-parent-child-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 0 6px;
+  width: 242px;
+}
+
+.bookmark-sidebar-child-link {
+  border-radius: 4px;
+  height: 32px;
+  padding: 8px 20px 8px 10px;
+  position: relative;
+  width: 242px;
+}
+
+.bookmark-sidebar-child-link::before {
+  background: #5b5b6e;
+  border-radius: 999px;
+  content: "";
+  height: 1px;
+  left: -18px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+}
+
+.bookmark-sidebar-child-link .bookmark-sidebar-link-main {
+  gap: 8px;
+  max-width: 176px;
+}
+
+.bookmark-sidebar-child-link .bookmark-sidebar-link-icon {
+  flex: 0 0 16px;
+  height: 16px;
+  width: 16px;
+}
+
+.bookmark-sidebar-child-link .bookmark-sidebar-link-icon-frame {
+  height: 16px;
+  width: 16px;
+}
+
+.bookmark-sidebar-child-link .bookmark-sidebar-link-icon img {
+  height: 16px;
+  width: 16px;
+}
+
+.bookmark-sidebar-child-link.is-active,
+.bookmark-sidebar-child-link:hover {
+  background: #32324d;
+}
+
+.bookmark-sidebar-child-link.is-active .bookmark-sidebar-link-label,
+.bookmark-sidebar-child-link.is-active .bookmark-sidebar-link-count,
+.bookmark-sidebar-child-link:hover .bookmark-sidebar-link-label,
+.bookmark-sidebar-child-link:hover .bookmark-sidebar-link-count {
+  color: #d9d9d9;
+}
+
 .bookmark-sidebar-link.is-active {
   background: #32324d;
 }
@@ -1007,7 +1112,12 @@ input {
 .bookmark-sidebar-link-chevron img {
   display: block;
   height: 4.448px;
+  transition: transform 240ms ease;
   width: 8.249px;
+}
+
+.bookmark-sidebar-parent-group.is-expanded .bookmark-sidebar-link-chevron img {
+  transform: rotate(180deg);
 }
 
 .bookmark-trash-icon img,

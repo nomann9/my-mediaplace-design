@@ -969,6 +969,7 @@ const appState = {
   createdCategoryNames: [],
   activeGlobalSidebarItem: "Bookmarks",
   activeSidebarCategory: "All Bookmarks",
+  wpResourcesExpanded: false,
   selectedBookmarkIds: [],
   activeContentView: "cards",
   contentKebabOpen: false,
@@ -1119,7 +1120,17 @@ const BOOKMARK_PRIMARY_LINKS = [
 
 const BOOKMARK_CATEGORY_LINKS = [
   { label: "Books", count: "57", state: "default", icon: BOOKMARK_FOLDER_ICON },
-  { label: "WP Resources", count: "41", state: "default", icon: BOOKMARK_FOLDER_ICON, chevron: true },
+  {
+    label: "WP Resources",
+    count: "41",
+    state: "default",
+    icon: BOOKMARK_FOLDER_ICON,
+    chevron: true,
+    children: [
+      { label: "Themes", count: "8", icon: BOOKMARK_FOLDER_ICON },
+      { label: "Premium Plugins", count: "33", icon: BOOKMARK_FOLDER_ICON }
+    ]
+  },
   { label: "YouTube Channels", count: "77", state: "default", icon: BOOKMARK_FOLDER_ICON },
   { label: "Arts and Culture", count: "172", state: "default", icon: BOOKMARK_LOCKED_ICON, iconClass: "bookmark-locked-icon" },
   { label: "Sports", count: "47", state: "default", icon: BOOKMARK_FOLDER_ICON },
@@ -1134,6 +1145,12 @@ const BOOKMARK_FILTER_LINKS = [
   { label: "Videos", count: "168", icon: BOOKMARK_VIDEO_ICON, iconClass: "bookmark-video-icon", iconFrameClass: "bookmark-video-frame" },
   { label: "Untagged", count: "56", icon: BOOKMARK_UNTAGGED_ICON, iconClass: "bookmark-untagged-icon", iconFrameClass: "bookmark-untagged-frame" }
 ];
+
+const WP_RESOURCES_PARENT_CATEGORY = "WP Resources";
+const WP_RESOURCES_CHILD_CATEGORY_COUNTS = {
+  Themes: 8,
+  "Premium Plugins": 33
+};
 
 const SUPPORTED_INSPECTOR_CATEGORIES = new Set(["All Bookmarks", "Uncategorized"]);
 const BOOKMARK_TYPE_ORDER = ["Article", "Audio", "Link", "Video"];
@@ -1190,6 +1207,8 @@ appState.bookmarks = FIGMA_BOOKMARK_GRID.map((bookmark, index) => ({
   reminder: bookmark.reminder || "",
   articleHtml: buildPreviewArticle(bookmark.title, bookmark.url)
 }));
+
+assignWpResourceSubcategories(appState.bookmarks);
 
 function getByPath(object, path) {
   return path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), object);
@@ -1329,15 +1348,17 @@ function renderNewBookmarkControl() {
 }
 
 function renderBookmarkSidebarLink(link) {
-  const isActive = appState.activeSidebarCategory === link.label;
+  const isActive = isSidebarCategoryActive(link.label);
   const stateClass = isActive ? " is-active" : "";
+  const isExpandable = Boolean(link.children?.length);
   const chevronMarkup = link.chevron
     ? `<span class="bookmark-sidebar-link-chevron"><img src="${BOOKMARK_CHEVRON_ICON}" alt="" width="8.249" height="4.448" /></span>`
     : "";
   const linkCount = link.group === "filter" ? link.count : String(getCategoryBookmarkCount(link.label));
+  const ariaExpanded = isExpandable ? ` aria-expanded="${appState.wpResourcesExpanded}"` : "";
 
   return `
-    <button class="bookmark-sidebar-link${stateClass}" type="button" data-action="select-sidebar-category" data-category="${escapeHtml(link.label)}">
+    <button class="bookmark-sidebar-link${stateClass}" type="button" data-action="select-sidebar-category" data-category="${escapeHtml(link.label)}"${ariaExpanded}>
       <span class="bookmark-sidebar-link-main">
         <span class="bookmark-sidebar-link-icon ${link.iconClass || ""}">
           <span class="bookmark-sidebar-link-icon-frame ${link.iconFrameClass || ""}">
@@ -1349,6 +1370,48 @@ function renderBookmarkSidebarLink(link) {
       </span>
       <span class="bookmark-sidebar-link-count">${linkCount}</span>
     </button>
+  `;
+}
+
+function renderBookmarkSidebarChildLink(link) {
+  const isActive = isSidebarCategoryActive(link.label);
+  const linkCount = String(getCategoryBookmarkCount(link.label));
+
+  return `
+    <button class="bookmark-sidebar-link bookmark-sidebar-child-link${isActive ? " is-active" : ""}" type="button" data-action="select-sidebar-category" data-category="${escapeHtml(link.label)}">
+      <span class="bookmark-sidebar-link-main">
+        <span class="bookmark-sidebar-link-icon ${link.iconClass || ""}">
+          <span class="bookmark-sidebar-link-icon-frame ${link.iconFrameClass || ""}">
+            <img src="${link.icon}" alt="" width="20" height="20" />
+          </span>
+        </span>
+        <span class="bookmark-sidebar-link-label">${link.label}</span>
+      </span>
+      <span class="bookmark-sidebar-link-count">${linkCount}</span>
+    </button>
+  `;
+}
+
+function renderBookmarkSidebarEntry(link) {
+  if (!link.children?.length) {
+    return renderBookmarkSidebarLink(link);
+  }
+
+  const childLinks = link.children.map(renderBookmarkSidebarChildLink).join("");
+  const expandedClass = appState.wpResourcesExpanded ? " is-expanded" : "";
+
+  return `
+    <div class="bookmark-sidebar-parent-group${expandedClass}" data-parent-category="${escapeHtml(link.label)}">
+      ${renderBookmarkSidebarLink(link)}
+      <div class="bookmark-sidebar-parent-children-shell" aria-hidden="${appState.wpResourcesExpanded ? "false" : "true"}">
+        <div class="bookmark-sidebar-parent-children">
+          <span class="bookmark-sidebar-parent-connector" aria-hidden="true"></span>
+          <div class="bookmark-sidebar-parent-child-list">
+            ${childLinks}
+          </div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -1376,7 +1439,7 @@ function renderNewCategoryDraftRow() {
 function renderBookmarkSidebar() {
   const sidebarLinks = getSidebarCategoryLinks();
   const primaryLinks = sidebarLinks.primaryLinks.map(renderBookmarkSidebarLink).join("");
-  const categoryLinks = sidebarLinks.categoryLinks.map(renderBookmarkSidebarLink).join("");
+  const categoryLinks = sidebarLinks.categoryLinks.map(renderBookmarkSidebarEntry).join("");
   const filterLinks = sidebarLinks.filterLinks.map(renderBookmarkSidebarLink).join("");
   const createCategoryClass = appState.createCategoryState === "active" ? " is-active" : "";
   const categoryContent = appState.isCreatingCategory
@@ -1463,6 +1526,27 @@ function normalizeBookmarkCategory(categoryName) {
   return categoryName;
 }
 
+function isWpResourcesChildCategory(categoryName) {
+  return Object.prototype.hasOwnProperty.call(WP_RESOURCES_CHILD_CATEGORY_COUNTS, categoryName);
+}
+
+function isSidebarCategoryActive(categoryName) {
+  if (categoryName === WP_RESOURCES_PARENT_CATEGORY) {
+    return appState.activeSidebarCategory === WP_RESOURCES_PARENT_CATEGORY || isWpResourcesChildCategory(appState.activeSidebarCategory);
+  }
+
+  return appState.activeSidebarCategory === categoryName;
+}
+
+function assignWpResourceSubcategories(bookmarks) {
+  const wpBookmarks = bookmarks.filter((bookmark) => normalizeBookmarkCategory(bookmark.category) === WP_RESOURCES_PARENT_CATEGORY);
+  const themeCount = WP_RESOURCES_CHILD_CATEGORY_COUNTS.Themes;
+
+  wpBookmarks.forEach((bookmark, index) => {
+    bookmark.subcategory = index < themeCount ? "Themes" : "Premium Plugins";
+  });
+}
+
 function getBookmarkStatusIcon(bookmark) {
   if (BOOKMARK_STATUS_RED_IDS.has(bookmark.id)) {
     return BOOKMARK_CARD_STATUS_RED_ICON;
@@ -1482,6 +1566,15 @@ function getBookmarksForCategory(categoryName) {
 
   if (categoryName === "Deleted Items") {
     return appState.bookmarks.filter((bookmark) => bookmark.isDeleted);
+  }
+
+  if (isWpResourcesChildCategory(categoryName)) {
+    return appState.bookmarks.filter(
+      (bookmark) =>
+        !bookmark.isDeleted &&
+        normalizeBookmarkCategory(bookmark.category) === WP_RESOURCES_PARENT_CATEGORY &&
+        bookmark.subcategory === categoryName
+    );
   }
 
   const normalizedCategoryName = normalizeBookmarkCategory(categoryName);
@@ -1544,13 +1637,24 @@ function syncBookmarkSelectionUi() {
 function syncSidebarCategoryUi() {
   app.querySelectorAll("[data-action='select-sidebar-category']").forEach((link) => {
     const categoryName = link.getAttribute("data-category");
-    const isActive = categoryName === appState.activeSidebarCategory;
+    const isActive = isSidebarCategoryActive(categoryName);
     const count = link.querySelector(".bookmark-sidebar-link-count");
 
     link.classList.toggle("is-active", isActive);
 
+    if (categoryName === WP_RESOURCES_PARENT_CATEGORY) {
+      link.setAttribute("aria-expanded", String(appState.wpResourcesExpanded));
+    }
+
     if (count && !link.closest(".bookmark-sidebar-group-filter")) {
       count.textContent = String(getCategoryBookmarkCount(categoryName));
+    }
+  });
+
+  app.querySelectorAll("[data-parent-category]").forEach((group) => {
+    const categoryName = group.getAttribute("data-parent-category");
+    if (categoryName === WP_RESOURCES_PARENT_CATEGORY) {
+      group.classList.toggle("is-expanded", appState.wpResourcesExpanded);
     }
   });
 }
@@ -1884,15 +1988,15 @@ function renderImportBookmarksModal() {
             </span>
             <span class="import-bookmarks-modal-doc-wrap import-bookmarks-modal-doc-wrap-1">
               <span class="import-bookmarks-modal-doc-rotate import-bookmarks-modal-doc-rotate-1">
-                <span class="import-bookmarks-modal-doc-frame import-bookmarks-modal-doc-frame-32">
-                  <img src="${IMPORT_BOOKMARKS_DOC_1}" alt="" width="18.67" height="24" />
+                <span class="import-bookmarks-modal-doc-frame import-bookmarks-modal-doc-frame-40">
+                  <img src="${IMPORT_BOOKMARKS_DOC_1}" alt="" width="23.33" height="30" />
                 </span>
               </span>
             </span>
             <span class="import-bookmarks-modal-doc-wrap import-bookmarks-modal-doc-wrap-4">
               <span class="import-bookmarks-modal-doc-rotate import-bookmarks-modal-doc-rotate-4">
-                <span class="import-bookmarks-modal-doc-frame import-bookmarks-modal-doc-frame-32">
-                  <img src="${IMPORT_BOOKMARKS_DOC_4}" alt="" width="18.67" height="24" />
+                <span class="import-bookmarks-modal-doc-frame import-bookmarks-modal-doc-frame-40">
+                  <img src="${IMPORT_BOOKMARKS_DOC_4}" alt="" width="23.33" height="30" />
                 </span>
               </span>
             </span>
@@ -3216,6 +3320,12 @@ function handleAppClick(event) {
   if (action === "select-sidebar-category") {
     const categoryName = actionTarget.getAttribute("data-category");
     if (categoryName) {
+      if (categoryName === WP_RESOURCES_PARENT_CATEGORY) {
+        appState.wpResourcesExpanded = !appState.wpResourcesExpanded;
+      } else if (isWpResourcesChildCategory(categoryName)) {
+        appState.wpResourcesExpanded = true;
+      }
+
       appState.activeInspectorBookmarkId = null;
       closeDeleteBookmarkModal();
       appState.activeSidebarCategory = categoryName;
