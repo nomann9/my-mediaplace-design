@@ -1675,6 +1675,7 @@ input {
 
 .inspector-panel-field-move {
   gap: 0;
+  position: relative;
 }
 
 .inspector-panel-field-label-row {
@@ -1705,6 +1706,10 @@ input {
   justify-content: space-between;
   padding: 12px;
   width: 268px;
+}
+
+.inspector-panel-move-button[aria-expanded="true"] .inspector-panel-move-chevron img {
+  transform: rotate(180deg);
 }
 
 .inspector-panel-move-label {
@@ -1742,7 +1747,142 @@ input {
 .inspector-panel-move-chevron img {
   display: block;
   height: 5.5px;
+  transition: transform 180ms ease;
   width: 9.5px;
+}
+
+.inspector-bookmark-move-dropdown {
+  background: #1d1d2c;
+  border: 1px solid rgba(53, 53, 74, 0.5);
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  top: 48px;
+  width: 268px;
+  z-index: 20;
+}
+
+.inspector-bookmark-move-dropdown-panel {
+  background: #1d1d2c;
+  border-bottom: 1px solid rgba(53, 53, 74, 0.5);
+  width: 268px;
+}
+
+.inspector-bookmark-move-current {
+  align-items: center;
+  background: #32324d;
+  box-sizing: border-box;
+  color: #bfbfbf;
+  display: flex;
+  gap: 10px;
+  height: 24px;
+  padding: 4px 12px;
+}
+
+.inspector-bookmark-move-current span,
+.inspector-bookmark-move-option span,
+.inspector-bookmark-move-submit,
+.inspector-bookmark-move-cancel {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.inspector-bookmark-move-options {
+  background: #1d1d2c;
+  display: flex;
+  flex-direction: column;
+}
+
+.inspector-bookmark-move-option {
+  align-items: center;
+  appearance: none;
+  background: #1d1d2c;
+  border: 0;
+  box-sizing: border-box;
+  color: #bfbfbf;
+  cursor: pointer;
+  display: flex;
+  height: 35px;
+  padding: 10px 12px;
+  text-align: left;
+  width: 268px;
+}
+
+.inspector-bookmark-move-option:hover:not(:disabled),
+.inspector-bookmark-move-option.is-selected {
+  background: #27273b;
+}
+
+.inspector-bookmark-move-option.is-disabled,
+.inspector-bookmark-move-option:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.inspector-bookmark-move-actions {
+  align-items: center;
+  background: #1d1d2c;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding: 0 12px 12px;
+  width: 268px;
+}
+
+.inspector-bookmark-move-submit,
+.inspector-bookmark-move-cancel {
+  align-items: center;
+  appearance: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  padding: 8px 12px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+  width: 112px;
+}
+
+.inspector-bookmark-move-submit {
+  background: #27273b;
+  border: 0;
+  color: #bfbfbf;
+}
+
+.inspector-bookmark-move-submit:hover:not(:disabled),
+.inspector-bookmark-move-submit:focus-visible:not(:disabled),
+.inspector-bookmark-move-submit:active:not(:disabled) {
+  background: #32324d;
+}
+
+.inspector-bookmark-move-submit.is-disabled,
+.inspector-bookmark-move-submit:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.inspector-bookmark-move-cancel {
+  background: #1d1d2c;
+  border: 1px solid #35354a;
+  color: #bfbfbf;
+}
+
+.inspector-bookmark-move-cancel:hover,
+.inspector-bookmark-move-cancel:focus-visible,
+.inspector-bookmark-move-cancel:active {
+  background: #32324d;
+  border-color: #35354a;
 }
 
 .inspector-panel-field-box-tags {

@@ -998,6 +998,8 @@ const appState = {
   uncategorizedTagDraft: "",
   uncategorizedNote: "",
   activeInspectorBookmarkId: null,
+  moveBookmarkMenuOpen: false,
+  moveBookmarkTargetCategory: "",
   deleteBookmarkModalOpen: false,
   pendingDeleteBookmarkId: null,
   previewBookmarkId: null,
@@ -1579,6 +1581,54 @@ function normalizeBookmarkCategory(categoryName) {
   }
 
   return categoryName;
+}
+
+function getRootCategoryOptions() {
+  return appState.categoryLinks.map((link) => ({
+    id: link.id,
+    label: link.label,
+    bookmarkCategory: normalizeBookmarkCategory(link.label)
+  }));
+}
+
+function getBookmarkCurrentMoveCategory(bookmark) {
+  return normalizeBookmarkCategory(bookmark?.category || "Uncategorized");
+}
+
+function formatCategoryLabel(categoryName) {
+  return normalizeBookmarkCategory(categoryName);
+}
+
+function openBookmarkMoveMenu(bookmark) {
+  if (!bookmark) {
+    return;
+  }
+
+  appState.moveBookmarkMenuOpen = true;
+  appState.moveBookmarkTargetCategory = "";
+}
+
+function closeBookmarkMoveMenu() {
+  appState.moveBookmarkMenuOpen = false;
+  appState.moveBookmarkTargetCategory = "";
+}
+
+function moveBookmarkToCategory(bookmarkId, nextCategory) {
+  const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
+  if (!bookmark || !nextCategory) {
+    return false;
+  }
+
+  const previousCategory = bookmark.category;
+  bookmark.category = nextCategory;
+  if (nextCategory !== WP_RESOURCES_PARENT_CATEGORY) {
+    bookmark.subcategory = "";
+  }
+  bookmark.modifiedDate = formatBookmarkDate(new Date());
+  updateRelatedInspectorModifiedDates(previousCategory);
+  updateRelatedInspectorModifiedDates(nextCategory);
+  closeBookmarkMoveMenu();
+  return true;
 }
 
 function isSidebarCategoryActive(categoryName) {
@@ -2920,6 +2970,43 @@ function renderContentPanel() {
   return appState.activeContentView === "preview" ? renderPreviewPane() : renderBookmarkCards();
 }
 
+function renderBookmarkMoveDropdown(bookmark) {
+  const currentCategory = getBookmarkCurrentMoveCategory(bookmark);
+  const categoryOptions = getRootCategoryOptions()
+    .map((option) => {
+      const isCurrent = option.bookmarkCategory === currentCategory;
+      const isSelected = option.bookmarkCategory === appState.moveBookmarkTargetCategory;
+      const selectedClass = isSelected ? " is-selected" : "";
+      const disabledClass = isCurrent ? " is-disabled" : "";
+      const actionMarkup = isCurrent ? "" : ` data-action="select-bookmark-move-category" data-move-category="${escapeHtml(option.bookmarkCategory)}"`;
+
+      return `
+        <button class="inspector-bookmark-move-option${selectedClass}${disabledClass}" type="button"${actionMarkup}${isCurrent ? " disabled" : ""}>
+          <span>${escapeHtml(formatCategoryLabel(option.label))}</span>
+        </button>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="inspector-bookmark-move-dropdown">
+      <div class="inspector-bookmark-move-dropdown-panel">
+        <div class="inspector-bookmark-move-current">
+          <span>Currently in:</span>
+          <span>${escapeHtml(formatCategoryLabel(currentCategory))}</span>
+        </div>
+        <div class="inspector-bookmark-move-options">
+          ${categoryOptions}
+        </div>
+      </div>
+      <div class="inspector-bookmark-move-actions">
+        <button class="inspector-bookmark-move-submit${appState.moveBookmarkTargetCategory ? "" : " is-disabled"}" type="button" data-action="confirm-bookmark-move"${appState.moveBookmarkTargetCategory ? "" : " disabled"}>Move</button>
+        <button class="inspector-bookmark-move-cancel" type="button" data-action="cancel-bookmark-move">Cancel</button>
+      </div>
+    </div>
+  `;
+}
+
 function renderInspectorPanel() {
   const activeInspectorBookmark = getActiveInspectorBookmark();
   if (activeInspectorBookmark) {
@@ -2978,7 +3065,7 @@ function renderInspectorPanel() {
 
         <div class="inspector-panel-fields inspector-panel-fields-bookmark">
           <div class="inspector-panel-field inspector-panel-field-move">
-            <button class="inspector-panel-move-button" type="button" aria-expanded="false">
+            <button class="inspector-panel-move-button" type="button" data-action="toggle-bookmark-move-menu" aria-expanded="${appState.moveBookmarkMenuOpen}">
               <span class="inspector-panel-move-label">
                 <span class="inspector-panel-move-icon">
                   <img src="${INSPECTOR_MOVE_CATEGORY_ICON}" alt="" width="12.7" height="12.7" />
@@ -2989,6 +3076,7 @@ function renderInspectorPanel() {
                 <img src="${INSPECTOR_MOVE_CHEVRON_ICON}" alt="" width="9.5" height="5.5" />
               </span>
             </button>
+            ${appState.moveBookmarkMenuOpen ? renderBookmarkMoveDropdown(activeInspectorBookmark) : ""}
           </div>
 
           <div class="inspector-panel-field">
@@ -3470,6 +3558,11 @@ function handleAppClick(event) {
       renderShell();
     }
 
+    if (appState.moveBookmarkMenuOpen && !event.target.closest(".inspector-panel-field-move")) {
+      closeBookmarkMoveMenu();
+      syncInspectorPanel();
+    }
+
     if (appState.importBookmarksModalOpen && !event.target.closest(".import-bookmarks-modal")) {
       closeImportBookmarksModal();
       renderShell();
@@ -3625,6 +3718,7 @@ function handleAppClick(event) {
     const bookmarkId = actionTarget.closest("[data-bookmark-id]")?.getAttribute("data-bookmark-id") || appState.previewBookmarkId;
     if (bookmarkId) {
       appState.activeInspectorBookmarkId = bookmarkId;
+      closeBookmarkMoveMenu();
       closeDeleteBookmarkModal();
       syncInspectorPanel();
     }
@@ -3633,8 +3727,45 @@ function handleAppClick(event) {
 
   if (action === "close-bookmark-inspector") {
     appState.activeInspectorBookmarkId = null;
+    closeBookmarkMoveMenu();
     closeDeleteBookmarkModal();
     syncInspectorPanel();
+    return;
+  }
+
+  if (action === "toggle-bookmark-move-menu") {
+    const activeBookmark = getActiveInspectorBookmark();
+    if (appState.moveBookmarkMenuOpen) {
+      closeBookmarkMoveMenu();
+    } else {
+      openBookmarkMoveMenu(activeBookmark);
+    }
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "select-bookmark-move-category") {
+    const nextCategory = actionTarget.getAttribute("data-move-category");
+    if (nextCategory) {
+      appState.moveBookmarkTargetCategory = nextCategory;
+      syncInspectorPanel();
+    }
+    return;
+  }
+
+  if (action === "cancel-bookmark-move") {
+    closeBookmarkMoveMenu();
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "confirm-bookmark-move") {
+    const activeBookmark = getActiveInspectorBookmark();
+    if (activeBookmark && moveBookmarkToCategory(activeBookmark.id, appState.moveBookmarkTargetCategory)) {
+      syncSidebarCategoryUi();
+      syncBookmarkContentForActiveCategory();
+      syncInspectorPanel();
+    }
     return;
   }
 
