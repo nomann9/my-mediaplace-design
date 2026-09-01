@@ -2350,6 +2350,7 @@ function createCategoryInspectorState(categoryName) {
     accessPasswordVisible: false,
     accessPasswordStatus: "idle",
     accessPasswordSetupExpanded: false,
+    accessPasswordDeleteExpanded: false,
     tags: [],
     tagDraft: "",
     note: ""
@@ -2490,7 +2491,10 @@ function shouldShowInspectorPasswordSetup(categoryName = appState.activeSidebarC
 }
 
 function shouldShowInspectorDeletePassword(categoryName = appState.activeSidebarCategory) {
-  return false;
+  return Boolean(
+    getInspectorSavePasswordState(categoryName) === "final" &&
+    getInspectorStateValue("accessPasswordDeleteExpanded", categoryName)
+  );
 }
 
 function renderInspectorPasswordShowHideToggle(isExpanded) {
@@ -2506,11 +2510,11 @@ function renderInspectorPasswordShowHideToggle(isExpanded) {
   `;
 }
 
-function renderInspectorPasswordProtectToggle({ isProtected, isExpanded = false, isDisabled = false }) {
+function renderInspectorPasswordProtectToggle({ categoryName = appState.activeSidebarCategory, isProtected, isExpanded = false, isDisabled = false }) {
   const disabledAttr = isDisabled ? " disabled" : "";
   const disabledClass = isDisabled ? " is-disabled" : "";
   const pressedAttr = isProtected ? "true" : "false";
-  const isSaved = getInspectorSavePasswordState() === "final";
+  const isSaved = getInspectorSavePasswordState(categoryName) === "final";
   const showHideMarkup = isProtected && isSaved ? renderInspectorPasswordShowHideToggle(isExpanded) : "";
 
   return `
@@ -2536,7 +2540,7 @@ function renderInspectorPasswordField(categoryName = appState.activeSidebarCateg
   const isHidden = Boolean(passwordValue) && !isVisible;
   const fieldState = !passwordValue ? "default" : (isVisible ? "active" : "hidden");
   const inputType = isVisible ? "text" : "password";
-  const hiddenDots = isHidden ? "•".repeat(passwordValue.length) : "";
+  const hiddenDots = isHidden ? "&#8226;".repeat(passwordValue.length) : "";
 
   return `
     <div class="inspector-password-input-shell inspector-password-input-shell-${fieldState}">
@@ -2568,6 +2572,7 @@ function renderInspectorPasswordField(categoryName = appState.activeSidebarCateg
 
 function renderInspectorSavePasswordButton(categoryName = appState.activeSidebarCategory) {
   const state = getInspectorSavePasswordState(categoryName);
+  const isDeleteExpanded = Boolean(getInspectorStateValue("accessPasswordDeleteExpanded", categoryName));
   const label = {
     processing: "Saving password...",
     final: "Password saved"
@@ -2576,29 +2581,36 @@ function renderInspectorSavePasswordButton(categoryName = appState.activeSidebar
   const wrapperClass = state === "final" ? " is-final" : "";
   const mainClass = state === "processing" ? " is-emphasis" : "";
   const disabledAttr = state === "disabled" || state === "processing" ? " disabled" : "";
+  const pointerLabel = isDeleteExpanded ? "Hide delete password" : "Show delete password";
+  const mainActionAttr = state === "final" ? "" : ' data-action="save-inspector-password"';
 
   return `
-    <button class="inspector-password-save-button${wrapperClass}${state === "disabled" ? " is-disabled" : ""}" type="button" data-action="save-inspector-password"${disabledAttr}>
-      <span class="inspector-password-save-main${mainClass}">
+    <div class="inspector-password-save-button${wrapperClass}${state === "disabled" ? " is-disabled" : ""}">
+      <button class="inspector-password-save-main${mainClass}" type="button"${mainActionAttr}${disabledAttr}>
         <span class="inspector-password-save-lock">
           <img src="${icon}" alt="" width="16" height="16" />
         </span>
         <span class="inspector-password-save-label">${label}</span>
-      </span>
-      <span class="inspector-password-save-pointer">
-        <img src="${INSPECTOR_PASSWORD_POINTER_ICON}" alt="" width="16" height="16" />
-      </span>
-    </button>
+      </button>
+      ${state === "final" ? `
+        <button class="inspector-password-save-pointer inspector-password-save-pointer-toggle${isDeleteExpanded ? " is-open" : ""}" type="button" data-action="toggle-inspector-password-delete" aria-expanded="${isDeleteExpanded}" aria-label="${pointerLabel}">
+          <img src="${INSPECTOR_PASSWORD_POINTER_ICON}" alt="" width="16" height="16" />
+        </button>
+      ` : `
+        <span class="inspector-password-save-pointer" aria-hidden="true">
+          <img src="${INSPECTOR_PASSWORD_POINTER_ICON}" alt="" width="16" height="16" />
+        </span>
+      `}
+    </div>
   `;
 }
 
 function renderInspectorDeletePasswordButton(categoryName = appState.activeSidebarCategory) {
-  const isActive = getInspectorDeletePasswordState(categoryName) === "active";
-
   return `
-    <button class="inspector-password-delete-button${isActive ? " is-active" : ""}" type="button" data-action="delete-inspector-password">
+    <button class="inspector-password-delete-button" type="button" data-action="delete-inspector-password">
       <span class="inspector-password-delete-icon">
-        <img src="${isActive ? INSPECTOR_PASSWORD_TRASH_ACTIVE_ICON : INSPECTOR_TRASH_ICON}" alt="" width="16" height="16" />
+        <img class="inspector-password-delete-icon-layer is-default" src="${INSPECTOR_TRASH_ICON}" alt="" width="16" height="16" />
+        <img class="inspector-password-delete-icon-layer is-hover" src="${INSPECTOR_PASSWORD_TRASH_ACTIVE_ICON}" alt="" width="16" height="16" />
       </span>
       <span class="inspector-password-delete-label">Delete password</span>
     </button>
@@ -2677,12 +2689,14 @@ function saveInspectorCategoryPassword(categoryName = appState.activeSidebarCate
   setInspectorStateValue("accessPasswordStatus", "processing", categoryName);
   setInspectorStateValue("accessPasswordVisible", false, categoryName);
   setInspectorStateValue("accessPasswordSetupExpanded", true, categoryName);
+  setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
   syncInspectorPanel();
 
   window.setTimeout(() => {
     setInspectorStateValue("accessPassword", draftPassword, categoryName);
     setInspectorStateValue("accessPasswordDraft", draftPassword, categoryName);
     setInspectorStateValue("accessPasswordStatus", "saved", categoryName);
+    setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
     setCategoryUnlocked(categoryName, false);
     if (appState.activeSidebarCategory === categoryName) {
       appState.lockedInspectorCategory = categoryName;
@@ -2700,6 +2714,7 @@ function deleteInspectorCategoryPassword(categoryName = appState.activeSidebarCa
   setInspectorStateValue("accessPasswordVisible", false, categoryName);
   setInspectorStateValue("accessPasswordStatus", "idle", categoryName);
   setInspectorStateValue("accessPasswordSetupExpanded", true, categoryName);
+  setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
   if (appState.categoryAccessStates[categoryName]) {
     appState.categoryAccessStates[categoryName].passwordDraft = "";
     appState.categoryAccessStates[categoryName].passwordVisible = false;
@@ -3862,9 +3877,10 @@ function renderInspectorPanel() {
     const savePermanentCopy = Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory));
     const passwordProtected = Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory));
     const showPasswordSetup = shouldShowInspectorPasswordSetup(activeInspectorCategory);
+    const showDeletePassword = shouldShowInspectorDeletePassword(activeInspectorCategory);
     const lockedOverlayMarkup = shouldRenderLockedCategoryOverlay(activeInspectorCategory) ? renderLockedCategoryOverlay() : "";
     const passwordPanelMarkup = showPasswordSetup ? renderInspectorPasswordSetup(activeInspectorCategory) : "";
-    const categoryPanelClass = showPasswordSetup ? " inspector-panel-category-password-open" : "";
+    const categoryPanelClass = `${showPasswordSetup ? " inspector-panel-category-password-open" : ""}${showDeletePassword ? " inspector-panel-category-password-delete-open" : ""}`;
     const isPasswordSetupExpanded = Boolean(getInspectorStateValue("accessPasswordSetupExpanded", activeInspectorCategory));
 
     return `
@@ -3905,7 +3921,7 @@ function renderInspectorPanel() {
             <span class="inspector-panel-toggle-label">Save all as permanent copy</span>
           </button>
 
-          ${renderInspectorPasswordProtectToggle({ isProtected: passwordProtected, isExpanded: isPasswordSetupExpanded })}
+          ${renderInspectorPasswordProtectToggle({ categoryName: activeInspectorCategory, isProtected: passwordProtected, isExpanded: isPasswordSetupExpanded })}
 
           ${passwordPanelMarkup}
         </div>
@@ -4642,6 +4658,7 @@ function handleAppClick(event) {
       setInspectorStateValue("accessPasswordVisible", false, appState.activeSidebarCategory);
       setInspectorStateValue("accessPasswordStatus", "idle", appState.activeSidebarCategory);
       setInspectorStateValue("accessPasswordSetupExpanded", false, appState.activeSidebarCategory);
+      setInspectorStateValue("accessPasswordDeleteExpanded", false, appState.activeSidebarCategory);
       if (appState.categoryAccessStates[appState.activeSidebarCategory]) {
         appState.categoryAccessStates[appState.activeSidebarCategory].passwordDraft = "";
         appState.categoryAccessStates[appState.activeSidebarCategory].passwordVisible = false;
@@ -4653,6 +4670,7 @@ function handleAppClick(event) {
       setInspectorStateValue("accessPasswordVisible", false, appState.activeSidebarCategory);
       setInspectorStateValue("accessPasswordStatus", getInspectorStateValue("accessPassword", appState.activeSidebarCategory) ? "saved" : "idle", appState.activeSidebarCategory);
       setInspectorStateValue("accessPasswordSetupExpanded", true, appState.activeSidebarCategory);
+      setInspectorStateValue("accessPasswordDeleteExpanded", false, appState.activeSidebarCategory);
       setCategoryUnlocked(appState.activeSidebarCategory, false);
       appState.lockedInspectorCategory = appState.activeSidebarCategory;
     }
@@ -4672,6 +4690,21 @@ function handleAppClick(event) {
     const isExpanded = Boolean(getInspectorStateValue("accessPasswordSetupExpanded", categoryName));
     setInspectorStateValue("accessPasswordSetupExpanded", !isExpanded, categoryName);
     setInspectorStateValue("accessPasswordVisible", false, categoryName);
+    if (isExpanded) {
+      setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
+    }
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "toggle-inspector-password-delete") {
+    const categoryName = getSupportedInspectorCategory();
+    if (!categoryName || categoryName === "All Bookmarks" || getInspectorSavePasswordState(categoryName) !== "final") {
+      return;
+    }
+
+    const isExpanded = Boolean(getInspectorStateValue("accessPasswordDeleteExpanded", categoryName));
+    setInspectorStateValue("accessPasswordDeleteExpanded", !isExpanded, categoryName);
     syncInspectorPanel();
     return;
   }
@@ -4687,6 +4720,7 @@ function handleAppClick(event) {
     if (!getInspectorStateValue("accessPasswordDraft", categoryName) && getInspectorStateValue("accessPassword", categoryName)) {
       setInspectorStateValue("accessPasswordDraft", getInspectorStateValue("accessPassword", categoryName), categoryName);
     }
+    setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
     syncInspectorPasswordSetupUi();
     return;
   }
@@ -4880,6 +4914,7 @@ function handleAppInput(event) {
     const savedPassword = String(getInspectorStateValue("accessPassword", categoryName) || "");
     const nextStatus = savedPassword && event.target.value.trim() === savedPassword ? "saved" : "idle";
     setInspectorStateValue("accessPasswordStatus", nextStatus, categoryName);
+    setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
     syncInspectorPasswordSetupUi({ preserveFocus: true });
     return;
   }

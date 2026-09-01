@@ -1736,7 +1736,11 @@ input {
 }
 
 .inspector-panel-category-password-open .inspector-panel-divider-category-bottom {
-  top: 453px;
+  top: 397px;
+}
+
+.inspector-panel-category-password-delete-open .inspector-panel-divider-category-bottom {
+  top: 441px;
 }
 
 .inspector-panel-divider-bookmark-top {
@@ -1762,7 +1766,11 @@ input {
 }
 
 .inspector-panel-category-password-open .inspector-panel-fields-category {
-  top: 473px;
+  top: 417px;
+}
+
+.inspector-panel-category-password-delete-open .inspector-panel-fields-category {
+  top: 461px;
 }
 
 .inspector-panel-fields-bookmark {
@@ -1957,19 +1965,18 @@ input {
 .inspector-password-save-button,
 .inspector-password-delete-button {
   align-items: stretch;
-  appearance: none;
   border: 0;
   border-radius: 4px;
-  cursor: pointer;
   display: flex;
   height: 32px;
   overflow: hidden;
-  padding: 0;
   width: 268px;
 }
 
 .inspector-password-save-button {
   background: #27273b;
+  cursor: default;
+  padding: 0;
   transition:
     opacity 150ms ease,
     background-color 150ms ease;
@@ -1984,12 +1991,16 @@ input {
 .inspector-password-save-main,
 .inspector-password-save-pointer {
   align-items: center;
+  appearance: none;
+  border: 0;
   display: inline-flex;
+  padding: 0;
 }
 
 .inspector-password-save-main {
   background: #27273b;
   color: #bfbfbf;
+  cursor: pointer;
   flex: 1 1 auto;
   gap: 8px;
   justify-content: center;
@@ -1997,9 +2008,13 @@ input {
   transition: background-color 150ms ease;
 }
 
-.inspector-password-save-button:hover:not(:disabled) .inspector-password-save-main,
-.inspector-password-save-button:focus-visible:not(:disabled) .inspector-password-save-main,
-.inspector-password-save-button:active:not(:disabled) .inspector-password-save-main {
+.inspector-password-save-main:disabled {
+  cursor: default;
+}
+
+.inspector-password-save-main:hover:not(:disabled),
+.inspector-password-save-main:focus-visible:not(:disabled),
+.inspector-password-save-main:active:not(:disabled) {
   background: #32324d;
 }
 
@@ -2049,6 +2064,26 @@ input {
   width: 40px;
 }
 
+.inspector-password-save-pointer-toggle {
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.inspector-password-save-pointer-toggle img {
+  transition: transform 150ms ease;
+}
+
+.inspector-password-save-pointer-toggle:hover,
+.inspector-password-save-pointer-toggle:focus-visible {
+  background: #32324d;
+}
+
+.inspector-password-save-pointer-toggle.is-open img {
+  transform: rotate(180deg);
+}
+
 .inspector-password-save-pointer img {
   height: 16px;
   width: 16px;
@@ -2060,17 +2095,19 @@ input {
 
 .inspector-password-delete-button {
   align-items: center;
+  appearance: none;
   background: #27273b;
+  cursor: pointer;
   color: #bfbfbf;
   gap: 8px;
   justify-content: center;
+  padding: 0;
   transition: background-color 150ms ease;
 }
 
 .inspector-password-delete-button:hover,
 .inspector-password-delete-button:focus-visible,
-.inspector-password-delete-button:active,
-.inspector-password-delete-button.is-active {
+.inspector-password-delete-button:active {
   background: #874040;
 }
 
@@ -2080,12 +2117,41 @@ input {
   flex: 0 0 16px;
   height: 16px;
   justify-content: center;
+  position: relative;
   width: 16px;
 }
 
-.inspector-password-delete-icon img {
+.inspector-password-delete-icon-layer {
+  inset: 0;
+  position: absolute;
+}
+
+.inspector-password-delete-icon img,
+.inspector-password-delete-icon-layer {
   height: 16px;
   width: 16px;
+}
+
+.inspector-password-delete-icon-layer.is-hover {
+  opacity: 0;
+}
+
+.inspector-password-delete-button:hover .inspector-password-delete-icon-layer.is-default,
+.inspector-password-delete-button:focus-visible .inspector-password-delete-icon-layer.is-default,
+.inspector-password-delete-button:active .inspector-password-delete-icon-layer.is-default {
+  opacity: 0;
+}
+
+.inspector-password-delete-button:hover .inspector-password-delete-icon-layer.is-hover,
+.inspector-password-delete-button:focus-visible .inspector-password-delete-icon-layer.is-hover,
+.inspector-password-delete-button:active .inspector-password-delete-icon-layer.is-hover {
+  opacity: 1;
+}
+
+.inspector-password-delete-button:hover .inspector-password-delete-label,
+.inspector-password-delete-button:focus-visible .inspector-password-delete-label,
+.inspector-password-delete-button:active .inspector-password-delete-label {
+  color: var(--text-heading, #d9d9d9);
 }
 
 .inspector-panel-field-label-row {
