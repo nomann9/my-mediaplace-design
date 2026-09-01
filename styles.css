@@ -2,6 +2,9 @@
   --bg-nav-group-active: #222233;
   --bg-overlay-locked: rgba(29, 29, 44, 0.8);
   --bg-overlay-locked-solid: #1d1d2c;
+  --bg-overlay-content-start: rgba(18, 18, 27, 0.9);
+  --bg-overlay-content-end: #12121b;
+  --bg-overlay-header-blur: rgba(18, 18, 27, 0.4);
   --text-hint-muted: #65656e;
   color-scheme: dark;
   font-family: "Inter", sans-serif;
@@ -2383,6 +2386,7 @@ input {
   height: 858px;
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
 }
 
 .bookmark-content-view::-webkit-scrollbar {
@@ -2893,6 +2897,229 @@ input {
 .bookmark-card-canvas.is-list {
   flex-direction: column;
   gap: 12px;
+}
+
+.locked-category-view {
+  height: 858px;
+  overflow: hidden;
+  position: relative;
+  width: 1160px;
+}
+
+.locked-category-screen {
+  inset: 0;
+  position: absolute;
+  z-index: 8;
+}
+
+.locked-category-screen-header-blur {
+  backdrop-filter: blur(5px);
+  background: var(--bg-overlay-header-blur, rgba(18, 18, 27, 0.4));
+  height: 80px;
+  inset: 0 0 auto;
+  position: absolute;
+}
+
+.locked-category-screen-body {
+  backdrop-filter: blur(10px);
+  background: linear-gradient(
+    180deg,
+    var(--bg-overlay-content-start, rgba(18, 18, 27, 0.9)) 0%,
+    var(--bg-overlay-content-end, #12121b) 29.327%
+  );
+  height: 778px;
+  inset: 80px 0 0;
+  position: absolute;
+}
+
+.locked-category-illustration {
+  height: 274px;
+  left: 367px;
+  pointer-events: none;
+  position: absolute;
+  top: 140px;
+  width: 426px;
+}
+
+.locked-category-illustration img {
+  display: block;
+  height: 274px;
+  width: 426px;
+}
+
+.locked-category-access-panel {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  left: 439px;
+  position: absolute;
+  top: 417px;
+  width: 282px;
+}
+
+.locked-category-copy {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  text-align: center;
+  width: 282px;
+}
+
+.locked-category-title {
+  color: var(--text-body, #bfbfbf);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  margin: 0;
+  width: 282px;
+}
+
+.locked-category-subtitle {
+  color: var(--text-hint-muted, #65656e);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  margin: 0;
+  width: 282px;
+}
+
+.locked-category-fields {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 270px;
+}
+
+.locked-category-password-field {
+  align-items: center;
+  background: var(--bg-panel, #1d1d2c);
+  border: 1px solid rgba(53, 53, 74, 0.6);
+  border-radius: 4px;
+  display: flex;
+  gap: 8px;
+  height: 40px;
+  overflow: hidden;
+  padding: 12px;
+  position: relative;
+  width: 270px;
+}
+
+.locked-category-password-field:hover,
+.locked-category-password-field:focus-within,
+.locked-category-password-field.is-active,
+.locked-category-password-field.is-hidden {
+  border-color: #35354a;
+}
+
+.locked-category-password-input {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-body, #bfbfbf);
+  flex: 1 1 auto;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  min-width: 0;
+  outline: none;
+  padding: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.locked-category-password-input::placeholder {
+  color: rgba(191, 191, 191, 0.35);
+}
+
+.locked-category-password-input.is-obscured {
+  color: transparent;
+  caret-color: transparent;
+}
+
+.locked-category-password-dots {
+  align-items: center;
+  display: inline-flex;
+  height: 5px;
+  left: 12px;
+  pointer-events: none;
+  position: absolute;
+  top: 17.5px;
+  width: 124px;
+  z-index: 1;
+}
+
+.locked-category-password-dots img {
+  display: block;
+  height: 5px;
+  width: 124px;
+}
+
+.locked-category-password-visibility {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 20px;
+  height: 20px;
+  justify-content: center;
+  padding: 0;
+  position: relative;
+  width: 20px;
+  z-index: 2;
+}
+
+.locked-category-password-visibility.is-hidden {
+  opacity: 0.35;
+}
+
+.locked-category-password-visibility img {
+  display: block;
+  height: 20px;
+  width: 20px;
+}
+
+.locked-category-access-button {
+  align-items: center;
+  appearance: none;
+  background: #1d1d2c;
+  border: 1px solid rgba(53, 53, 74, 0.6);
+  border-radius: 4px;
+  color: var(--text-body, #bfbfbf);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  height: 40px;
+  justify-content: center;
+  line-height: normal;
+  padding: 8px;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+  width: 270px;
+}
+
+.locked-category-access-button.is-disabled,
+.locked-category-access-button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.locked-category-access-button.is-ready:hover,
+.locked-category-access-button.is-ready:focus-visible {
+  background: #27273b;
 }
 
 .preview-pane {

@@ -72,6 +72,9 @@ const INSPECTOR_BOOKMARK_CLOSE_ICON = "assets/figma/inspector-bookmark-close.svg
 const INSPECTOR_REMINDER_BELL_ICON = "assets/figma/inspector-reminder-bell.svg";
 const INSPECTOR_HIDE_PASSWORD_ICON = "assets/figma/inspector-hide-password.svg";
 const INSPECTOR_LOCKED_HINT_ARROW_ICON = "assets/figma/inspector-locked-hint-arrow.svg";
+const LOCKED_CATEGORY_ILLUSTRATION = "assets/figma/locked-category-illustration.png";
+const LOCKED_CATEGORY_PASSWORD_PREVIEW_ICON = "assets/figma/anc-password-preview.svg";
+const LOCKED_CATEGORY_PASSWORD_HIDDEN_DOTS = "assets/figma/anc-password-hidden-dots.svg";
 const IMPORT_BOOKMARKS_RINGS_IMAGE = "assets/figma/import-bookmarks-circles.svg";
 const IMPORT_BOOKMARKS_MAIN_ICON = "assets/figma/import-bookmarks-main.svg";
 const IMPORT_BOOKMARKS_DOC_1 = "assets/figma/import-bookmarks-doc-1.svg";
@@ -998,7 +1001,9 @@ const appState = {
   allBookmarksTagDraft: "",
   allBookmarksNote: "",
   categoryInspectorStates: {},
+  categoryAccessStates: {},
   lockedInspectorCategory: null,
+  unlockedCategoryNames: [],
   uncategorizedLastSaved: "",
   uncategorizedLastModified: "",
   uncategorizedIsFavourite: false,
@@ -2134,6 +2139,53 @@ function renderVisibleBookmarkCardsMarkup() {
   return visibleBookmarks.map(cardRenderer).join("");
 }
 
+function syncLockedCategoryAccessUi() {
+  const field = app.querySelector(".locked-category-password-field");
+  const input = app.querySelector("[data-role='locked-category-password-input']");
+  const toggleButton = app.querySelector("[data-action='toggle-locked-category-password-visibility']");
+  const accessButton = app.querySelector("[data-action='submit-locked-category-access']");
+
+  if (!field || !input || !toggleButton || !accessButton) {
+    return;
+  }
+
+  const accessState = ensureCategoryAccessState(appState.activeSidebarCategory);
+  if (!accessState) {
+    return;
+  }
+
+  const hasValue = Boolean(accessState.passwordDraft);
+  const isHidden = hasValue && !accessState.passwordVisible;
+  field.classList.toggle("is-active", hasValue && !isHidden);
+  field.classList.toggle("is-hidden", isHidden);
+  input.classList.toggle("is-obscured", isHidden);
+  toggleButton.classList.toggle("is-hidden", isHidden);
+  toggleButton.setAttribute("aria-label", isHidden || !hasValue ? "Show password" : "Hide password");
+
+  const toggleIcon = toggleButton.querySelector("img");
+  if (toggleIcon) {
+    toggleIcon.setAttribute("src", isHidden ? INSPECTOR_HIDE_PASSWORD_ICON : LOCKED_CATEGORY_PASSWORD_PREVIEW_ICON);
+  }
+
+  let dots = field.querySelector(".locked-category-password-dots");
+  if (isHidden) {
+    if (!dots) {
+      dots = document.createElement("span");
+      dots.className = "locked-category-password-dots";
+      dots.setAttribute("aria-hidden", "true");
+      dots.innerHTML = `<img src="${LOCKED_CATEGORY_PASSWORD_HIDDEN_DOTS}" alt="" width="124" height="5" />`;
+      field.insertBefore(dots, input);
+    }
+  } else if (dots) {
+    dots.remove();
+  }
+
+  const canSubmit = canSubmitLockedCategoryPassword(appState.activeSidebarCategory);
+  accessButton.disabled = !canSubmit;
+  accessButton.classList.toggle("is-disabled", !canSubmit);
+  accessButton.classList.toggle("is-ready", canSubmit);
+}
+
 function syncBookmarkContentForActiveCategory() {
   const contentPanel = app.querySelector(".content-panel");
 
@@ -2142,7 +2194,7 @@ function syncBookmarkContentForActiveCategory() {
     return;
   }
 
-  if (appState.activeContentView !== "cards") {
+  if (appState.activeContentView !== "cards" || isCategoryAccessLocked()) {
     contentPanel.innerHTML = renderContentPanel();
     return;
   }
@@ -2160,6 +2212,7 @@ function syncBookmarkContentForActiveCategory() {
   }
 
   syncBookmarkSelectionUi();
+  syncLockedCategoryAccessUi();
 }
 
 function toggleBookmarkSelection(bookmarkId) {
@@ -2281,6 +2334,7 @@ function createCategoryInspectorState(categoryName) {
     isFavourite: false,
     savePermanentCopy: false,
     passwordProtected: Boolean(categoryLink?.lockedByDefault),
+    accessPassword: "",
     tags: [],
     tagDraft: "",
     note: ""
@@ -2299,6 +2353,44 @@ function ensureCategoryInspectorState(categoryName) {
   return appState.categoryInspectorStates[categoryName];
 }
 
+function createCategoryAccessState() {
+  return {
+    passwordDraft: "",
+    passwordVisible: false
+  };
+}
+
+function ensureCategoryAccessState(categoryName) {
+  if (!isCategoryInspectorCategory(categoryName)) {
+    return null;
+  }
+
+  if (!appState.categoryAccessStates[categoryName]) {
+    appState.categoryAccessStates[categoryName] = createCategoryAccessState();
+  }
+
+  return appState.categoryAccessStates[categoryName];
+}
+
+function isCategoryUnlocked(categoryName) {
+  return appState.unlockedCategoryNames.includes(categoryName);
+}
+
+function setCategoryUnlocked(categoryName, isUnlocked) {
+  if (!isCategoryInspectorCategory(categoryName)) {
+    return;
+  }
+
+  if (isUnlocked) {
+    if (!appState.unlockedCategoryNames.includes(categoryName)) {
+      appState.unlockedCategoryNames = [...appState.unlockedCategoryNames, categoryName];
+    }
+    return;
+  }
+
+  appState.unlockedCategoryNames = appState.unlockedCategoryNames.filter((item) => item !== categoryName);
+}
+
 function shouldShowLockedCategoryInSidebar(categoryName) {
   if (!isCategoryInspectorCategory(categoryName)) {
     return false;
@@ -2307,15 +2399,60 @@ function shouldShowLockedCategoryInSidebar(categoryName) {
   return Boolean(getInspectorStateValue("passwordProtected", categoryName));
 }
 
+function isCategoryAccessLocked(categoryName = appState.activeSidebarCategory) {
+  if (!isCategoryInspectorCategory(categoryName)) {
+    return false;
+  }
+
+  return Boolean(getInspectorStateValue("passwordProtected", categoryName) && !isCategoryUnlocked(categoryName));
+}
+
 function shouldRenderLockedCategoryOverlay(categoryName = appState.activeSidebarCategory) {
   if (!isCategoryInspectorCategory(categoryName)) {
     return false;
   }
 
   return Boolean(
-    getInspectorStateValue("passwordProtected", categoryName) &&
+    isCategoryAccessLocked(categoryName) &&
     appState.lockedInspectorCategory === categoryName
   );
+}
+
+function canSubmitLockedCategoryPassword(categoryName = appState.activeSidebarCategory) {
+  const accessState = ensureCategoryAccessState(categoryName);
+  return Boolean(accessState?.passwordDraft.trim());
+}
+
+function canUnlockCategory(categoryName = appState.activeSidebarCategory) {
+  const accessState = ensureCategoryAccessState(categoryName);
+  const password = accessState?.passwordDraft.trim() || "";
+  if (!password) {
+    return false;
+  }
+
+  const storedPassword = getInspectorStateValue("accessPassword", categoryName);
+  if (!storedPassword) {
+    return true;
+  }
+
+  return password === storedPassword;
+}
+
+function unlockActiveCategory() {
+  if (!isCategoryAccessLocked()) {
+    return;
+  }
+
+  if (!canUnlockCategory()) {
+    return;
+  }
+
+  setCategoryUnlocked(appState.activeSidebarCategory, true);
+  appState.lockedInspectorCategory = null;
+  closeExportFormatsMenu();
+  appState.contentKebabOpen = false;
+  syncBookmarkContentForActiveCategory();
+  syncInspectorPanel();
 }
 
 function renderLockedCategoryOverlay() {
@@ -3181,6 +3318,81 @@ function renderPreviewPane() {
   `;
 }
 
+function renderLockedCategoryPasswordField(categoryName = appState.activeSidebarCategory) {
+  const accessState = ensureCategoryAccessState(categoryName);
+  const passwordValue = accessState?.passwordDraft || "";
+  const isHidden = Boolean(passwordValue) && !accessState?.passwordVisible;
+  const stateClass = passwordValue ? (isHidden ? " is-hidden" : " is-active") : "";
+  const visibilityLabel = isHidden || !passwordValue ? "Show password" : "Hide password";
+
+  return `
+    <label class="locked-category-password-field${stateClass}">
+      ${isHidden ? `
+        <span class="locked-category-password-dots" aria-hidden="true">
+          <img src="${LOCKED_CATEGORY_PASSWORD_HIDDEN_DOTS}" alt="" width="124" height="5" />
+        </span>
+      ` : ""}
+      <input
+        class="locked-category-password-input${isHidden ? " is-obscured" : ""}"
+        type="text"
+        value="${escapeHtml(passwordValue).replace(/"/g, "&quot;")}"
+        placeholder="Type a password"
+        data-role="locked-category-password-input"
+        aria-label="Type a password"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+      <button
+        class="locked-category-password-visibility${isHidden ? " is-hidden" : ""}"
+        type="button"
+        data-action="toggle-locked-category-password-visibility"
+        aria-label="${visibilityLabel}">
+        <img src="${isHidden ? INSPECTOR_HIDE_PASSWORD_ICON : LOCKED_CATEGORY_PASSWORD_PREVIEW_ICON}" alt="" width="20" height="20" />
+      </button>
+    </label>
+  `;
+}
+
+function renderLockedCategoryAccessButton(categoryName = appState.activeSidebarCategory) {
+  const stateClass = canSubmitLockedCategoryPassword(categoryName) ? " is-ready" : " is-disabled";
+
+  return `
+    <button class="locked-category-access-button${stateClass}" type="button" data-action="submit-locked-category-access"${canSubmitLockedCategoryPassword(categoryName) ? "" : " disabled"}>
+      <span>Access category</span>
+    </button>
+  `;
+}
+
+function renderLockedCategoryContent() {
+  return `
+    <section class="locked-category-view">
+      ${renderBookmarkCards()}
+      <div class="locked-category-screen">
+        <div class="locked-category-screen-header-blur"></div>
+        <div class="locked-category-screen-body">
+          <div class="locked-category-illustration">
+            <img src="${LOCKED_CATEGORY_ILLUSTRATION}" alt="" width="426" height="274" />
+          </div>
+
+          <div class="locked-category-access-panel">
+            <div class="locked-category-copy">
+              <h2 class="locked-category-title">This category is password protected</h2>
+              <p class="locked-category-subtitle">Enter the password to view bookmarks</p>
+            </div>
+
+            <div class="locked-category-fields">
+              ${renderLockedCategoryPasswordField()}
+              ${renderLockedCategoryAccessButton()}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function queueBookmarkImageReveal(bookmarkId) {
   window.setTimeout(() => {
     const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
@@ -3194,6 +3406,10 @@ function queueBookmarkImageReveal(bookmarkId) {
 }
 
 function renderContentPanel() {
+  if (isCategoryAccessLocked()) {
+    return renderLockedCategoryContent();
+  }
+
   return appState.activeContentView === "preview" ? renderPreviewPane() : renderBookmarkCards();
 }
 
@@ -3899,7 +4115,8 @@ function handleAppClick(event) {
       }
 
       appState.activeInspectorBookmarkId = null;
-      appState.lockedInspectorCategory = shouldShowLockedCategoryInSidebar(categoryName) ? categoryName : null;
+      ensureCategoryAccessState(categoryName);
+      appState.lockedInspectorCategory = isCategoryAccessLocked(categoryName) ? categoryName : null;
       closeDeleteBookmarkModal();
       appState.activeSidebarCategory = categoryName;
       appState.activeContentView = "cards";
@@ -4089,6 +4306,20 @@ function handleAppClick(event) {
     return;
   }
 
+  if (action === "toggle-locked-category-password-visibility") {
+    const accessState = ensureCategoryAccessState(appState.activeSidebarCategory);
+    if (accessState) {
+      accessState.passwordVisible = !accessState.passwordVisible;
+      syncLockedCategoryAccessUi();
+    }
+    return;
+  }
+
+  if (action === "submit-locked-category-access") {
+    unlockActiveCategory();
+    return;
+  }
+
   if (action === "save-permanent-copy") {
     const bookmark = appState.bookmarks.find((item) => item.id === appState.previewBookmarkId);
 
@@ -4150,9 +4381,14 @@ function handleAppClick(event) {
     setInspectorStateValue("passwordProtected", !passwordProtected);
     if (passwordProtected) {
       appState.lockedInspectorCategory = null;
+      setCategoryUnlocked(appState.activeSidebarCategory, false);
+    } else {
+      setCategoryUnlocked(appState.activeSidebarCategory, false);
+      appState.lockedInspectorCategory = appState.activeSidebarCategory;
     }
     updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
     syncSidebarCategoryUi();
+    syncBookmarkContentForActiveCategory();
     syncInspectorPanel();
     return;
   }
@@ -4325,6 +4561,15 @@ function handleAppInput(event) {
     return;
   }
 
+  if (event.target.matches("[data-role='locked-category-password-input']")) {
+    const accessState = ensureCategoryAccessState(appState.activeSidebarCategory);
+    if (accessState) {
+      accessState.passwordDraft = event.target.value;
+      syncLockedCategoryAccessUi();
+    }
+    return;
+  }
+
   if (event.target.matches("[data-role='bookmark-inspector-tags-input']")) {
     const bookmark = getActiveInspectorBookmark();
     if (bookmark) {
@@ -4398,6 +4643,14 @@ function handleAppKeydown(event) {
         appState.isCreatingCategory = false;
         appState.newCategoryName = "New Category";
         renderShell();
+      }
+      return;
+    }
+
+    if (event.target.matches("[data-role='locked-category-password-input']")) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        unlockActiveCategory();
       }
       return;
     }
