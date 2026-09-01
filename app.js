@@ -2424,7 +2424,14 @@ function isCategoryAccessLocked(categoryName = appState.activeSidebarCategory) {
 }
 
 function shouldRenderLockedCategoryOverlay(categoryName = appState.activeSidebarCategory) {
-  return false;
+  if (!isCategoryInspectorCategory(categoryName)) {
+    return false;
+  }
+
+  return Boolean(
+    isCategoryAccessLocked(categoryName) &&
+    appState.lockedInspectorCategory === categoryName
+  );
 }
 
 function canSubmitLockedCategoryPassword(categoryName = appState.activeSidebarCategory) {
@@ -2654,6 +2661,23 @@ function unlockActiveCategory() {
   syncInspectorPanel();
 }
 
+function lockCategoryAfterLeaving(categoryName) {
+  if (!isCategoryInspectorCategory(categoryName)) {
+    return;
+  }
+
+  const hasSavedPassword = Boolean(String(getInspectorStateValue("accessPassword", categoryName) || "").trim());
+  const isProtected = Boolean(getInspectorStateValue("passwordProtected", categoryName));
+  if (!isProtected || !hasSavedPassword) {
+    return;
+  }
+
+  setCategoryUnlocked(categoryName, false);
+  if (appState.lockedInspectorCategory === categoryName) {
+    appState.lockedInspectorCategory = null;
+  }
+}
+
 function syncInspectorPasswordSetupUi({ preserveFocus = false } = {}) {
   const activeInspectorCategory = getSupportedInspectorCategory();
   if (!activeInspectorCategory || activeInspectorCategory === "All Bookmarks") {
@@ -2697,9 +2721,9 @@ function saveInspectorCategoryPassword(categoryName = appState.activeSidebarCate
     setInspectorStateValue("accessPasswordDraft", draftPassword, categoryName);
     setInspectorStateValue("accessPasswordStatus", "saved", categoryName);
     setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
-    setCategoryUnlocked(categoryName, false);
+    setCategoryUnlocked(categoryName, true);
     if (appState.activeSidebarCategory === categoryName) {
-      appState.lockedInspectorCategory = categoryName;
+      appState.lockedInspectorCategory = null;
     }
     updateRelatedInspectorModifiedDates(categoryName);
     syncSidebarCategoryUi();
@@ -4372,6 +4396,7 @@ function handleAppClick(event) {
   if (action === "select-global-sidebar-item") {
     const sidebarItem = actionTarget.getAttribute("data-sidebar-item");
     if (sidebarItem) {
+      lockCategoryAfterLeaving(appState.activeSidebarCategory);
       appState.activeGlobalSidebarItem = sidebarItem;
       syncGlobalSidebarUi();
     }
@@ -4382,16 +4407,20 @@ function handleAppClick(event) {
     const categoryName = actionTarget.getAttribute("data-category");
     const categoryId = actionTarget.getAttribute("data-category-id");
     if (categoryName) {
+      const previousCategory = appState.activeSidebarCategory;
       const categoryLink = categoryId ? findCategoryLinkById(categoryId) : findCategoryLinkByLabel(categoryName);
       if (categoryLink?.children?.length) {
         setCategoryExpanded(categoryLink.id, !isCategoryExpanded(categoryLink.id));
       }
 
+      if (previousCategory !== categoryName) {
+        lockCategoryAfterLeaving(previousCategory);
+      }
       appState.activeInspectorBookmarkId = null;
       ensureCategoryAccessState(categoryName);
-      appState.lockedInspectorCategory = isCategoryAccessLocked(categoryName) ? categoryName : null;
       closeDeleteBookmarkModal();
       appState.activeSidebarCategory = categoryName;
+      appState.lockedInspectorCategory = isCategoryAccessLocked(categoryName) ? categoryName : null;
       appState.activeContentView = "cards";
       appState.previewBookmarkId = null;
       appState.selectedBookmarkIds = [];
@@ -4671,8 +4700,8 @@ function handleAppClick(event) {
       setInspectorStateValue("accessPasswordStatus", getInspectorStateValue("accessPassword", appState.activeSidebarCategory) ? "saved" : "idle", appState.activeSidebarCategory);
       setInspectorStateValue("accessPasswordSetupExpanded", true, appState.activeSidebarCategory);
       setInspectorStateValue("accessPasswordDeleteExpanded", false, appState.activeSidebarCategory);
-      setCategoryUnlocked(appState.activeSidebarCategory, false);
-      appState.lockedInspectorCategory = appState.activeSidebarCategory;
+      setCategoryUnlocked(appState.activeSidebarCategory, true);
+      appState.lockedInspectorCategory = null;
     }
     updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
     syncSidebarCategoryUi();
