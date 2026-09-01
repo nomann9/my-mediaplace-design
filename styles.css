@@ -1590,6 +1590,94 @@ input {
   width: 268px;
 }
 
+.inspector-panel-toggle-row-password {
+  align-items: center;
+  min-height: 16px;
+  width: 206px;
+}
+
+.inspector-password-protect-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  min-height: 16px;
+  width: 268px;
+}
+
+.inspector-panel-toggle-row-password .inspector-panel-toggle-label {
+  align-items: center;
+  display: inline-flex;
+  line-height: 16px;
+  min-height: 16px;
+}
+
+.inspector-panel-toggle-row-password.is-disabled,
+.inspector-panel-toggle-row-password:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.inspector-panel-password-toggle-icon {
+  display: inline-flex;
+  flex: 0 0 16px;
+  height: 16px;
+  position: relative;
+  width: 16px;
+}
+
+.inspector-panel-password-toggle-icon-layer {
+  display: block;
+  height: 16px;
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 120ms ease;
+  width: 16px;
+}
+
+.inspector-panel-toggle-row-password .inspector-panel-password-toggle-icon-layer.is-default {
+  opacity: 1;
+}
+
+.inspector-panel-toggle-row-password:hover:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-default,
+.inspector-panel-toggle-row-password:focus-visible:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-default,
+.inspector-panel-toggle-row-password:active:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-default,
+.inspector-panel-toggle-row-password[aria-pressed="true"] .inspector-panel-password-toggle-icon-layer.is-default,
+.inspector-panel-toggle-row-password.is-disabled .inspector-panel-password-toggle-icon-layer.is-default,
+.inspector-panel-toggle-row-password:disabled .inspector-panel-password-toggle-icon-layer.is-default {
+  opacity: 0;
+}
+
+.inspector-panel-toggle-row-password:hover:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-hover,
+.inspector-panel-toggle-row-password:focus-visible:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-hover {
+  opacity: 1;
+}
+
+.inspector-panel-toggle-row-password[aria-pressed="true"] .inspector-panel-password-toggle-icon-layer.is-postactive {
+  opacity: 1;
+}
+
+.inspector-panel-toggle-row-password[aria-pressed="true"]:active:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-postactive {
+  opacity: 0;
+}
+
+.inspector-panel-toggle-row-password[aria-pressed="true"]:active:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-active {
+  opacity: 1;
+}
+
+.inspector-panel-toggle-row-password:not([aria-pressed="true"]):active:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-hover {
+  opacity: 0;
+}
+
+.inspector-panel-toggle-row-password:not([aria-pressed="true"]):active:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-active {
+  opacity: 1;
+}
+
+.inspector-panel-toggle-row-password.is-disabled .inspector-panel-password-toggle-icon-layer.is-disabled,
+.inspector-panel-toggle-row-password:disabled .inspector-panel-password-toggle-icon-layer.is-disabled {
+  opacity: 1;
+}
+
 .inspector-panel-checkbox,
 .inspector-panel-field-icon,
 .inspector-panel-delete-icon {
@@ -1647,6 +1735,10 @@ input {
   top: 277px;
 }
 
+.inspector-panel-category-password-open .inspector-panel-divider-category-bottom {
+  top: 453px;
+}
+
 .inspector-panel-divider-bookmark-top {
   top: 172px;
 }
@@ -1669,6 +1761,10 @@ input {
   top: 297px;
 }
 
+.inspector-panel-category-password-open .inspector-panel-fields-category {
+  top: 473px;
+}
+
 .inspector-panel-fields-bookmark {
   top: 280px;
 }
@@ -1683,6 +1779,313 @@ input {
 .inspector-panel-field-move {
   gap: 0;
   position: relative;
+}
+
+.inspector-password-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 268px;
+}
+
+.inspector-password-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 268px;
+}
+
+.inspector-password-input-shell {
+  align-items: center;
+  background: transparent;
+  border: 1px solid rgba(53, 53, 74, 0.6);
+  border-radius: 4px;
+  box-sizing: border-box;
+  display: flex;
+  height: 40px;
+  padding: 0 10px 0 12px;
+  position: relative;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+  width: 268px;
+}
+
+.inspector-password-input-shell:hover,
+.inspector-password-input-shell:focus-within,
+.inspector-password-input-shell-active {
+  background: transparent;
+  border-color: rgba(53, 53, 74, 0.95);
+}
+
+.inspector-password-input-shell-hidden {
+  background: transparent;
+  border-color: rgba(53, 53, 74, 0.95);
+}
+
+.inspector-password-input {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: #bfbfbf;
+  flex: 1 1 auto;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  min-width: 0;
+  outline: none;
+  padding: 0;
+}
+
+.inspector-password-input::placeholder {
+  color: rgba(191, 191, 191, 0.35);
+}
+
+.inspector-password-input.is-obscured {
+  color: transparent;
+  caret-color: #bfbfbf;
+}
+
+.inspector-password-input-dots {
+  align-items: center;
+  color: var(--text-password-mask, rgba(217, 217, 217, 0.35));
+  display: inline-flex;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 1.55px;
+  line-height: 16px;
+  left: 12px;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.inspector-password-visibility {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 20px;
+  height: 20px;
+  justify-content: center;
+  padding: 0;
+  width: 20px;
+}
+
+.inspector-password-visibility img {
+  display: block;
+  height: 20px;
+  width: 20px;
+}
+
+.inspector-password-visibility.is-hidden img {
+  height: 16.5px;
+  opacity: 0.78;
+  width: 16.5px;
+}
+
+.inspector-password-helper-row {
+  align-items: center;
+  display: flex;
+  min-height: 16px;
+  width: 268px;
+}
+
+.inspector-password-helper-text,
+.inspector-password-show-hide-label {
+  color: rgba(191, 191, 191, 0.35);
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.inspector-password-helper-text {
+  white-space: nowrap;
+}
+
+.inspector-password-show-hide {
+  align-self: center;
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 4px;
+  height: 16px;
+  margin-left: auto;
+  padding: 0;
+}
+
+.inspector-password-show-hide-label {
+  align-items: center;
+  display: inline-flex;
+  height: 16px;
+  line-height: 16px;
+}
+
+.inspector-password-show-hide-icon {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 16px;
+  height: 16px;
+  justify-content: center;
+  transition: transform 150ms ease;
+  width: 16px;
+}
+
+.inspector-password-show-hide-icon img {
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.inspector-password-show-hide-icon.is-open {
+  transform: rotate(180deg);
+}
+
+.inspector-password-save-button,
+.inspector-password-delete-button {
+  align-items: stretch;
+  appearance: none;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  height: 32px;
+  overflow: hidden;
+  padding: 0;
+  width: 268px;
+}
+
+.inspector-password-save-button {
+  background: #27273b;
+  transition:
+    opacity 150ms ease,
+    background-color 150ms ease;
+}
+
+.inspector-password-save-button.is-disabled,
+.inspector-password-save-button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.inspector-password-save-main,
+.inspector-password-save-pointer {
+  align-items: center;
+  display: inline-flex;
+}
+
+.inspector-password-save-main {
+  background: #27273b;
+  color: #bfbfbf;
+  flex: 1 1 auto;
+  gap: 8px;
+  justify-content: center;
+  padding: 8px 12px;
+  transition: background-color 150ms ease;
+}
+
+.inspector-password-save-button:hover:not(:disabled) .inspector-password-save-main,
+.inspector-password-save-button:focus-visible:not(:disabled) .inspector-password-save-main,
+.inspector-password-save-button:active:not(:disabled) .inspector-password-save-main {
+  background: #32324d;
+}
+
+.inspector-password-save-main.is-emphasis {
+  background: #32324d;
+}
+
+.inspector-password-save-button.is-final {
+  background: #32324d;
+  cursor: default;
+}
+
+.inspector-password-save-button.is-final .inspector-password-save-main {
+  background: #27273b;
+}
+
+.inspector-password-save-lock {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 16px;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
+}
+
+.inspector-password-save-lock img,
+.inspector-password-save-pointer img,
+.inspector-password-delete-icon img {
+  display: block;
+}
+
+.inspector-password-save-label,
+.inspector-password-delete-label {
+  color: #bfbfbf;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.inspector-password-save-pointer {
+  background: #27273b;
+  border-left: 1px solid #1d1d2c;
+  flex: 0 0 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.inspector-password-save-pointer img {
+  height: 16px;
+  width: 16px;
+}
+
+.inspector-password-delete-shell {
+  width: 268px;
+}
+
+.inspector-password-delete-button {
+  align-items: center;
+  background: #27273b;
+  color: #bfbfbf;
+  gap: 8px;
+  justify-content: center;
+  transition: background-color 150ms ease;
+}
+
+.inspector-password-delete-button:hover,
+.inspector-password-delete-button:focus-visible,
+.inspector-password-delete-button:active,
+.inspector-password-delete-button.is-active {
+  background: #874040;
+}
+
+.inspector-password-delete-icon {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 16px;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
+}
+
+.inspector-password-delete-icon img {
+  height: 16px;
+  width: 16px;
 }
 
 .inspector-panel-field-label-row {
