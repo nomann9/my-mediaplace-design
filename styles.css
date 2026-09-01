@@ -1,5 +1,8 @@
 :root {
   --bg-nav-group-active: #222233;
+  --bg-overlay-locked: rgba(29, 29, 44, 0.8);
+  --bg-overlay-locked-solid: #1d1d2c;
+  --text-hint-muted: #65656e;
   color-scheme: dark;
   font-family: "Inter", sans-serif;
   font-synthesis: none;
@@ -1418,6 +1421,7 @@ input {
   background: var(--bg-panel, #1d1d2c);
   color: var(--text-body, #bfbfbf);
   height: 858px;
+  overflow: hidden;
   position: relative;
   width: 300px;
 }
@@ -2169,6 +2173,90 @@ input {
   position: absolute;
   top: 806px;
   width: 268px;
+}
+
+.inspector-panel-locked-overlay {
+  backdrop-filter: blur(4px);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    var(--bg-overlay-locked, rgba(29, 29, 44, 0.8)) 15.385%,
+    var(--bg-overlay-locked-solid, #1d1d2c) 47.115%
+  );
+  inset: -1px 0 0;
+  position: absolute;
+  z-index: 5;
+}
+
+.inspector-panel-locked-copy {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  left: 45px;
+  position: absolute;
+  top: 371px;
+  width: 210px;
+}
+
+.inspector-panel-locked-icon {
+  align-items: center;
+  display: inline-flex;
+  height: 20px;
+  justify-content: center;
+  width: 20px;
+}
+
+.inspector-panel-locked-icon img {
+  display: block;
+  height: 20px;
+  width: 20px;
+}
+
+.inspector-panel-locked-text {
+  align-items: center;
+  color: var(--text-hint-muted, #65656e);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  width: 210px;
+}
+
+.inspector-panel-locked-title {
+  color: var(--text-hint-muted, #65656e);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  width: 210px;
+}
+
+.inspector-panel-locked-subtitle {
+  color: var(--text-hint-muted, #65656e);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  width: 210px;
+}
+
+.inspector-panel-locked-arrow {
+  align-items: center;
+  display: inline-flex;
+  height: 21px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 461px;
+  transform: translateX(-50%);
+  width: 38px;
+}
+
+.inspector-panel-locked-arrow img {
+  display: block;
+  height: 21px;
+  width: 38px;
 }
 
 .bookmark-delete-modal {

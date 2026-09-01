@@ -70,6 +70,8 @@ const INSPECTOR_MOVE_CATEGORY_ICON = "assets/figma/inspector-move-category.svg";
 const INSPECTOR_MOVE_CHEVRON_ICON = "assets/figma/inspector-move-chevron.svg";
 const INSPECTOR_BOOKMARK_CLOSE_ICON = "assets/figma/inspector-bookmark-close.svg";
 const INSPECTOR_REMINDER_BELL_ICON = "assets/figma/inspector-reminder-bell.svg";
+const INSPECTOR_HIDE_PASSWORD_ICON = "assets/figma/inspector-hide-password.svg";
+const INSPECTOR_LOCKED_HINT_ARROW_ICON = "assets/figma/inspector-locked-hint-arrow.svg";
 const IMPORT_BOOKMARKS_RINGS_IMAGE = "assets/figma/import-bookmarks-circles.svg";
 const IMPORT_BOOKMARKS_MAIN_ICON = "assets/figma/import-bookmarks-main.svg";
 const IMPORT_BOOKMARKS_DOC_1 = "assets/figma/import-bookmarks-doc-1.svg";
@@ -996,6 +998,7 @@ const appState = {
   allBookmarksTagDraft: "",
   allBookmarksNote: "",
   categoryInspectorStates: {},
+  lockedInspectorCategory: null,
   uncategorizedLastSaved: "",
   uncategorizedLastModified: "",
   uncategorizedIsFavourite: false,
@@ -1426,6 +1429,9 @@ function renderNewBookmarkControl() {
 function renderBookmarkSidebarLink(link) {
   const isChild = Boolean(link.isChild);
   const isActive = isSidebarCategoryActive(link.label);
+  const isLockedCategory = shouldShowLockedCategoryInSidebar(link.label);
+  const iconSource = isLockedCategory ? BOOKMARK_LOCKED_ICON : (link.defaultIcon || link.icon);
+  const iconClassName = isLockedCategory ? "bookmark-locked-icon" : (link.defaultIconClass || link.iconClass || "");
   const stateClass = isActive ? " is-active" : "";
   const isExpandable = Boolean(link.children?.length);
   const dragStateClass = appState.draggedCategoryId === link.id ? " is-dragging" : "";
@@ -1447,9 +1453,9 @@ function renderBookmarkSidebarLink(link) {
       data-category-id="${escapeHtml(link.id)}"
       draggable="true"${ariaExpanded}>
       <span class="bookmark-sidebar-link-main">
-        <span class="bookmark-sidebar-link-icon ${link.iconClass || ""}">
+        <span class="bookmark-sidebar-link-icon ${iconClassName}">
           <span class="bookmark-sidebar-link-icon-frame ${link.iconFrameClass || ""}">
-            <img src="${link.icon}" alt="" width="20" height="20" />
+            <img src="${iconSource}" alt="" width="20" height="20" />
           </span>
         </span>
         <span class="bookmark-sidebar-link-label">${link.label}</span>
@@ -1677,19 +1683,36 @@ function createInitialCategoryLinks() {
       ]
     }),
     createCategoryLink({ id: "youtube-channels", label: "YouTube Channels", icon: BOOKMARK_FOLDER_ICON }),
-    createCategoryLink({ id: "arts-and-culture", label: "Arts and Culture", icon: BOOKMARK_LOCKED_ICON, iconClass: "bookmark-locked-icon" }),
+    createCategoryLink({
+      id: "arts-and-culture",
+      label: "Arts and Culture",
+      icon: BOOKMARK_FOLDER_ICON,
+      lockedByDefault: true
+    }),
     createCategoryLink({ id: "sports", label: "Sports", icon: BOOKMARK_FOLDER_ICON }),
     createCategoryLink({ id: "design-resources", label: "Design Resources", icon: BOOKMARK_FOLDER_ICON })
   ];
 }
 
-function createCategoryLink({ id, label, icon, iconClass = "", iconFrameClass = "", bookmarkFilter = null, children = [] }) {
+function createCategoryLink({
+  id,
+  label,
+  icon,
+  iconClass = "",
+  iconFrameClass = "",
+  bookmarkFilter = null,
+  children = [],
+  lockedByDefault = false
+}) {
   return {
     id,
     label,
     icon,
     iconClass,
     iconFrameClass,
+    defaultIcon: icon,
+    defaultIconClass: iconClass,
+    lockedByDefault,
     bookmarkFilter,
     children
   };
@@ -2250,13 +2273,14 @@ function isCategoryInspectorCategory(categoryName) {
 
 function createCategoryInspectorState(categoryName) {
   const lastSaved = getMostRecentBookmarkDateForCategory(categoryName);
+  const categoryLink = findCategoryLinkByLabel(categoryName);
 
   return {
     lastSaved,
     lastModified: lastSaved,
     isFavourite: false,
     savePermanentCopy: false,
-    passwordProtected: false,
+    passwordProtected: Boolean(categoryLink?.lockedByDefault),
     tags: [],
     tagDraft: "",
     note: ""
@@ -2273,6 +2297,44 @@ function ensureCategoryInspectorState(categoryName) {
   }
 
   return appState.categoryInspectorStates[categoryName];
+}
+
+function shouldShowLockedCategoryInSidebar(categoryName) {
+  if (!isCategoryInspectorCategory(categoryName)) {
+    return false;
+  }
+
+  return Boolean(getInspectorStateValue("passwordProtected", categoryName));
+}
+
+function shouldRenderLockedCategoryOverlay(categoryName = appState.activeSidebarCategory) {
+  if (!isCategoryInspectorCategory(categoryName)) {
+    return false;
+  }
+
+  return Boolean(
+    getInspectorStateValue("passwordProtected", categoryName) &&
+    appState.lockedInspectorCategory === categoryName
+  );
+}
+
+function renderLockedCategoryOverlay() {
+  return `
+    <div class="inspector-panel-locked-overlay">
+      <div class="inspector-panel-locked-copy">
+        <span class="inspector-panel-locked-icon">
+          <img src="${INSPECTOR_HIDE_PASSWORD_ICON}" alt="" width="20" height="20" />
+        </span>
+        <div class="inspector-panel-locked-text">
+          <div class="inspector-panel-locked-title">Category details are hidden</div>
+          <div class="inspector-panel-locked-subtitle">Enter password to view</div>
+        </div>
+      </div>
+      <span class="inspector-panel-locked-arrow">
+        <img src="${INSPECTOR_LOCKED_HINT_ARROW_ICON}" alt="" width="38" height="21" />
+      </span>
+    </div>
+  `;
 }
 
 function getMostRecentBookmarkDateForCategory(categoryName) {
@@ -3327,6 +3389,7 @@ function renderInspectorPanel() {
     const isFavourite = Boolean(getInspectorStateValue("isFavourite", activeInspectorCategory));
     const savePermanentCopy = Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory));
     const passwordProtected = Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory));
+    const lockedOverlayMarkup = shouldRenderLockedCategoryOverlay(activeInspectorCategory) ? renderLockedCategoryOverlay() : "";
 
     return `
       <div class="inspector-panel inspector-panel-category">
@@ -3370,7 +3433,7 @@ function renderInspectorPanel() {
             <span class="inspector-panel-checkbox">
               <img src="${passwordProtected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
             </span>
-            <span class="inspector-panel-toggle-label">Password-protect this view</span>
+            <span class="inspector-panel-toggle-label">Password-protect this category</span>
           </button>
         </div>
 
@@ -3427,6 +3490,8 @@ function renderInspectorPanel() {
           </span>
           <span class="inspector-panel-delete-label">Delete Category</span>
         </button>
+
+        ${lockedOverlayMarkup}
       </div>
     `;
   }
@@ -3834,6 +3899,7 @@ function handleAppClick(event) {
       }
 
       appState.activeInspectorBookmarkId = null;
+      appState.lockedInspectorCategory = shouldShowLockedCategoryInSidebar(categoryName) ? categoryName : null;
       closeDeleteBookmarkModal();
       appState.activeSidebarCategory = categoryName;
       appState.activeContentView = "cards";
@@ -3920,6 +3986,7 @@ function handleAppClick(event) {
   if (action === "edit-bookmark") {
     const bookmarkId = actionTarget.closest("[data-bookmark-id]")?.getAttribute("data-bookmark-id") || appState.previewBookmarkId;
     if (bookmarkId) {
+      appState.lockedInspectorCategory = null;
       appState.activeInspectorBookmarkId = bookmarkId;
       closeExportFormatsMenu();
       closeBookmarkMoveMenu();
@@ -3931,6 +3998,7 @@ function handleAppClick(event) {
 
   if (action === "close-bookmark-inspector") {
     appState.activeInspectorBookmarkId = null;
+    appState.lockedInspectorCategory = null;
     closeExportFormatsMenu();
     closeBookmarkMoveMenu();
     closeDeleteBookmarkModal();
@@ -4001,6 +4069,7 @@ function handleAppClick(event) {
   if (action === "go-to-deleted-items") {
     closeDeleteBookmarkModal();
     appState.activeInspectorBookmarkId = null;
+    appState.lockedInspectorCategory = null;
     appState.activeSidebarCategory = "Deleted Items";
     appState.activeContentView = "cards";
     appState.previewBookmarkId = null;
@@ -4079,7 +4148,11 @@ function handleAppClick(event) {
   if (action === "toggle-inspector-password") {
     const passwordProtected = Boolean(getInspectorStateValue("passwordProtected"));
     setInspectorStateValue("passwordProtected", !passwordProtected);
+    if (passwordProtected) {
+      appState.lockedInspectorCategory = null;
+    }
     updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
+    syncSidebarCategoryUi();
     syncInspectorPanel();
     return;
   }
