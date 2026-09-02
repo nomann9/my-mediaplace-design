@@ -2154,6 +2154,7 @@ function syncLockedCategoryAccessUi() {
   const input = app.querySelector("[data-role='locked-category-password-input']");
   const toggleButton = app.querySelector("[data-action='toggle-locked-category-password-visibility']");
   const accessButton = app.querySelector("[data-action='submit-locked-category-access']");
+  const shouldKeepCaretAtEnd = document.activeElement === input;
 
   if (!field || !input || !toggleButton || !accessButton) {
     return;
@@ -2164,7 +2165,8 @@ function syncLockedCategoryAccessUi() {
     return;
   }
 
-  const hasValue = Boolean(accessState.passwordDraft);
+  const hasValue = Boolean(accessState.passwordDraft) && Boolean(accessState.hasTypedPassword);
+  const revealIndex = accessState.passwordVisible ? -1 : accessState.passwordRevealIndex;
   const isHidden = hasValue && !accessState.passwordVisible;
   field.classList.toggle("is-active", hasValue && !isHidden);
   field.classList.toggle("is-hidden", isHidden);
@@ -2179,13 +2181,14 @@ function syncLockedCategoryAccessUi() {
 
   let dots = field.querySelector(".locked-category-password-dots");
   if (isHidden) {
+    const hiddenDots = renderLockedCategoryPasswordMaskText(accessState.passwordDraft, revealIndex);
     if (!dots) {
       dots = document.createElement("span");
       dots.className = "locked-category-password-dots";
       dots.setAttribute("aria-hidden", "true");
-      dots.innerHTML = `<img src="${LOCKED_CATEGORY_PASSWORD_HIDDEN_DOTS}" alt="" width="124" height="5" />`;
       field.insertBefore(dots, input);
     }
+    dots.innerHTML = hiddenDots;
   } else if (dots) {
     dots.remove();
   }
@@ -2194,6 +2197,18 @@ function syncLockedCategoryAccessUi() {
   accessButton.disabled = !canSubmit;
   accessButton.classList.toggle("is-disabled", !canSubmit);
   accessButton.classList.toggle("is-ready", canSubmit);
+
+  if (shouldKeepCaretAtEnd) {
+    window.requestAnimationFrame(() => {
+      if (document.activeElement !== input) {
+        return;
+      }
+
+      const end = input.value.length;
+      input.setSelectionRange(end, end);
+      input.scrollLeft = input.scrollWidth;
+    });
+  }
 }
 
 function syncBookmarkContentForActiveCategory() {
@@ -2372,8 +2387,20 @@ function ensureCategoryInspectorState(categoryName) {
 function createCategoryAccessState() {
   return {
     passwordDraft: "",
-    passwordVisible: false
+    passwordVisible: false,
+    hasTypedPassword: false,
+    passwordRevealIndex: -1,
+    passwordMaskTimerId: null
   };
+}
+
+function renderLockedCategoryPasswordMaskText(password, revealIndex = -1) {
+  return Array.from(password || "", (character, index) => {
+    if (index === revealIndex) {
+      return escapeHtml(character);
+    }
+    return "&#8226;";
+  }).join("");
 }
 
 function ensureCategoryAccessState(categoryName) {
@@ -2386,6 +2413,60 @@ function ensureCategoryAccessState(categoryName) {
   }
 
   return appState.categoryAccessStates[categoryName];
+}
+
+function resetCategoryAccessState(categoryName) {
+  const accessState = ensureCategoryAccessState(categoryName);
+  if (!accessState) {
+    return;
+  }
+
+  if (accessState.passwordMaskTimerId) {
+    window.clearTimeout(accessState.passwordMaskTimerId);
+    accessState.passwordMaskTimerId = null;
+  }
+  accessState.passwordDraft = "";
+  accessState.passwordVisible = false;
+  accessState.hasTypedPassword = false;
+  accessState.passwordRevealIndex = -1;
+}
+
+function clearCategoryAccessMaskTimer(categoryName) {
+  const accessState = ensureCategoryAccessState(categoryName);
+  if (!accessState?.passwordMaskTimerId) {
+    return;
+  }
+
+  window.clearTimeout(accessState.passwordMaskTimerId);
+  accessState.passwordMaskTimerId = null;
+}
+
+function scheduleLockedCategoryPasswordMask(categoryName) {
+  const accessState = ensureCategoryAccessState(categoryName);
+  if (!accessState) {
+    return;
+  }
+
+  clearCategoryAccessMaskTimer(categoryName);
+  if (!accessState.passwordDraft) {
+    accessState.passwordVisible = false;
+    accessState.passwordRevealIndex = -1;
+    return;
+  }
+
+  accessState.passwordMaskTimerId = window.setTimeout(() => {
+    const latestAccessState = ensureCategoryAccessState(categoryName);
+    if (!latestAccessState || !latestAccessState.passwordDraft) {
+      return;
+    }
+
+    latestAccessState.passwordVisible = false;
+    latestAccessState.passwordRevealIndex = -1;
+    latestAccessState.passwordMaskTimerId = null;
+    if (appState.activeSidebarCategory === categoryName && isCategoryAccessLocked(categoryName)) {
+      syncLockedCategoryAccessUi();
+    }
+  }, 1000);
 }
 
 function isCategoryUnlocked(categoryName) {
@@ -2436,7 +2517,7 @@ function shouldRenderLockedCategoryOverlay(categoryName = appState.activeSidebar
 
 function canSubmitLockedCategoryPassword(categoryName = appState.activeSidebarCategory) {
   const accessState = ensureCategoryAccessState(categoryName);
-  return Boolean(accessState?.passwordDraft.trim());
+  return Boolean((accessState?.passwordDraft || "").length >= 8);
 }
 
 function canUnlockCategory(categoryName = appState.activeSidebarCategory) {
@@ -2673,6 +2754,7 @@ function lockCategoryAfterLeaving(categoryName) {
   }
 
   setCategoryUnlocked(categoryName, false);
+  resetCategoryAccessState(categoryName);
   if (appState.lockedInspectorCategory === categoryName) {
     appState.lockedInspectorCategory = null;
   }
@@ -3615,17 +3697,18 @@ function renderPreviewPane() {
 
 function renderLockedCategoryPasswordField(categoryName = appState.activeSidebarCategory) {
   const accessState = ensureCategoryAccessState(categoryName);
-  const passwordValue = accessState?.passwordDraft || "";
+  const hasTypedPassword = Boolean(accessState?.hasTypedPassword);
+  const passwordValue = hasTypedPassword ? (accessState?.passwordDraft || "") : "";
   const isHidden = Boolean(passwordValue) && !accessState?.passwordVisible;
   const stateClass = passwordValue ? (isHidden ? " is-hidden" : " is-active") : "";
   const visibilityLabel = isHidden || !passwordValue ? "Show password" : "Hide password";
+  const revealIndex = accessState?.passwordVisible ? -1 : (accessState?.passwordRevealIndex ?? -1);
+  const hiddenDots = isHidden ? renderLockedCategoryPasswordMaskText(passwordValue, revealIndex) : "";
 
   return `
     <label class="locked-category-password-field${stateClass}">
       ${isHidden ? `
-        <span class="locked-category-password-dots" aria-hidden="true">
-          <img src="${LOCKED_CATEGORY_PASSWORD_HIDDEN_DOTS}" alt="" width="124" height="5" />
-        </span>
+        <span class="locked-category-password-dots" aria-hidden="true">${hiddenDots}</span>
       ` : ""}
       <input
         class="locked-category-password-input${isHidden ? " is-obscured" : ""}"
@@ -3634,7 +3717,7 @@ function renderLockedCategoryPasswordField(categoryName = appState.activeSidebar
         placeholder="Type a password"
         data-role="locked-category-password-input"
         aria-label="Type a password"
-        autocomplete="off"
+        autocomplete="new-password"
         autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
@@ -4420,6 +4503,9 @@ function handleAppClick(event) {
       ensureCategoryAccessState(categoryName);
       closeDeleteBookmarkModal();
       appState.activeSidebarCategory = categoryName;
+      if (isCategoryAccessLocked(categoryName)) {
+        resetCategoryAccessState(categoryName);
+      }
       appState.lockedInspectorCategory = isCategoryAccessLocked(categoryName) ? categoryName : null;
       appState.activeContentView = "cards";
       appState.previewBookmarkId = null;
@@ -4610,8 +4696,15 @@ function handleAppClick(event) {
 
   if (action === "toggle-locked-category-password-visibility") {
     const accessState = ensureCategoryAccessState(appState.activeSidebarCategory);
-    if (accessState) {
+    if (accessState?.passwordDraft) {
       accessState.passwordVisible = !accessState.passwordVisible;
+      if (accessState.passwordVisible) {
+        accessState.passwordRevealIndex = -1;
+        clearCategoryAccessMaskTimer(appState.activeSidebarCategory);
+      } else {
+        accessState.passwordRevealIndex = -1;
+        scheduleLockedCategoryPasswordMask(appState.activeSidebarCategory);
+      }
       syncLockedCategoryAccessUi();
     }
     return;
@@ -4951,7 +5044,35 @@ function handleAppInput(event) {
   if (event.target.matches("[data-role='locked-category-password-input']")) {
     const accessState = ensureCategoryAccessState(appState.activeSidebarCategory);
     if (accessState) {
-      accessState.passwordDraft = event.target.value;
+      const previousValue = accessState.passwordDraft;
+      const enteredValue = event.target.value;
+      const storedPassword = String(getInspectorStateValue("accessPassword", appState.activeSidebarCategory) || "");
+
+      // Ignore autofill-like repopulation of the saved category password.
+      if (!accessState.hasTypedPassword && enteredValue && enteredValue === storedPassword) {
+        resetCategoryAccessState(appState.activeSidebarCategory);
+        event.target.value = "";
+        syncLockedCategoryAccessUi();
+        return;
+      }
+
+      accessState.passwordDraft = enteredValue;
+      accessState.hasTypedPassword = Boolean(enteredValue);
+      if (!enteredValue) {
+        accessState.passwordVisible = false;
+        accessState.passwordRevealIndex = -1;
+        clearCategoryAccessMaskTimer(appState.activeSidebarCategory);
+      } else if (accessState.passwordVisible) {
+        accessState.passwordRevealIndex = -1;
+      } else if (enteredValue.length > previousValue.length) {
+        accessState.passwordVisible = false;
+        accessState.passwordRevealIndex = enteredValue.length - 1;
+        scheduleLockedCategoryPasswordMask(appState.activeSidebarCategory);
+      } else {
+        accessState.passwordVisible = false;
+        accessState.passwordRevealIndex = -1;
+        clearCategoryAccessMaskTimer(appState.activeSidebarCategory);
+      }
       syncLockedCategoryAccessUi();
     }
     return;
@@ -5068,6 +5189,21 @@ function handleAppKeydown(event) {
 }
 
 function handleAppFocusIn(event) {
+  if (event.target.matches("[data-role='locked-category-password-input']")) {
+    const categoryName = appState.activeSidebarCategory;
+    const accessState = ensureCategoryAccessState(categoryName);
+    if (!accessState) {
+      return;
+    }
+
+    if (!accessState.hasTypedPassword) {
+      resetCategoryAccessState(categoryName);
+      event.target.value = "";
+      syncLockedCategoryAccessUi();
+    }
+    return;
+  }
+
   if (!event.target.matches("[data-role='inspector-password-input']")) {
     return;
   }

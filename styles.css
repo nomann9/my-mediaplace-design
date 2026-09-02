@@ -3510,25 +3510,26 @@ input {
 
 .locked-category-password-input.is-obscured {
   color: transparent;
-  caret-color: transparent;
+  caret-color: var(--text-body, #bfbfbf);
+  letter-spacing: 1.55px;
 }
 
 .locked-category-password-dots {
   align-items: center;
+  color: var(--text-password-mask, rgba(217, 217, 217, 0.35));
   display: inline-flex;
-  height: 5px;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 1.55px;
+  line-height: 16px;
   left: 12px;
   pointer-events: none;
   position: absolute;
-  top: 17.5px;
-  width: 124px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 1;
-}
-
-.locked-category-password-dots img {
-  display: block;
-  height: 5px;
-  width: 124px;
 }
 
 .locked-category-password-visibility {
