@@ -79,6 +79,7 @@
       "400": "#EAB308"
     },
     "red": {
+      "300": "#BC6D6D",
       "400": "#EF4444",
       "600": "#874040"
     }
@@ -118,6 +119,7 @@
       "100": "{brand.yellow.400}"
     },
     "error": {
+      "200": "{brand.red.300}",
       "100": "{brand.red.400}",
       "600": "{brand.red.600}"
     },
@@ -189,6 +191,7 @@
       "button-secondary-hover": "{alias.neutral.300}",
       "body-disabled": "{alias.text.disabled-strong}",
       "password-mask": "{alias.text.password-mask}",
+      "danger-subtle": "{alias.error.200}",
       "placeholder-disabled": "{alias.text.disabled}",
       "destructive-on-solid": "{alias.neutral.300}",
       "modal-heading": "{alias.neutral.300}",
