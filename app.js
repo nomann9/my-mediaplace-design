@@ -1274,6 +1274,7 @@ function setCssVars(tokens) {
     "--text-danger-subtle": resolveValue(mapped.text["danger-subtle"], tokens),
     "--text-password-mask": resolveValue(mapped.text["password-mask"], tokens),
     "--text-placeholder": resolveValue(mapped.text.placeholder, tokens),
+    "--text-placeholder-disabled": resolveValue(mapped.text["placeholder-disabled"], tokens),
     "--text-nav-section-title": resolveValue(mapped.text["nav-section-title"], tokens),
     "--text-nav-link-default": resolveValue(mapped.text["nav-link-default"], tokens),
     "--text-button-secondary-default": resolveValue(mapped.text["button-secondary-default"], tokens),
@@ -1657,6 +1658,7 @@ function moveBookmarkToCategory(bookmarkId, nextCategory) {
   bookmark.modifiedDate = formatBookmarkDate(new Date());
   updateRelatedInspectorModifiedDates(previousCategory);
   updateRelatedInspectorModifiedDates(nextCategory);
+  appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => id !== bookmark.id);
   closeBookmarkMoveMenu();
   return true;
 }
@@ -2271,7 +2273,11 @@ function toggleBookmarkSelection(bookmarkId) {
     appState.selectedBookmarkIds = [...appState.selectedBookmarkIds, bookmarkId];
   }
 
+  if (!appState.activeInspectorBookmarkId) {
+    closeBookmarkMoveMenu();
+  }
   syncBookmarkSelectionUi();
+  syncInspectorPanel();
 }
 
 function toggleVisibleBookmarkSelection() {
@@ -2286,7 +2292,11 @@ function toggleVisibleBookmarkSelection() {
     appState.selectedBookmarkIds = Array.from(new Set([...appState.selectedBookmarkIds, ...visibleIds]));
   }
 
+  if (!appState.activeInspectorBookmarkId) {
+    closeBookmarkMoveMenu();
+  }
   syncBookmarkSelectionUi();
+  syncInspectorPanel();
 }
 
 function formatBookmarkDate(date) {
@@ -2934,6 +2944,15 @@ function getBookmarkTypesForCategory(categoryName) {
 
 function getActiveInspectorBookmark() {
   return appState.bookmarks.find((bookmark) => bookmark.id === appState.activeInspectorBookmarkId) || null;
+}
+
+function getSingleSelectedVisibleBookmark() {
+  const selectedVisibleBookmarks = getVisibleBookmarks().filter((bookmark) => appState.selectedBookmarkIds.includes(bookmark.id));
+  return selectedVisibleBookmarks.length === 1 ? selectedVisibleBookmarks[0] : null;
+}
+
+function getActiveMoveBookmark() {
+  return getActiveInspectorBookmark() || getSingleSelectedVisibleBookmark();
 }
 
 function getBookmarkInspectorTypeLabel(bookmark) {
@@ -4042,6 +4061,8 @@ function renderInspectorPanel() {
     const passwordProtected = Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory));
     const showPasswordSetup = shouldShowInspectorPasswordSetup(activeInspectorCategory);
     const showDeletePassword = shouldShowInspectorDeletePassword(activeInspectorCategory);
+    const selectedMoveBookmark = getSingleSelectedVisibleBookmark();
+    const canMoveSelectedBookmark = Boolean(selectedMoveBookmark);
     const lockedOverlayMarkup = shouldRenderLockedCategoryOverlay(activeInspectorCategory) ? renderLockedCategoryOverlay() : "";
     const passwordPanelMarkup = showPasswordSetup ? renderInspectorPasswordSetup(activeInspectorCategory) : "";
     const categoryPanelClass = `${showPasswordSetup ? " inspector-panel-category-password-open" : ""}${showDeletePassword ? " inspector-panel-category-password-delete-open" : ""}`;
@@ -4096,7 +4117,7 @@ function renderInspectorPanel() {
 
         <div class="inspector-panel-fields inspector-panel-fields-category">
           <div class="inspector-panel-field inspector-panel-field-move">
-            <button class="inspector-panel-move-button" type="button" aria-expanded="false">
+            <button class="inspector-panel-move-button${canMoveSelectedBookmark ? "" : " is-disabled"}" type="button" data-action="toggle-bookmark-move-menu" aria-expanded="${canMoveSelectedBookmark && appState.moveBookmarkMenuOpen}"${canMoveSelectedBookmark ? "" : " disabled"}>
               <span class="inspector-panel-move-label">
                 <span class="inspector-panel-move-icon">
                   <img src="${INSPECTOR_MOVE_CATEGORY_ICON}" alt="" width="12.7" height="12.7" />
@@ -4107,6 +4128,7 @@ function renderInspectorPanel() {
                 <img src="${INSPECTOR_MOVE_CHEVRON_ICON}" alt="" width="9.5" height="5.5" />
               </span>
             </button>
+            ${canMoveSelectedBookmark && appState.moveBookmarkMenuOpen ? renderBookmarkMoveDropdown(selectedMoveBookmark) : ""}
           </div>
 
           <div class="inspector-panel-field">
@@ -4669,7 +4691,7 @@ function handleAppClick(event) {
   }
 
   if (action === "toggle-bookmark-move-menu") {
-    const activeBookmark = getActiveInspectorBookmark();
+    const activeBookmark = getActiveMoveBookmark();
     if (appState.moveBookmarkMenuOpen) {
       closeBookmarkMoveMenu();
     } else {
@@ -4695,7 +4717,7 @@ function handleAppClick(event) {
   }
 
   if (action === "confirm-bookmark-move") {
-    const activeBookmark = getActiveInspectorBookmark();
+    const activeBookmark = getActiveMoveBookmark();
     if (activeBookmark && moveBookmarkToCategory(activeBookmark.id, appState.moveBookmarkTargetCategory)) {
       syncSidebarCategoryUi();
       syncBookmarkContentForActiveCategory();
