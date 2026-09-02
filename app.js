@@ -2210,7 +2210,7 @@ function syncLockedCategoryAccessUi() {
     if (!errorMessage) {
       errorMessage = document.createElement("p");
       errorMessage.className = "locked-category-access-error";
-      errorMessage.textContent = "Incorrect password";
+      errorMessage.textContent = "Incorrect password. Please try again.";
       accessActions.appendChild(errorMessage);
     }
   } else if (errorMessage) {
@@ -2435,6 +2435,12 @@ function getLockedCategoryPasswordDisplayValue(accessState) {
   return Array.from(accessState.passwordDraft || "", (character, index) => (
     index === accessState.passwordRevealIndex ? character : "\u2022"
   )).join("");
+}
+
+function replaceLockedCategoryPasswordRange(password, start, end, insertedText = "") {
+  const safeStart = Math.max(0, Math.min(start, password.length));
+  const safeEnd = Math.max(safeStart, Math.min(end, password.length));
+  return `${password.slice(0, safeStart)}${insertedText}${password.slice(safeEnd)}`;
 }
 
 function ensureCategoryAccessState(categoryName) {
@@ -3781,7 +3787,7 @@ function renderLockedCategoryAccessButton(categoryName = appState.activeSidebarC
   const accessState = ensureCategoryAccessState(categoryName);
   const stateClass = canSubmitLockedCategoryPassword(categoryName) ? " is-ready" : " is-disabled";
   const errorMarkup = accessState?.accessError ? `
-    <p class="locked-category-access-error">Incorrect password</p>
+    <p class="locked-category-access-error">Incorrect password. Please try again.</p>
   ` : "";
 
   return `
@@ -5172,14 +5178,21 @@ function handleAppBeforeInput(event) {
     return;
   }
 
+  const selectionStart = typeof event.target.selectionStart === "number" ? event.target.selectionStart : accessState.passwordDraft.length;
+  const selectionEnd = typeof event.target.selectionEnd === "number" ? event.target.selectionEnd : accessState.passwordDraft.length;
   const inputType = event.inputType || "";
   if (inputType === "insertText" || inputType === "insertCompositionText") {
     event.preventDefault();
     const nextCharacter = event.data || "";
-    accessState.passwordDraft = `${accessState.passwordDraft}${nextCharacter}`;
+    accessState.passwordDraft = replaceLockedCategoryPasswordRange(
+      accessState.passwordDraft,
+      selectionStart,
+      selectionEnd,
+      nextCharacter
+    );
     accessState.hasTypedPassword = Boolean(accessState.passwordDraft);
     accessState.accessError = false;
-    accessState.passwordRevealIndex = accessState.passwordDraft.length - 1;
+    accessState.passwordRevealIndex = nextCharacter ? selectionStart + nextCharacter.length - 1 : -1;
     scheduleLockedCategoryPasswordMask(categoryName);
     syncLockedCategoryAccessUi();
     return;
@@ -5188,27 +5201,66 @@ function handleAppBeforeInput(event) {
   if (inputType === "insertFromPaste") {
     event.preventDefault();
     const pastedValue = event.data || "";
-    accessState.passwordDraft = `${accessState.passwordDraft}${pastedValue}`;
+    accessState.passwordDraft = replaceLockedCategoryPasswordRange(
+      accessState.passwordDraft,
+      selectionStart,
+      selectionEnd,
+      pastedValue
+    );
     accessState.hasTypedPassword = Boolean(accessState.passwordDraft);
     accessState.accessError = false;
-    accessState.passwordRevealIndex = accessState.passwordDraft.length - 1;
-    scheduleLockedCategoryPasswordMask(categoryName);
+    accessState.passwordRevealIndex = pastedValue ? selectionStart + pastedValue.length - 1 : -1;
+    if (pastedValue) {
+      scheduleLockedCategoryPasswordMask(categoryName);
+    } else {
+      clearCategoryAccessMaskTimer(categoryName);
+    }
     syncLockedCategoryAccessUi();
     return;
   }
 
   if (inputType === "deleteContentBackward" || inputType === "deleteContentForward") {
     event.preventDefault();
-    accessState.passwordDraft = accessState.passwordDraft.slice(0, -1);
+    if (selectionStart !== selectionEnd) {
+      accessState.passwordDraft = replaceLockedCategoryPasswordRange(
+        accessState.passwordDraft,
+        selectionStart,
+        selectionEnd
+      );
+    } else if (inputType === "deleteContentBackward" && selectionStart > 0) {
+      accessState.passwordDraft = replaceLockedCategoryPasswordRange(
+        accessState.passwordDraft,
+        selectionStart - 1,
+        selectionEnd
+      );
+    } else if (inputType === "deleteContentForward" && selectionStart < accessState.passwordDraft.length) {
+      accessState.passwordDraft = replaceLockedCategoryPasswordRange(
+        accessState.passwordDraft,
+        selectionStart,
+        selectionStart + 1
+      );
+    }
     accessState.hasTypedPassword = Boolean(accessState.passwordDraft);
     accessState.accessError = false;
     accessState.passwordVisible = false;
     accessState.passwordRevealIndex = -1;
-    if (accessState.passwordDraft) {
-      clearCategoryAccessMaskTimer(categoryName);
-    } else {
-      clearCategoryAccessMaskTimer(categoryName);
-    }
+    clearCategoryAccessMaskTimer(categoryName);
+    syncLockedCategoryAccessUi();
+    return;
+  }
+
+  if (inputType === "deleteByCut") {
+    event.preventDefault();
+    accessState.passwordDraft = replaceLockedCategoryPasswordRange(
+      accessState.passwordDraft,
+      selectionStart,
+      selectionEnd
+    );
+    accessState.hasTypedPassword = Boolean(accessState.passwordDraft);
+    accessState.accessError = false;
+    accessState.passwordVisible = false;
+    accessState.passwordRevealIndex = -1;
+    clearCategoryAccessMaskTimer(categoryName);
     syncLockedCategoryAccessUi();
   }
 }
