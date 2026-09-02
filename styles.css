@@ -1617,6 +1617,12 @@ input {
   opacity: 0.35;
 }
 
+.inspector-panel-toggle-row-password.is-static {
+  cursor: default;
+  opacity: 1;
+  pointer-events: none;
+}
+
 .inspector-panel-password-toggle-icon {
   display: inline-flex;
   flex: 0 0 16px;
@@ -1657,6 +1663,17 @@ input {
   opacity: 1;
 }
 
+.inspector-panel-toggle-row-password.is-static .inspector-panel-password-toggle-icon-layer.is-default,
+.inspector-panel-toggle-row-password.is-static .inspector-panel-password-toggle-icon-layer.is-disabled,
+.inspector-panel-toggle-row-password.is-static .inspector-panel-password-toggle-icon-layer.is-hover,
+.inspector-panel-toggle-row-password.is-static .inspector-panel-password-toggle-icon-layer.is-active {
+  opacity: 0;
+}
+
+.inspector-panel-toggle-row-password.is-static .inspector-panel-password-toggle-icon-layer.is-postactive {
+  opacity: 1;
+}
+
 .inspector-panel-toggle-row-password[aria-pressed="true"]:active:not(:disabled) .inspector-panel-password-toggle-icon-layer.is-postactive {
   opacity: 0;
 }
@@ -1687,6 +1704,47 @@ input {
   height: 16px;
   justify-content: center;
   width: 16px;
+}
+
+.inspector-panel-checkbox-layered {
+  position: relative;
+}
+
+.inspector-panel-checkbox-layer {
+  display: block;
+  height: 16px;
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 120ms ease;
+  width: 16px;
+}
+
+.inspector-panel-toggle-row-checkbox .inspector-panel-checkbox-layer.is-default {
+  opacity: 1;
+}
+
+.inspector-panel-toggle-row-checkbox:hover .inspector-panel-checkbox-layer.is-default,
+.inspector-panel-toggle-row-checkbox:focus-visible .inspector-panel-checkbox-layer.is-default,
+.inspector-panel-toggle-row-checkbox[aria-pressed="true"] .inspector-panel-checkbox-layer.is-default {
+  opacity: 0;
+}
+
+.inspector-panel-toggle-row-checkbox:hover:not([aria-pressed="true"]) .inspector-panel-checkbox-layer.is-hover,
+.inspector-panel-toggle-row-checkbox:focus-visible:not([aria-pressed="true"]) .inspector-panel-checkbox-layer.is-hover {
+  opacity: 1;
+}
+
+.inspector-panel-toggle-row-checkbox[aria-pressed="true"] .inspector-panel-checkbox-layer.is-postactive {
+  opacity: 1;
+}
+
+.inspector-panel-toggle-row-checkbox[aria-pressed="true"]:active .inspector-panel-checkbox-layer.is-postactive {
+  opacity: 0;
+}
+
+.inspector-panel-toggle-row-checkbox[aria-pressed="true"]:active .inspector-panel-checkbox-layer.is-active {
+  opacity: 1;
 }
 
 .inspector-panel-favourite-icon,

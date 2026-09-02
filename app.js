@@ -2785,14 +2785,17 @@ function renderInspectorPasswordShowHideToggle(isExpanded) {
 
 function renderInspectorPasswordProtectToggle({ categoryName = appState.activeSidebarCategory, isProtected, isExpanded = false, isDisabled = false }) {
   const disabledAttr = isDisabled ? " disabled" : "";
-  const disabledClass = isDisabled ? " is-disabled" : "";
-  const pressedAttr = isProtected ? "true" : "false";
   const isSaved = getInspectorSavePasswordState(categoryName) === "final";
+  const isStatic = isProtected && isSaved;
+  const disabledClass = `${isDisabled ? " is-disabled" : ""}${isStatic ? " is-static" : ""}`;
+  const pressedAttr = isProtected ? "true" : "false";
   const showHideMarkup = isProtected && isSaved ? renderInspectorPasswordShowHideToggle(isExpanded) : "";
+  const actionAttr = isStatic ? "" : ' data-action="toggle-inspector-password"';
+  const ariaDisabledAttr = isStatic ? ' aria-disabled="true"' : "";
 
   return `
     <div class="inspector-password-protect-row">
-      <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category inspector-panel-toggle-row-password${disabledClass}" type="button" data-action="toggle-inspector-password" aria-pressed="${pressedAttr}"${disabledAttr}>
+      <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category inspector-panel-toggle-row-password${disabledClass}" type="button"${actionAttr} aria-pressed="${pressedAttr}"${ariaDisabledAttr}${disabledAttr}>
         <span class="inspector-panel-password-toggle-icon" aria-hidden="true">
           <img class="inspector-panel-password-toggle-icon-layer is-disabled" src="${INSPECTOR_PASSWORD_PROTECT_DISABLED_HOVER_ICON}" alt="" width="16" height="16" />
           <img class="inspector-panel-password-toggle-icon-layer is-default" src="${INSPECTOR_PASSWORD_PROTECT_DEFAULT_ICON}" alt="" width="16" height="16" />
@@ -2804,6 +2807,17 @@ function renderInspectorPasswordProtectToggle({ categoryName = appState.activeSi
       </button>
       ${showHideMarkup}
     </div>
+  `;
+}
+
+function renderInspectorPermanentCopyCheckbox() {
+  return `
+    <span class="inspector-panel-checkbox inspector-panel-checkbox-layered" aria-hidden="true">
+      <img class="inspector-panel-checkbox-layer is-default" src="${INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
+      <img class="inspector-panel-checkbox-layer is-hover" src="${INSPECTOR_PASSWORD_PROTECT_DISABLED_HOVER_ICON}" alt="" width="16" height="16" />
+      <img class="inspector-panel-checkbox-layer is-active" src="${INSPECTOR_PASSWORD_PROTECT_ACTIVE_ICON}" alt="" width="16" height="16" />
+      <img class="inspector-panel-checkbox-layer is-postactive" src="${INSPECTOR_PASSWORD_PROTECT_POSTACTIVE_ICON}" alt="" width="16" height="16" />
+    </span>
   `;
 }
 
@@ -4173,10 +4187,8 @@ function renderInspectorPanel() {
             <span class="inspector-panel-toggle-label">Mark as favourite</span>
           </button>
 
-          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-bookmark" type="button" data-action="toggle-bookmark-permanent-copy" data-bookmark-id="${activeInspectorBookmark.id}" aria-pressed="${Boolean(activeInspectorBookmark.isPermanentCopy)}">
-            <span class="inspector-panel-checkbox">
-              <img src="${activeInspectorBookmark.isPermanentCopy ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
-            </span>
+          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-bookmark inspector-panel-toggle-row-checkbox" type="button" data-action="toggle-bookmark-permanent-copy" data-bookmark-id="${activeInspectorBookmark.id}" aria-pressed="${Boolean(activeInspectorBookmark.isPermanentCopy)}">
+            ${renderInspectorPermanentCopyCheckbox()}
             <span class="inspector-panel-toggle-label">Save a permanent copy</span>
           </button>
         </div>
@@ -4324,10 +4336,8 @@ function renderInspectorPanel() {
             <span class="inspector-panel-toggle-label">Mark all as favourite</span>
           </button>
 
-          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category" type="button" data-action="toggle-inspector-permanent-copy" aria-pressed="${savePermanentCopy}">
-            <span class="inspector-panel-checkbox">
-              <img src="${savePermanentCopy ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
-            </span>
+          <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category inspector-panel-toggle-row-checkbox" type="button" data-action="toggle-inspector-permanent-copy" aria-pressed="${savePermanentCopy}">
+            ${renderInspectorPermanentCopyCheckbox()}
             <span class="inspector-panel-toggle-label">Save all as permanent copy</span>
           </button>
 
@@ -4419,10 +4429,8 @@ function renderInspectorPanel() {
         <img src="${INSPECTOR_TOP_DIVIDER}" alt="" width="300" height="1" />
       </div>
 
-      <button class="inspector-panel-toggle-row inspector-panel-toggle-row-primary" type="button" data-action="toggle-inspector-permanent-copy" aria-pressed="${Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory))}">
-        <span class="inspector-panel-checkbox">
-          <img src="${getInspectorStateValue("savePermanentCopy", activeInspectorCategory) ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
-        </span>
+      <button class="inspector-panel-toggle-row inspector-panel-toggle-row-primary inspector-panel-toggle-row-checkbox" type="button" data-action="toggle-inspector-permanent-copy" aria-pressed="${Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory))}">
+        ${renderInspectorPermanentCopyCheckbox()}
         <span class="inspector-panel-toggle-label">Save all as permanent copy</span>
       </button>
 
