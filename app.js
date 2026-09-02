@@ -2207,10 +2207,29 @@ function syncSidebarCategoryUi() {
     const categoryId = link.getAttribute("data-category-id");
     const isActive = isSidebarCategoryActive(categoryName);
     const count = link.querySelector(".bookmark-sidebar-link-count");
+    const iconImage = link.querySelector(".bookmark-sidebar-link-icon-frame img");
+    const iconWrapper = link.querySelector(".bookmark-sidebar-link-icon");
+    const label = link.querySelector(".bookmark-sidebar-link-label");
+    const sidebarEntry = findPrimaryLinkByLabel(categoryName) || (categoryId ? findCategoryLinkById(categoryId) : findCategoryLinkByLabel(categoryName));
+    const isLockedCategory = shouldShowLockedCategoryInSidebar(categoryName);
+    const iconSource = isLockedCategory ? BOOKMARK_LOCKED_ICON : (sidebarEntry?.defaultIcon || sidebarEntry?.icon);
+    const iconClassName = isLockedCategory ? "bookmark-locked-icon" : (sidebarEntry?.defaultIconClass || sidebarEntry?.iconClass || "");
 
     link.classList.toggle("is-active", isActive);
     link.classList.toggle("is-dragging", categoryId === appState.draggedCategoryId);
     link.classList.toggle("is-drop-target", categoryId === appState.dropTargetCategoryId);
+
+    if (label && sidebarEntry) {
+      label.textContent = sidebarEntry.displayLabel || sidebarEntry.label;
+    }
+
+    if (iconImage && iconSource) {
+      iconImage.src = iconSource;
+    }
+
+    if (iconWrapper) {
+      iconWrapper.className = `bookmark-sidebar-link-icon ${iconClassName}`.trim();
+    }
 
     if (categoryId) {
       const categoryLink = findCategoryLinkById(categoryId);
@@ -2656,7 +2675,10 @@ function shouldShowLockedCategoryInSidebar(categoryName) {
     return false;
   }
 
-  return Boolean(getInspectorStateValue("passwordProtected", categoryName));
+  return Boolean(
+    getInspectorStateValue("passwordProtected", categoryName) &&
+    String(getInspectorStateValue("accessPassword", categoryName) || "").trim()
+  );
 }
 
 function isCategoryAccessLocked(categoryName = appState.activeSidebarCategory) {
