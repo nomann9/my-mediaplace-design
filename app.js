@@ -52,6 +52,7 @@ const CONTENT_HEADING_ZOOM_OUT_ICON = "assets/figma/4ffe2a45-f7d2-45c0-b247-998b
 const CONTENT_HEADING_KEBAB_ICON = "assets/figma/f4287519-7129-4119-9586-362722a3a71c.svg";
 const CONTENT_HEADING_CHEVRON_ICON = "assets/figma/c8491e4a-2b0c-443f-892d-3aa72b88a697.svg";
 const CONTENT_HEADING_EXPORT_ICON = "assets/figma/3c693a14-1cd0-46a4-ab33-9b60f298a351.svg";
+const CONTENT_HEADING_EDIT_ICON = "assets/figma/57ed943c-8dad-4fbd-9b01-cdd2ac027a5c.svg";
 const CONTENT_KEBAB_OPEN_ICON = "assets/figma/aecebe9a-2c29-4a7d-b0d9-b02da46c9acd.svg";
 const CONTENT_KEBAB_DUPLICATE_ICON = "assets/figma/489489a9-f697-4b5d-8109-56f5265b4a7e.svg";
 const CONTENT_KEBAB_READ_ICON = "assets/figma/e12e2637-8369-4937-ba1a-37dc1c548ddd.svg";
@@ -991,6 +992,7 @@ const appState = {
   createCategoryState: "default",
   isCreatingCategory: false,
   newCategoryName: "New Category",
+  primaryLinks: createInitialPrimaryLinks(),
   categoryLinks: createInitialCategoryLinks(),
   expandedCategoryIds: [],
   activeGlobalSidebarItem: "Bookmarks",
@@ -1029,6 +1031,8 @@ const appState = {
   previewBookmarkId: null,
   bookmarkDisplayMode: "grid",
   bookmarkZoomLevel: 1,
+  contentTitleEditingCategory: null,
+  contentTitleDraft: "",
   bookmarks: [
     {
       id: "sample-bookmark-1",
@@ -1282,8 +1286,10 @@ function setCssVars(tokens) {
     "--text-accent-on-primary": resolveValue(mapped.text["accent-on-primary"], tokens),
     "--border-divider": resolveValue(mapped.border.divider, tokens),
     "--border-input": resolveValue(mapped.border.input, tokens),
+    "--border-field-disabled": resolveValue(mapped.border["field-disabled"], tokens),
     "--border-card-default": resolveValue(mapped.border["card-default"], tokens),
     "--icon-default": resolveValue(mapped.icon.default, tokens),
+    "--icon-disabled": resolveValue(mapped.icon.disabled, tokens),
     "--icon-status-positive": resolveValue(mapped.icon["status-positive"], tokens),
     "--control-toggle-accent": resolveValue(mapped.control["toggle-accent"], tokens),
     "--inspector-title": resolveValue(mapped.inspector.title, tokens),
@@ -1448,6 +1454,7 @@ function renderBookmarkSidebarLink(link) {
   const isChild = Boolean(link.isChild);
   const isActive = isSidebarCategoryActive(link.label);
   const isLockedCategory = shouldShowLockedCategoryInSidebar(link.label);
+  const displayLabel = link.displayLabel || link.label;
   const iconSource = isLockedCategory ? BOOKMARK_LOCKED_ICON : (link.defaultIcon || link.icon);
   const iconClassName = isLockedCategory ? "bookmark-locked-icon" : (link.defaultIconClass || link.iconClass || "");
   const stateClass = isActive ? " is-active" : "";
@@ -1476,7 +1483,7 @@ function renderBookmarkSidebarLink(link) {
             <img src="${iconSource}" alt="" width="20" height="20" />
           </span>
         </span>
-        <span class="bookmark-sidebar-link-label">${link.label}</span>
+        <span class="bookmark-sidebar-link-label">${escapeHtml(displayLabel)}</span>
         ${chevronMarkup}
       </span>
       <span class="bookmark-sidebar-link-count">${linkCount}</span>
@@ -1596,13 +1603,51 @@ function escapeHtml(value) {
 }
 
 function getSidebarCategoryLinks() {
-  const primaryLinks = BOOKMARK_PRIMARY_LINKS.map((link) => ({ ...link, group: "primary" }));
+  const primaryLinks = appState.primaryLinks.map((link) => ({ ...link, group: "primary" }));
   const filterLinks = BOOKMARK_FILTER_LINKS.map((link) => ({ ...link, group: "filter" }));
 
   return {
     primaryLinks,
     categoryLinks: appState.categoryLinks.map((link) => ({ ...link, group: "category" })),
     filterLinks
+  };
+}
+
+function createInitialPrimaryLinks() {
+  return [
+    createPrimaryLink({ id: "all-bookmarks", label: "All Bookmarks", count: "462", icon: BOOKMARK_FOLDER_ICON }),
+    createPrimaryLink({ id: "uncategorized", label: "Uncategorized", count: "4", icon: BOOKMARK_FOLDER_ICON, bookmarkCategory: "Uncategorized" }),
+    createPrimaryLink({
+      id: "deleted-items",
+      label: "Deleted Items",
+      count: "0",
+      icon: BOOKMARK_TRASH_ICON,
+      iconClass: "bookmark-trash-icon",
+      iconFrameClass: "bookmark-trash-frame"
+    })
+  ];
+}
+
+function createPrimaryLink({
+  id,
+  label,
+  count,
+  icon,
+  iconClass = "",
+  iconFrameClass = "",
+  bookmarkCategory = null
+}) {
+  return {
+    id,
+    label,
+    displayLabel: label,
+    count,
+    icon,
+    iconClass,
+    iconFrameClass,
+    defaultIcon: icon,
+    defaultIconClass: iconClass,
+    bookmarkCategory
   };
 }
 
@@ -1618,7 +1663,8 @@ function getRootCategoryOptions() {
   return appState.categoryLinks.map((link) => ({
     id: link.id,
     label: link.label,
-    bookmarkCategory: normalizeBookmarkCategory(link.label)
+    displayLabel: link.displayLabel || link.label,
+    bookmarkCategory: link.bookmarkCategory || normalizeBookmarkCategory(link.label)
   }));
 }
 
@@ -1719,6 +1765,7 @@ function createCategoryLink({
   icon,
   iconClass = "",
   iconFrameClass = "",
+  bookmarkCategory = null,
   bookmarkFilter = null,
   children = [],
   lockedByDefault = false
@@ -1726,11 +1773,13 @@ function createCategoryLink({
   return {
     id,
     label,
+    displayLabel: label,
     icon,
     iconClass,
     iconFrameClass,
     defaultIcon: icon,
     defaultIconClass: iconClass,
+    bookmarkCategory: bookmarkCategory || normalizeBookmarkCategory(label),
     lockedByDefault,
     bookmarkFilter,
     children
@@ -1769,6 +1818,62 @@ function findCategoryLinkById(id, links = appState.categoryLinks) {
   }
 
   return null;
+}
+
+function findCategoryLinkByBookmarkCategory(bookmarkCategory, links = appState.categoryLinks) {
+  for (const link of links) {
+    if ((link.bookmarkCategory || normalizeBookmarkCategory(link.label)) === bookmarkCategory) {
+      return link;
+    }
+
+    const childMatch = findCategoryLinkByBookmarkCategory(bookmarkCategory, link.children || []);
+    if (childMatch) {
+      return childMatch;
+    }
+  }
+
+  return null;
+}
+
+function findPrimaryLinkByLabel(label) {
+  return appState.primaryLinks.find((link) => link.label === label) || null;
+}
+
+function getSidebarDisplayLabel(categoryName = appState.activeSidebarCategory) {
+  const primaryLink = findPrimaryLinkByLabel(categoryName);
+  if (primaryLink) {
+    return primaryLink.displayLabel || primaryLink.label;
+  }
+
+  const categoryLink = findCategoryLinkByLabel(categoryName);
+  if (categoryLink) {
+    return categoryLink.displayLabel || categoryLink.label;
+  }
+
+  return categoryName;
+}
+
+function getDisplayLabelForBookmarkCategory(bookmarkCategory) {
+  const primaryLink = appState.primaryLinks.find((link) => link.bookmarkCategory === bookmarkCategory);
+  if (primaryLink) {
+    return primaryLink.displayLabel || primaryLink.label;
+  }
+
+  const categoryLink = findCategoryLinkByBookmarkCategory(bookmarkCategory);
+  if (categoryLink) {
+    return categoryLink.displayLabel || categoryLink.label;
+  }
+
+  return bookmarkCategory;
+}
+
+function getRenameableSidebarEntry(categoryName = appState.activeSidebarCategory) {
+  const primaryLink = findPrimaryLinkByLabel(categoryName);
+  if (primaryLink) {
+    return primaryLink;
+  }
+
+  return findCategoryLinkByLabel(categoryName);
 }
 
 function hasDescendantCategoryLabel(link, targetLabel) {
@@ -1875,12 +1980,19 @@ function getBookmarkStatusIcon(bookmark) {
 }
 
 function getBookmarksForCategory(categoryName) {
-  if (categoryName === "All Bookmarks") {
+  const primaryLink = findPrimaryLinkByLabel(categoryName);
+  if (primaryLink?.id === "all-bookmarks") {
     return appState.bookmarks.filter((bookmark) => !bookmark.isDeleted);
   }
 
-  if (categoryName === "Deleted Items") {
+  if (primaryLink?.id === "deleted-items") {
     return appState.bookmarks.filter((bookmark) => bookmark.isDeleted);
+  }
+
+  if (primaryLink?.bookmarkCategory) {
+    return appState.bookmarks.filter(
+      (bookmark) => !bookmark.isDeleted && normalizeBookmarkCategory(bookmark.category) === primaryLink.bookmarkCategory
+    );
   }
 
   const categoryLink = findCategoryLinkByLabel(categoryName);
@@ -1893,7 +2005,7 @@ function getBookmarksForCategory(categoryName) {
     );
   }
 
-  const normalizedCategoryName = normalizeBookmarkCategory(categoryName);
+  const normalizedCategoryName = categoryLink?.bookmarkCategory || normalizeBookmarkCategory(categoryName);
   return appState.bookmarks.filter(
     (bookmark) => !bookmark.isDeleted && normalizeBookmarkCategory(bookmark.category) === normalizedCategoryName
   );
@@ -2015,7 +2127,7 @@ ${item.note ? `${item.note}\n` : ""}`).join("\n");
   <title>MediaPlace Export</title>
 </head>
 <body>
-  <h1>${escapeHtml(appState.activeSidebarCategory)}</h1>
+  <h1>${escapeHtml(getSidebarDisplayLabel(appState.activeSidebarCategory))}</h1>
   <ul>
 ${htmlBookmarks}
   </ul>
@@ -2955,6 +3067,44 @@ function getActiveMoveBookmark() {
   return getActiveInspectorBookmark() || getSingleSelectedVisibleBookmark();
 }
 
+function isContentTitleEditable(categoryName = appState.activeSidebarCategory) {
+  return Boolean(getRenameableSidebarEntry(categoryName));
+}
+
+function isEditingContentTitle(categoryName = appState.activeSidebarCategory) {
+  return appState.contentTitleEditingCategory === categoryName;
+}
+
+function startContentTitleEdit(categoryName = appState.activeSidebarCategory) {
+  if (!isContentTitleEditable(categoryName)) {
+    return;
+  }
+
+  appState.contentTitleEditingCategory = categoryName;
+  appState.contentTitleDraft = getSidebarDisplayLabel(categoryName);
+}
+
+function cancelContentTitleEdit() {
+  appState.contentTitleEditingCategory = null;
+  appState.contentTitleDraft = "";
+}
+
+function commitContentTitleEdit() {
+  const categoryName = appState.contentTitleEditingCategory;
+  const renameableEntry = getRenameableSidebarEntry(categoryName);
+  if (!categoryName || !renameableEntry) {
+    cancelContentTitleEdit();
+    return;
+  }
+
+  const trimmedDraft = appState.contentTitleDraft.trim();
+  if (trimmedDraft) {
+    renameableEntry.displayLabel = trimmedDraft;
+  }
+
+  cancelContentTitleEdit();
+}
+
 function getBookmarkInspectorTypeLabel(bookmark) {
   return bookmark?.type || inferBookmarkType(bookmark || {});
 }
@@ -3549,6 +3699,7 @@ function renderExportFormatsMenu() {
 
 function renderBookmarkContentHeader() {
   const activeCategory = appState.activeSidebarCategory;
+  const activeCategoryLabel = getSidebarDisplayLabel(activeCategory);
   const bookmarkCount = getCategoryBookmarkCount(activeCategory);
   const gridActiveClass = appState.bookmarkDisplayMode === "grid" ? " is-active" : "";
   const listActiveClass = appState.bookmarkDisplayMode === "list" ? " is-active" : "";
@@ -3557,13 +3708,40 @@ function renderBookmarkContentHeader() {
   const kebabMenuMarkup = appState.contentKebabOpen ? renderContentKebabMenu() : "";
   const exportDisabled = bookmarkCount === 0;
   const exportMenuMarkup = appState.exportFormatsOpen && !exportDisabled ? renderExportFormatsMenu() : "";
+  const isEditable = isContentTitleEditable(activeCategory);
+  const isEditing = isEditingContentTitle(activeCategory);
+  const titleMarkup = isEditing
+    ? `
+      <label class="bookmark-content-title-input-shell">
+        <input
+          class="bookmark-content-title-input"
+          type="text"
+          value="${escapeHtml(appState.contentTitleDraft).replace(/"/g, "&quot;")}"
+          size="${Math.max(1, appState.contentTitleDraft.length)}"
+          data-role="bookmark-content-title-input"
+          aria-label="Rename page title"
+        />
+      </label>
+    `
+    : isEditable
+      ? `
+        <button class="bookmark-content-title-button" type="button" data-action="start-content-title-edit" aria-label="Edit ${escapeHtml(activeCategoryLabel)} title">
+          <span class="bookmark-content-title-shell">
+            <span class="bookmark-content-title">${escapeHtml(activeCategoryLabel)}</span>
+            <span class="bookmark-content-title-edit-indicator">
+              <img src="${CONTENT_HEADING_EDIT_ICON}" alt="" width="12" height="12" />
+            </span>
+          </span>
+        </button>
+      `
+      : `<h2 class="bookmark-content-title">${escapeHtml(activeCategoryLabel)}</h2>`;
 
   return `
     <section class="bookmark-content-header">
       <div class="bookmark-content-header-main">
         <div class="bookmark-content-title-block">
           <div class="bookmark-content-title-row">
-            <h2 class="bookmark-content-title">${escapeHtml(activeCategory)}</h2>
+            ${titleMarkup}
             <span class="bookmark-content-count">(${bookmarkCount})</span>
           </div>
 
@@ -3879,7 +4057,7 @@ function renderBookmarkMoveDropdown(bookmark) {
 
       return `
         <button class="inspector-bookmark-move-option${selectedClass}${disabledClass}" type="button"${actionMarkup}${isCurrent ? " disabled" : ""}>
-          <span>${escapeHtml(formatCategoryLabel(option.label))}</span>
+          <span>${escapeHtml(formatCategoryLabel(option.displayLabel || option.label))}</span>
         </button>
       `;
     })
@@ -3890,7 +4068,7 @@ function renderBookmarkMoveDropdown(bookmark) {
       <div class="inspector-bookmark-move-dropdown-panel">
         <div class="inspector-bookmark-move-current">
           <span>Currently in:</span>
-          <span>${escapeHtml(formatCategoryLabel(currentCategory))}</span>
+          <span>${escapeHtml(getDisplayLabelForBookmarkCategory(currentCategory))}</span>
         </div>
         <div class="inspector-bookmark-move-options">
           ${categoryOptions}
@@ -4070,7 +4248,7 @@ function renderInspectorPanel() {
 
     return `
       <div class="inspector-panel inspector-panel-category${categoryPanelClass}">
-        <div class="inspector-panel-title">${escapeHtml(activeInspectorCategory)}</div>
+        <div class="inspector-panel-title">${escapeHtml(getSidebarDisplayLabel(activeInspectorCategory))}</div>
 
         <div class="inspector-panel-metadata">
           <div class="inspector-panel-meta-row">
@@ -4173,7 +4351,7 @@ function renderInspectorPanel() {
 
   return `
     <div class="inspector-panel inspector-panel-all-bookmarks">
-      <div class="inspector-panel-title">All Bookmarks</div>
+      <div class="inspector-panel-title">${escapeHtml(getSidebarDisplayLabel("All Bookmarks"))}</div>
 
       <div class="inspector-panel-metadata">
         <div class="inspector-panel-meta-row">
@@ -4431,6 +4609,12 @@ function renderShell() {
     newCategoryInput.setSelectionRange(valueLength, valueLength);
   }
 
+  const contentTitleInput = app.querySelector("[data-role='bookmark-content-title-input']");
+  if (appState.contentTitleEditingCategory && contentTitleInput) {
+    contentTitleInput.focus();
+    contentTitleInput.select();
+  }
+
   if (appState.activeContentView === "preview") {
     setupPreviewPaneScroll();
   }
@@ -4549,6 +4733,12 @@ function handleAppClick(event) {
     return;
   }
 
+  if (action === "start-content-title-edit") {
+    startContentTitleEdit();
+    renderShell();
+    return;
+  }
+
   if (action === "toggle-bookmark-selection") {
     const bookmarkId = actionTarget.getAttribute("data-bookmark-id");
     toggleBookmarkSelection(bookmarkId);
@@ -4558,6 +4748,7 @@ function handleAppClick(event) {
   if (action === "select-global-sidebar-item") {
     const sidebarItem = actionTarget.getAttribute("data-sidebar-item");
     if (sidebarItem) {
+      cancelContentTitleEdit();
       lockCategoryAfterLeaving(appState.activeSidebarCategory);
       appState.activeGlobalSidebarItem = sidebarItem;
       syncGlobalSidebarUi();
@@ -4569,6 +4760,7 @@ function handleAppClick(event) {
     const categoryName = actionTarget.getAttribute("data-category");
     const categoryId = actionTarget.getAttribute("data-category-id");
     if (categoryName) {
+      cancelContentTitleEdit();
       const previousCategory = appState.activeSidebarCategory;
       const categoryLink = categoryId ? findCategoryLinkById(categoryId) : findCategoryLinkByLabel(categoryName);
       if (categoryLink?.children?.length) {
@@ -5099,6 +5291,11 @@ function handleAppInput(event) {
     return;
   }
 
+  if (event.target.matches("[data-role='bookmark-content-title-input']")) {
+    appState.contentTitleDraft = event.target.value;
+    return;
+  }
+
   if (event.target.matches("[data-role='inspector-tags-input']")) {
     setInspectorStateValue("tagDraft", event.target.value);
     return;
@@ -5294,6 +5491,24 @@ function handleAppKeydown(event) {
     return;
   }
 
+  if (event.target.matches("[data-role='bookmark-content-title-input']")) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commitContentTitleEdit();
+      renderShell();
+      return;
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      cancelContentTitleEdit();
+      renderShell();
+      return;
+    }
+
+    return;
+  }
+
   if (!event.target.matches("[data-role='new-bookmark-input']")) {
     if (event.target.matches("[data-role='bookmark-inspector-tags-input']")) {
       if (event.key === "Enter" || event.key === ",") {
@@ -5371,6 +5586,23 @@ function handleAppKeydown(event) {
   }
 }
 
+function handleAppFocusOut(event) {
+  if (!event.target.matches("[data-role='bookmark-content-title-input']")) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    if (document.activeElement?.matches?.("[data-role='bookmark-content-title-input']")) {
+      return;
+    }
+
+    if (appState.contentTitleEditingCategory) {
+      commitContentTitleEdit();
+      renderShell();
+    }
+  });
+}
+
 function handleAppFocusIn(event) {
   if (event.target.matches("[data-role='locked-category-password-input']")) {
     const categoryName = appState.activeSidebarCategory;
@@ -5428,6 +5660,7 @@ async function init() {
   app.addEventListener("input", handleAppInput);
   app.addEventListener("keydown", handleAppKeydown);
   app.addEventListener("focusin", handleAppFocusIn);
+  app.addEventListener("focusout", handleAppFocusOut);
 }
 
 init();
