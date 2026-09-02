@@ -3105,6 +3105,17 @@ function commitContentTitleEdit() {
   cancelContentTitleEdit();
 }
 
+function updateContentTitleInputWidth(input) {
+  if (!input) {
+    return;
+  }
+
+  input.style.width = "1px";
+  const nextWidth = Math.max(1, Math.ceil(input.scrollWidth));
+  input.style.width = `${nextWidth}px`;
+  input.scrollLeft = 0;
+}
+
 function getBookmarkInspectorTypeLabel(bookmark) {
   return bookmark?.type || inferBookmarkType(bookmark || {});
 }
@@ -3507,6 +3518,7 @@ function renderBookmarkCard(bookmark) {
   const selectedClass = isSelected ? " is-selected" : "";
   const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
   const statusIcon = bookmark.statusIcon || BOOKMARK_CARD_STATUS_ICON;
+  const categoryLabel = getDisplayLabelForBookmarkCategory(normalizeBookmarkCategory(bookmark.category));
   const permanentCopyBanner = bookmark.isPermanentCopy
     ? `<div class="bookmark-card-permanent-banner"><span>Permanent copy</span></div>`
     : "";
@@ -3563,7 +3575,7 @@ function renderBookmarkCard(bookmark) {
         <div class="bookmark-card-meta-row">
           <div class="bookmark-card-category">
             <img class="bookmark-card-category-icon" src="${BOOKMARK_CARD_FOLDER_ICON}" alt="" width="16" height="16" />
-            <span class="bookmark-card-category-text">${bookmark.category}</span>
+            <span class="bookmark-card-category-text">${escapeHtml(categoryLabel)}</span>
           </div>
           <span class="bookmark-card-date">${bookmark.date}</span>
         </div>
@@ -3577,6 +3589,7 @@ function renderBookmarkListCard(bookmark) {
   const selectedClass = isSelected ? " is-selected" : "";
   const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
   const statusIcon = bookmark.statusIcon || BOOKMARK_CARD_STATUS_ICON;
+  const categoryLabel = getDisplayLabelForBookmarkCategory(normalizeBookmarkCategory(bookmark.category));
   const imageContent = bookmark.isFetchingImage
     ? `
         <div class="bookmark-card-fetch bookmark-list-card-fetch">
@@ -3612,7 +3625,7 @@ function renderBookmarkListCard(bookmark) {
           <div class="bookmark-list-card-meta-row">
             <div class="bookmark-list-card-category">
               <img class="bookmark-list-card-category-icon" src="${BOOKMARK_CARD_FOLDER_ICON}" alt="" width="20" height="20" />
-              <span class="bookmark-list-card-meta-text">${escapeHtml(bookmark.category)}</span>
+              <span class="bookmark-list-card-meta-text">${escapeHtml(categoryLabel)}</span>
             </div>
             <span class="bookmark-list-card-meta-divider"></span>
             <span class="bookmark-list-card-meta-text">${escapeHtml(bookmark.date)}</span>
@@ -3717,7 +3730,6 @@ function renderBookmarkContentHeader() {
           class="bookmark-content-title-input"
           type="text"
           value="${escapeHtml(appState.contentTitleDraft).replace(/"/g, "&quot;")}"
-          size="${Math.max(1, appState.contentTitleDraft.length)}"
           data-role="bookmark-content-title-input"
           aria-label="Rename page title"
         />
@@ -4611,8 +4623,11 @@ function renderShell() {
 
   const contentTitleInput = app.querySelector("[data-role='bookmark-content-title-input']");
   if (appState.contentTitleEditingCategory && contentTitleInput) {
+    updateContentTitleInputWidth(contentTitleInput);
     contentTitleInput.focus();
-    contentTitleInput.select();
+    const valueLength = contentTitleInput.value.length;
+    contentTitleInput.setSelectionRange(valueLength, valueLength);
+    contentTitleInput.scrollLeft = 0;
   }
 
   if (appState.activeContentView === "preview") {
@@ -5293,6 +5308,7 @@ function handleAppInput(event) {
 
   if (event.target.matches("[data-role='bookmark-content-title-input']")) {
     appState.contentTitleDraft = event.target.value;
+    updateContentTitleInputWidth(event.target);
     return;
   }
 

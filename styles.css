@@ -2951,6 +2951,10 @@ input {
   white-space: nowrap;
 }
 
+.bookmark-content-title-row:has(.bookmark-content-title-button:hover) {
+  gap: 20px;
+}
+
 .bookmark-content-title-button {
   appearance: none;
   background: transparent;
