@@ -3008,6 +3008,7 @@ function saveInspectorCategoryPassword(categoryName = appState.activeSidebarCate
 }
 
 function deleteInspectorCategoryPassword(categoryName = appState.activeSidebarCategory) {
+  setInspectorStateValue("passwordProtected", false, categoryName);
   setInspectorStateValue("accessPassword", "", categoryName);
   setInspectorStateValue("accessPasswordDraft", "", categoryName);
   setInspectorStateValue("accessPasswordVisible", false, categoryName);
@@ -3302,6 +3303,18 @@ function updateRelatedInspectorModifiedDates(categoryName, date = new Date()) {
   if (categoryName !== "All Bookmarks") {
     updateInspectorLastModified(categoryName, date);
   }
+}
+
+function applyPermanentCopyToCategory(categoryName, isPermanentCopy, date = new Date()) {
+  const bookmarks = getBookmarksForCategory(categoryName);
+  const formattedDate = formatBookmarkDate(date);
+
+  bookmarks.forEach((bookmark) => {
+    bookmark.isPermanentCopy = isPermanentCopy;
+    bookmark.modifiedDate = formattedDate;
+  });
+
+  return bookmarks;
 }
 
 function syncInspectorPanel() {
@@ -5072,39 +5085,59 @@ function handleAppClick(event) {
   }
 
   if (action === "toggle-inspector-permanent-copy") {
-    const savePermanentCopy = Boolean(getInspectorStateValue("savePermanentCopy"));
-    setInspectorStateValue("savePermanentCopy", !savePermanentCopy);
-    updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
+    const supportedCategory = getSupportedInspectorCategory();
+    if (!supportedCategory) {
+      return;
+    }
+
+    const savePermanentCopy = Boolean(getInspectorStateValue("savePermanentCopy", supportedCategory));
+    const nextPermanentCopyState = !savePermanentCopy;
+    const now = new Date();
+    setInspectorStateValue("savePermanentCopy", nextPermanentCopyState, supportedCategory);
+    applyPermanentCopyToCategory(supportedCategory, nextPermanentCopyState, now);
+    updateRelatedInspectorModifiedDates(supportedCategory, now);
     syncInspectorPanel();
+    syncBookmarkContentForActiveCategory();
     return;
   }
 
   if (action === "toggle-inspector-password") {
-    const passwordProtected = Boolean(getInspectorStateValue("passwordProtected"));
-    setInspectorStateValue("passwordProtected", !passwordProtected);
+    const categoryName = getSupportedInspectorCategory();
+    if (!categoryName || categoryName === "All Bookmarks") {
+      return;
+    }
+
+    const passwordProtected = Boolean(getInspectorStateValue("passwordProtected", categoryName));
+    const hasSavedPassword = Boolean(String(getInspectorStateValue("accessPassword", categoryName) || "").trim());
+    if (passwordProtected && hasSavedPassword) {
+      syncInspectorPanel();
+      return;
+    }
+
+    setInspectorStateValue("passwordProtected", !passwordProtected, categoryName);
     if (passwordProtected) {
-      setInspectorStateValue("accessPassword", "", appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordDraft", "", appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordVisible", false, appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordStatus", "idle", appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordSetupExpanded", false, appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordDeleteExpanded", false, appState.activeSidebarCategory);
-      if (appState.categoryAccessStates[appState.activeSidebarCategory]) {
-        appState.categoryAccessStates[appState.activeSidebarCategory].passwordDraft = "";
-        appState.categoryAccessStates[appState.activeSidebarCategory].passwordVisible = false;
+      setInspectorStateValue("accessPassword", "", categoryName);
+      setInspectorStateValue("accessPasswordDraft", "", categoryName);
+      setInspectorStateValue("accessPasswordVisible", false, categoryName);
+      setInspectorStateValue("accessPasswordStatus", "idle", categoryName);
+      setInspectorStateValue("accessPasswordSetupExpanded", false, categoryName);
+      setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
+      if (appState.categoryAccessStates[categoryName]) {
+        appState.categoryAccessStates[categoryName].passwordDraft = "";
+        appState.categoryAccessStates[categoryName].passwordVisible = false;
       }
       appState.lockedInspectorCategory = null;
-      setCategoryUnlocked(appState.activeSidebarCategory, false);
+      setCategoryUnlocked(categoryName, false);
     } else {
-      setInspectorStateValue("accessPasswordDraft", String(getInspectorStateValue("accessPassword", appState.activeSidebarCategory) || ""), appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordVisible", false, appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordStatus", getInspectorStateValue("accessPassword", appState.activeSidebarCategory) ? "saved" : "idle", appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordSetupExpanded", true, appState.activeSidebarCategory);
-      setInspectorStateValue("accessPasswordDeleteExpanded", false, appState.activeSidebarCategory);
-      setCategoryUnlocked(appState.activeSidebarCategory, true);
+      setInspectorStateValue("accessPasswordDraft", String(getInspectorStateValue("accessPassword", categoryName) || ""), categoryName);
+      setInspectorStateValue("accessPasswordVisible", false, categoryName);
+      setInspectorStateValue("accessPasswordStatus", getInspectorStateValue("accessPassword", categoryName) ? "saved" : "idle", categoryName);
+      setInspectorStateValue("accessPasswordSetupExpanded", true, categoryName);
+      setInspectorStateValue("accessPasswordDeleteExpanded", false, categoryName);
+      setCategoryUnlocked(categoryName, true);
       appState.lockedInspectorCategory = null;
     }
-    updateRelatedInspectorModifiedDates(getSupportedInspectorCategory());
+    updateRelatedInspectorModifiedDates(categoryName);
     syncSidebarCategoryUi();
     syncBookmarkContentForActiveCategory();
     syncInspectorPanel();
