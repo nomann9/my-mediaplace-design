@@ -1555,14 +1555,23 @@ input {
   width: 268px;
 }
 
-.inspector-panel-password-block {
-  left: 16px;
-  position: absolute;
-  top: 209px;
-  width: 268px;
+.inspector-panel-all-bookmarks-actions .inspector-panel-toggle-row-primary {
+  left: auto;
+  position: static;
+  top: auto;
 }
 
 .inspector-panel-category-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  left: 16px;
+  position: absolute;
+  top: 177px;
+  width: 268px;
+}
+
+.inspector-panel-all-bookmarks-actions {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -1789,6 +1798,14 @@ input {
   top: 245px;
 }
 
+.inspector-panel-all-bookmarks.inspector-panel-category-password-open .inspector-panel-divider-bottom {
+  top: 365px;
+}
+
+.inspector-panel-all-bookmarks.inspector-panel-category-password-delete-open .inspector-panel-divider-bottom {
+  top: 409px;
+}
+
 .inspector-panel-divider-category-bottom {
   top: 277px;
 }
@@ -1817,6 +1834,14 @@ input {
   position: absolute;
   top: 265px;
   width: 268px;
+}
+
+.inspector-panel-all-bookmarks.inspector-panel-category-password-open .inspector-panel-fields {
+  top: 385px;
+}
+
+.inspector-panel-all-bookmarks.inspector-panel-category-password-delete-open .inspector-panel-fields {
+  top: 429px;
 }
 
 .inspector-panel-fields-category {

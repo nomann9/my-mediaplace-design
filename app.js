@@ -1008,6 +1008,12 @@ const appState = {
   allBookmarksLastModified: "21 Dec 2025",
   allBookmarksSavePermanentCopy: false,
   allBookmarksPasswordProtected: false,
+  allBookmarksAccessPassword: "",
+  allBookmarksAccessPasswordDraft: "",
+  allBookmarksAccessPasswordVisible: false,
+  allBookmarksAccessPasswordStatus: "idle",
+  allBookmarksAccessPasswordSetupExpanded: false,
+  allBookmarksAccessPasswordDeleteExpanded: false,
   allBookmarksTags: [],
   allBookmarksTagDraft: "",
   allBookmarksNote: "",
@@ -1185,6 +1191,12 @@ const INSPECTOR_STATE_PATHS = {
     lastModified: "allBookmarksLastModified",
     savePermanentCopy: "allBookmarksSavePermanentCopy",
     passwordProtected: "allBookmarksPasswordProtected",
+    accessPassword: "allBookmarksAccessPassword",
+    accessPasswordDraft: "allBookmarksAccessPasswordDraft",
+    accessPasswordVisible: "allBookmarksAccessPasswordVisible",
+    accessPasswordStatus: "allBookmarksAccessPasswordStatus",
+    accessPasswordSetupExpanded: "allBookmarksAccessPasswordSetupExpanded",
+    accessPasswordDeleteExpanded: "allBookmarksAccessPasswordDeleteExpanded",
     tags: "allBookmarksTags",
     tagDraft: "allBookmarksTagDraft",
     note: "allBookmarksNote"
@@ -2510,6 +2522,10 @@ function isCategoryInspectorCategory(categoryName) {
   return Boolean(categoryName) && categoryName !== "All Bookmarks" && categoryName !== "Deleted Items";
 }
 
+function isPasswordProtectableInspectorCategory(categoryName = appState.activeSidebarCategory) {
+  return Boolean(getSupportedInspectorCategory(categoryName));
+}
+
 function createCategoryInspectorState(categoryName) {
   const lastSaved = getMostRecentBookmarkDateForCategory(categoryName);
   const categoryLink = findCategoryLinkByLabel(categoryName);
@@ -2585,7 +2601,7 @@ function replaceLockedCategoryPasswordRange(password, start, end, insertedText =
 }
 
 function ensureCategoryAccessState(categoryName) {
-  if (!isCategoryInspectorCategory(categoryName)) {
+  if (!isPasswordProtectableInspectorCategory(categoryName)) {
     return null;
   }
 
@@ -2656,7 +2672,7 @@ function isCategoryUnlocked(categoryName) {
 }
 
 function setCategoryUnlocked(categoryName, isUnlocked) {
-  if (!isCategoryInspectorCategory(categoryName)) {
+  if (!isPasswordProtectableInspectorCategory(categoryName)) {
     return;
   }
 
@@ -2682,7 +2698,7 @@ function shouldShowLockedCategoryInSidebar(categoryName) {
 }
 
 function isCategoryAccessLocked(categoryName = appState.activeSidebarCategory) {
-  if (!isCategoryInspectorCategory(categoryName)) {
+  if (!isPasswordProtectableInspectorCategory(categoryName)) {
     return false;
   }
 
@@ -2690,7 +2706,7 @@ function isCategoryAccessLocked(categoryName = appState.activeSidebarCategory) {
 }
 
 function shouldRenderLockedCategoryOverlay(categoryName = appState.activeSidebarCategory) {
-  if (!isCategoryInspectorCategory(categoryName)) {
+  if (!isPasswordProtectableInspectorCategory(categoryName)) {
     return false;
   }
 
@@ -2783,7 +2799,13 @@ function renderInspectorPasswordShowHideToggle(isExpanded) {
   `;
 }
 
-function renderInspectorPasswordProtectToggle({ categoryName = appState.activeSidebarCategory, isProtected, isExpanded = false, isDisabled = false }) {
+function renderInspectorPasswordProtectToggle({
+  categoryName = appState.activeSidebarCategory,
+  isProtected,
+  isExpanded = false,
+  isDisabled = false,
+  label = "Password-protect this category"
+}) {
   const disabledAttr = isDisabled ? " disabled" : "";
   const isSaved = getInspectorSavePasswordState(categoryName) === "final";
   const isStatic = isProtected && isSaved;
@@ -2803,7 +2825,7 @@ function renderInspectorPasswordProtectToggle({ categoryName = appState.activeSi
           <img class="inspector-panel-password-toggle-icon-layer is-active" src="${INSPECTOR_PASSWORD_PROTECT_ACTIVE_ICON}" alt="" width="16" height="16" />
           <img class="inspector-panel-password-toggle-icon-layer is-postactive" src="${INSPECTOR_PASSWORD_PROTECT_POSTACTIVE_ICON}" alt="" width="16" height="16" />
         </span>
-        <span class="inspector-panel-toggle-label">Password-protect this category</span>
+        <span class="inspector-panel-toggle-label">${escapeHtml(label)}</span>
       </button>
       ${showHideMarkup}
     </div>
@@ -2950,7 +2972,7 @@ function unlockActiveCategory() {
 }
 
 function lockCategoryAfterLeaving(categoryName) {
-  if (!isCategoryInspectorCategory(categoryName)) {
+  if (!isPasswordProtectableInspectorCategory(categoryName)) {
     return;
   }
 
@@ -2969,7 +2991,7 @@ function lockCategoryAfterLeaving(categoryName) {
 
 function syncInspectorPasswordSetupUi({ preserveFocus = false } = {}) {
   const activeInspectorCategory = getSupportedInspectorCategory();
-  if (!activeInspectorCategory || activeInspectorCategory === "All Bookmarks") {
+  if (!activeInspectorCategory) {
     return;
   }
 
@@ -4407,7 +4429,7 @@ function renderInspectorPanel() {
   }
 
   return `
-    <div class="inspector-panel inspector-panel-all-bookmarks">
+    <div class="inspector-panel inspector-panel-all-bookmarks${shouldShowInspectorPasswordSetup(activeInspectorCategory) ? " inspector-panel-category-password-open" : ""}${shouldShowInspectorDeletePassword(activeInspectorCategory) ? " inspector-panel-category-password-delete-open" : ""}">
       <div class="inspector-panel-title">${escapeHtml(getSidebarDisplayLabel("All Bookmarks"))}</div>
 
       <div class="inspector-panel-metadata">
@@ -4429,18 +4451,19 @@ function renderInspectorPanel() {
         <img src="${INSPECTOR_TOP_DIVIDER}" alt="" width="300" height="1" />
       </div>
 
-      <button class="inspector-panel-toggle-row inspector-panel-toggle-row-primary inspector-panel-toggle-row-checkbox" type="button" data-action="toggle-inspector-permanent-copy" aria-pressed="${Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory))}">
-        ${renderInspectorPermanentCopyCheckbox()}
-        <span class="inspector-panel-toggle-label">Save all as permanent copy</span>
-      </button>
-
-      <div class="inspector-panel-password-block">
-        <button class="inspector-panel-toggle-row" type="button" data-action="toggle-inspector-password" aria-pressed="${Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory))}">
-          <span class="inspector-panel-checkbox">
-            <img src="${getInspectorStateValue("passwordProtected", activeInspectorCategory) ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : INSPECTOR_CHECKBOX_ICON}" alt="" width="16" height="16" />
-          </span>
-          <span class="inspector-panel-toggle-label">Password-protect this view</span>
+      <div class="inspector-panel-all-bookmarks-actions">
+        <button class="inspector-panel-toggle-row inspector-panel-toggle-row-primary inspector-panel-toggle-row-checkbox" type="button" data-action="toggle-inspector-permanent-copy" aria-pressed="${Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory))}">
+          ${renderInspectorPermanentCopyCheckbox()}
+          <span class="inspector-panel-toggle-label">Save all as permanent copy</span>
         </button>
+
+        ${renderInspectorPasswordProtectToggle({
+          categoryName: activeInspectorCategory,
+          isProtected: Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory)),
+          isExpanded: Boolean(getInspectorStateValue("accessPasswordSetupExpanded", activeInspectorCategory)),
+          label: "Password-protect this view"
+        })}
+        ${shouldShowInspectorPasswordSetup(activeInspectorCategory) ? renderInspectorPasswordSetup(activeInspectorCategory) : ""}
       </div>
 
       <div class="inspector-panel-divider inspector-panel-divider-bottom">
@@ -4482,6 +4505,7 @@ function renderInspectorPanel() {
         </span>
         <span class="inspector-panel-delete-label">Delete all bookmarks</span>
       </button>
+      ${shouldRenderLockedCategoryOverlay(activeInspectorCategory) ? renderLockedCategoryOverlay() : ""}
     </div>
   `;
 }
@@ -5111,7 +5135,7 @@ function handleAppClick(event) {
 
   if (action === "toggle-inspector-password") {
     const categoryName = getSupportedInspectorCategory();
-    if (!categoryName || categoryName === "All Bookmarks") {
+    if (!categoryName) {
       return;
     }
 
@@ -5154,7 +5178,7 @@ function handleAppClick(event) {
 
   if (action === "toggle-inspector-password-setup") {
     const categoryName = getSupportedInspectorCategory();
-    if (!categoryName || categoryName === "All Bookmarks" || !getInspectorStateValue("passwordProtected", categoryName)) {
+    if (!categoryName || !getInspectorStateValue("passwordProtected", categoryName)) {
       return;
     }
 
@@ -5170,7 +5194,7 @@ function handleAppClick(event) {
 
   if (action === "toggle-inspector-password-delete") {
     const categoryName = getSupportedInspectorCategory();
-    if (!categoryName || categoryName === "All Bookmarks" || getInspectorSavePasswordState(categoryName) !== "final") {
+    if (!categoryName || getInspectorSavePasswordState(categoryName) !== "final") {
       return;
     }
 
@@ -5182,7 +5206,7 @@ function handleAppClick(event) {
 
   if (action === "toggle-inspector-password-visibility") {
     const categoryName = getSupportedInspectorCategory();
-    if (!categoryName || categoryName === "All Bookmarks") {
+    if (!categoryName) {
       return;
     }
 
@@ -5382,7 +5406,7 @@ function handleAppInput(event) {
 
   if (event.target.matches("[data-role='inspector-password-input']")) {
     const categoryName = getSupportedInspectorCategory();
-    if (!categoryName || categoryName === "All Bookmarks") {
+    if (!categoryName) {
       return;
     }
 
@@ -5703,7 +5727,7 @@ function handleAppFocusIn(event) {
   }
 
   const categoryName = getSupportedInspectorCategory();
-  if (!categoryName || categoryName === "All Bookmarks") {
+  if (!categoryName) {
     return;
   }
 
