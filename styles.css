@@ -1529,6 +1529,10 @@ input {
   width: 300px;
 }
 
+.inspector-panel-deleted-items .inspector-panel-divider {
+  top: 134px;
+}
+
 .inspector-panel-divider img {
   display: block;
   height: 1px;
@@ -1579,6 +1583,10 @@ input {
   position: absolute;
   top: 177px;
   width: 268px;
+}
+
+.inspector-panel-deleted-items .inspector-panel-all-bookmarks-actions {
+  top: 154px;
 }
 
 .inspector-panel-bookmark-actions {
@@ -1806,6 +1814,18 @@ input {
   top: 409px;
 }
 
+.inspector-panel-deleted-items .inspector-panel-divider-bottom {
+  top: 190px;
+}
+
+.inspector-panel-deleted-items.inspector-panel-category-password-open .inspector-panel-divider-bottom {
+  top: 310px;
+}
+
+.inspector-panel-deleted-items.inspector-panel-category-password-delete-open .inspector-panel-divider-bottom {
+  top: 354px;
+}
+
 .inspector-panel-divider-category-bottom {
   top: 277px;
 }
@@ -1842,6 +1862,18 @@ input {
 
 .inspector-panel-all-bookmarks.inspector-panel-category-password-delete-open .inspector-panel-fields {
   top: 429px;
+}
+
+.inspector-panel-deleted-items .inspector-panel-fields {
+  top: 210px;
+}
+
+.inspector-panel-deleted-items.inspector-panel-category-password-open .inspector-panel-fields {
+  top: 330px;
+}
+
+.inspector-panel-deleted-items.inspector-panel-category-password-delete-open .inspector-panel-fields {
+  top: 374px;
 }
 
 .inspector-panel-fields-category {
@@ -2781,7 +2813,22 @@ input {
   padding: 8px 0;
   position: absolute;
   top: 806px;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
   width: 268px;
+}
+
+.inspector-panel-delete-button:hover,
+.inspector-panel-delete-button:focus-visible {
+  background: var(--color-gray-625, #27273b);
+  border-color: rgba(53, 53, 74, 0.88);
+}
+
+.inspector-panel-delete-button:active {
+  background: #303049;
+  border-color: rgba(53, 53, 74, 0.96);
 }
 
 .inspector-panel-locked-overlay {

@@ -1017,6 +1017,14 @@ const appState = {
   allBookmarksTags: [],
   allBookmarksTagDraft: "",
   allBookmarksNote: "",
+  deletedItemsPasswordProtected: false,
+  deletedItemsAccessPassword: "",
+  deletedItemsAccessPasswordDraft: "",
+  deletedItemsAccessPasswordVisible: false,
+  deletedItemsAccessPasswordStatus: "idle",
+  deletedItemsAccessPasswordSetupExpanded: false,
+  deletedItemsAccessPasswordDeleteExpanded: false,
+  deletedItemsNote: "",
   categoryInspectorStates: {},
   categoryAccessStates: {},
   lockedInspectorCategory: null,
@@ -1200,6 +1208,16 @@ const INSPECTOR_STATE_PATHS = {
     tags: "allBookmarksTags",
     tagDraft: "allBookmarksTagDraft",
     note: "allBookmarksNote"
+  },
+  "Deleted Items": {
+    passwordProtected: "deletedItemsPasswordProtected",
+    accessPassword: "deletedItemsAccessPassword",
+    accessPasswordDraft: "deletedItemsAccessPasswordDraft",
+    accessPasswordVisible: "deletedItemsAccessPasswordVisible",
+    accessPasswordStatus: "deletedItemsAccessPasswordStatus",
+    accessPasswordSetupExpanded: "deletedItemsAccessPasswordSetupExpanded",
+    accessPasswordDeleteExpanded: "deletedItemsAccessPasswordDeleteExpanded",
+    note: "deletedItemsNote"
   },
   Uncategorized: {
     lastSaved: "uncategorizedLastSaved",
@@ -2466,7 +2484,7 @@ function getSupportedInspectorCategory(categoryName = appState.activeSidebarCate
     return null;
   }
 
-  if (categoryName === "All Bookmarks") {
+  if (categoryName === "All Bookmarks" || categoryName === "Deleted Items") {
     return categoryName;
   }
 
@@ -2480,7 +2498,7 @@ function getSupportedInspectorCategory(categoryName = appState.activeSidebarCate
 
 function getInspectorStatePath(fieldName, categoryName = appState.activeSidebarCategory) {
   const supportedCategory = getSupportedInspectorCategory(categoryName);
-  if (!supportedCategory || supportedCategory !== "All Bookmarks") {
+  if (!supportedCategory || !INSPECTOR_STATE_PATHS[supportedCategory]) {
     return null;
   }
 
@@ -2493,7 +2511,7 @@ function getInspectorStateValue(fieldName, categoryName = appState.activeSidebar
     return undefined;
   }
 
-  if (supportedCategory === "All Bookmarks") {
+  if (INSPECTOR_STATE_PATHS[supportedCategory]) {
     const path = getInspectorStatePath(fieldName, categoryName);
     return path ? appState[path] : undefined;
   }
@@ -2507,7 +2525,7 @@ function setInspectorStateValue(fieldName, value, categoryName = appState.active
     return;
   }
 
-  if (supportedCategory === "All Bookmarks") {
+  if (INSPECTOR_STATE_PATHS[supportedCategory]) {
     const path = getInspectorStatePath(fieldName, categoryName);
     if (path) {
       appState[path] = value;
@@ -2687,7 +2705,7 @@ function setCategoryUnlocked(categoryName, isUnlocked) {
 }
 
 function shouldShowLockedCategoryInSidebar(categoryName) {
-  if (!isCategoryInspectorCategory(categoryName)) {
+  if (!isPasswordProtectableInspectorCategory(categoryName) || categoryName === "Deleted Items") {
     return false;
   }
 
@@ -3089,6 +3107,28 @@ function getMostRecentBookmarkDateForCategory(categoryName) {
 
   const mostRecentDate = bookmarks.reduce((latest, bookmark) => {
     const parsedDate = parseBookmarkDate(bookmark.date);
+    if (!parsedDate) {
+      return latest;
+    }
+
+    if (!latest || parsedDate > latest) {
+      return parsedDate;
+    }
+
+    return latest;
+  }, null);
+
+  return mostRecentDate ? formatBookmarkDate(mostRecentDate) : "";
+}
+
+function getMostRecentDeletedDate() {
+  const deletedBookmarks = getBookmarksForCategory("Deleted Items");
+  if (!deletedBookmarks.length) {
+    return "";
+  }
+
+  const mostRecentDate = deletedBookmarks.reduce((latest, bookmark) => {
+    const parsedDate = parseBookmarkDate(bookmark.deletedAt || bookmark.modifiedDate || bookmark.date);
     if (!parsedDate) {
       return latest;
     }
@@ -4314,6 +4354,88 @@ function renderInspectorPanel() {
   const tagDraft = getInspectorStateValue("tagDraft", activeInspectorCategory) || "";
   const noteValue = getInspectorStateValue("note", activeInspectorCategory) || "";
 
+  if (activeInspectorCategory === "Deleted Items") {
+    const passwordProtected = Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory));
+    const showPasswordSetup = shouldShowInspectorPasswordSetup(activeInspectorCategory);
+    const showDeletePassword = shouldShowInspectorDeletePassword(activeInspectorCategory);
+    const canMoveSelectedBookmark = Boolean(getSingleSelectedVisibleBookmark());
+    const selectedMoveBookmark = getSingleSelectedVisibleBookmark();
+    const deletedItemsPanelClass = `${showPasswordSetup ? " inspector-panel-category-password-open" : ""}${showDeletePassword ? " inspector-panel-category-password-delete-open" : ""}`;
+
+    return `
+      <div class="inspector-panel inspector-panel-deleted-items${deletedItemsPanelClass}">
+        <div class="inspector-panel-title">${escapeHtml(getSidebarDisplayLabel("Deleted Items"))}</div>
+
+        <div class="inspector-panel-metadata">
+          <div class="inspector-panel-meta-row">
+            <span class="inspector-panel-meta-label">Types</span>
+            <span class="inspector-panel-meta-value inspector-panel-meta-value-types">${escapeHtml(typesText)}</span>
+          </div>
+          <div class="inspector-panel-meta-row">
+            <span class="inspector-panel-meta-label">Last Deleted</span>
+            <span class="inspector-panel-meta-value">${escapeHtml(getMostRecentDeletedDate())}</span>
+          </div>
+        </div>
+
+        <div class="inspector-panel-divider">
+          <img src="${INSPECTOR_TOP_DIVIDER}" alt="" width="300" height="1" />
+        </div>
+
+        <div class="inspector-panel-all-bookmarks-actions">
+          ${renderInspectorPasswordProtectToggle({
+            categoryName: activeInspectorCategory,
+            isProtected: passwordProtected,
+            isExpanded: Boolean(getInspectorStateValue("accessPasswordSetupExpanded", activeInspectorCategory)),
+            label: "Password-protect this view"
+          })}
+          ${showPasswordSetup ? renderInspectorPasswordSetup(activeInspectorCategory) : ""}
+        </div>
+
+        <div class="inspector-panel-divider inspector-panel-divider-bottom">
+          <img src="${INSPECTOR_BOTTOM_DIVIDER}" alt="" width="300" height="1" />
+        </div>
+
+        <div class="inspector-panel-fields">
+          <div class="inspector-panel-field inspector-panel-field-move">
+            <button class="inspector-panel-move-button${canMoveSelectedBookmark ? "" : " is-disabled"}" type="button" data-action="toggle-bookmark-move-menu" aria-expanded="${canMoveSelectedBookmark && appState.moveBookmarkMenuOpen}"${canMoveSelectedBookmark ? "" : " disabled"}>
+              <span class="inspector-panel-move-label">
+                <span class="inspector-panel-move-icon">
+                  <img src="${INSPECTOR_MOVE_CATEGORY_ICON}" alt="" width="12.7" height="12.7" />
+                </span>
+                <span class="inspector-panel-move-text">Move to</span>
+              </span>
+              <span class="inspector-panel-move-chevron">
+                <img src="${INSPECTOR_MOVE_CHEVRON_ICON}" alt="" width="9.5" height="5.5" />
+              </span>
+            </button>
+            ${canMoveSelectedBookmark && appState.moveBookmarkMenuOpen ? renderBookmarkMoveDropdown(selectedMoveBookmark) : ""}
+          </div>
+
+          <div class="inspector-panel-field">
+            <div class="inspector-panel-field-label-row">
+              <span class="inspector-panel-field-icon">
+                <img src="${INSPECTOR_NOTE_ICON}" alt="" width="16" height="16" />
+              </span>
+              <span class="inspector-panel-field-label">Add a note</span>
+            </div>
+            <label class="inspector-panel-field-box inspector-panel-field-box-note inspector-panel-field-box-resizable">
+              <textarea class="inspector-panel-input inspector-panel-input-note" data-role="inspector-note-input">${escapeHtml(noteValue)}</textarea>
+            </label>
+          </div>
+        </div>
+
+        <button class="inspector-panel-delete-button" type="button">
+          <span class="inspector-panel-delete-icon">
+            <img src="${INSPECTOR_TRASH_ICON}" alt="" width="16" height="16" />
+          </span>
+          <span class="inspector-panel-delete-label">Delete all bookmarks</span>
+        </button>
+
+        ${shouldRenderLockedCategoryOverlay(activeInspectorCategory) ? renderLockedCategoryOverlay() : ""}
+      </div>
+    `;
+  }
+
   if (activeInspectorCategory !== "All Bookmarks") {
     const isFavourite = Boolean(getInspectorStateValue("isFavourite", activeInspectorCategory));
     const savePermanentCopy = Boolean(getInspectorStateValue("savePermanentCopy", activeInspectorCategory));
@@ -5026,13 +5148,22 @@ function handleAppClick(event) {
 
   if (action === "go-to-deleted-items") {
     closeDeleteBookmarkModal();
+    const previousCategory = appState.activeSidebarCategory;
+    if (previousCategory !== "Deleted Items") {
+      lockCategoryAfterLeaving(previousCategory);
+    }
     appState.activeInspectorBookmarkId = null;
-    appState.lockedInspectorCategory = null;
+    ensureCategoryAccessState("Deleted Items");
     appState.activeSidebarCategory = "Deleted Items";
+    if (isCategoryAccessLocked("Deleted Items")) {
+      resetCategoryAccessState("Deleted Items");
+    }
+    appState.lockedInspectorCategory = isCategoryAccessLocked("Deleted Items") ? "Deleted Items" : null;
     appState.activeContentView = "cards";
     appState.previewBookmarkId = null;
     appState.selectedBookmarkIds = [];
     appState.contentKebabOpen = false;
+    closeExportFormatsMenu();
     syncSidebarCategoryUi();
     syncBookmarkContentForActiveCategory();
     syncInspectorPanel();
