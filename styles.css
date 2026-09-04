@@ -3081,10 +3081,6 @@ input {
   white-space: nowrap;
 }
 
-.bookmark-content-title-row:has(.bookmark-content-title-button:hover) {
-  gap: 20px;
-}
-
 .bookmark-content-title-button {
   appearance: none;
   background: transparent;
@@ -3102,6 +3098,10 @@ input {
   position: relative;
 }
 
+.bookmark-content-title-shell-editing {
+  gap: 0;
+}
+
 .bookmark-content-title {
   color: var(--text-heading, #d9d9d9);
   font-size: 20px;
@@ -3109,6 +3109,60 @@ input {
   font-weight: 400;
   line-height: normal;
   margin: 0;
+}
+
+.bookmark-content-title-breadcrumb {
+  align-items: center;
+  color: var(--text-heading, #d9d9d9);
+  display: inline-flex;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  gap: 4px;
+  line-height: normal;
+  margin: 0;
+  min-width: 0;
+}
+
+.bookmark-content-title-prefix {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.bookmark-content-title-prefix-segment {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.bookmark-content-title-parent,
+.bookmark-content-title-breadcrumb-chevron {
+  color: #65656e;
+  flex: 0 0 auto;
+}
+
+.bookmark-content-title-breadcrumb-chevron {
+  align-items: center;
+  display: inline-flex;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
+}
+
+.bookmark-content-title-breadcrumb-chevron img {
+  display: block;
+  height: 16px;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  width: 16px;
+}
+
+.bookmark-content-title-current {
+  color: var(--text-heading, #d9d9d9);
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .bookmark-content-title-edit-indicator {

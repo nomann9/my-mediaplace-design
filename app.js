@@ -1883,6 +1883,37 @@ function getSidebarDisplayLabel(categoryName = appState.activeSidebarCategory) {
   return categoryName;
 }
 
+function findCategoryLinkPathByLabel(label, links = appState.categoryLinks, trail = []) {
+  for (const link of links) {
+    const nextTrail = [...trail, link];
+    if (link.label === label) {
+      return nextTrail;
+    }
+
+    if (link.children?.length) {
+      const childMatch = findCategoryLinkPathByLabel(label, link.children, nextTrail);
+      if (childMatch) {
+        return childMatch;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getContentTitleBreadcrumb(categoryName = appState.activeSidebarCategory) {
+  const categoryPath = findCategoryLinkPathByLabel(categoryName);
+  if (!categoryPath || categoryPath.length < 2) {
+    return null;
+  }
+
+  return categoryPath.map((link, index) => ({
+    categoryName: link.label,
+    displayLabel: link.displayLabel || link.label,
+    isCurrent: index === categoryPath.length - 1
+  }));
+}
+
 function getDisplayLabelForBookmarkCategory(bookmarkCategory) {
   const primaryLink = appState.primaryLinks.find((link) => link.bookmarkCategory === bookmarkCategory);
   if (primaryLink) {
@@ -3821,9 +3852,41 @@ function renderExportFormatsMenu() {
   `;
 }
 
+function renderContentTitlePrefix(breadcrumbItems) {
+  if (!breadcrumbItems?.length) {
+    return "";
+  }
+
+  return breadcrumbItems
+    .map(
+      (item) => `<span class="bookmark-content-title-prefix-segment"><span class="bookmark-content-title-parent">${escapeHtml(item.displayLabel)}</span><span class="bookmark-content-title-breadcrumb-chevron" aria-hidden="true"><img src="${CONTENT_HEADING_CHEVRON_ICON}" alt="" width="16" height="16" /></span></span>`
+    )
+    .join("");
+}
+
+function renderContentTitleText(titleText, breadcrumb = null) {
+  if (!breadcrumb?.length) {
+    return `<span class="bookmark-content-title">${escapeHtml(titleText)}</span>`;
+  }
+
+  const parentTrail = breadcrumb.slice(0, -1);
+  return `<span class="bookmark-content-title-breadcrumb">${renderContentTitlePrefix(parentTrail)}<span class="bookmark-content-title-current">${escapeHtml(titleText)}</span></span>`;
+}
+
+function renderContentTitleHeading(titleText, breadcrumb = null) {
+  if (!breadcrumb?.length) {
+    return `<h2 class="bookmark-content-title">${escapeHtml(titleText)}</h2>`;
+  }
+
+  const parentTrail = breadcrumb.slice(0, -1);
+  return `<h2 class="bookmark-content-title-breadcrumb">${renderContentTitlePrefix(parentTrail)}<span class="bookmark-content-title-current">${escapeHtml(titleText)}</span></h2>`;
+}
+
 function renderBookmarkContentHeader() {
   const activeCategory = appState.activeSidebarCategory;
   const activeCategoryLabel = getSidebarDisplayLabel(activeCategory);
+  const breadcrumb = getContentTitleBreadcrumb(activeCategory);
+  const parentBreadcrumb = breadcrumb ? breadcrumb.slice(0, -1) : null;
   const bookmarkCount = getCategoryBookmarkCount(activeCategory);
   const gridActiveClass = appState.bookmarkDisplayMode === "grid" ? " is-active" : "";
   const listActiveClass = appState.bookmarkDisplayMode === "list" ? " is-active" : "";
@@ -3836,28 +3899,31 @@ function renderBookmarkContentHeader() {
   const isEditing = isEditingContentTitle(activeCategory);
   const titleMarkup = isEditing
     ? `
-      <label class="bookmark-content-title-input-shell">
-        <input
-          class="bookmark-content-title-input"
-          type="text"
-          value="${escapeHtml(appState.contentTitleDraft).replace(/"/g, "&quot;")}"
-          data-role="bookmark-content-title-input"
-          aria-label="Rename page title"
-        />
-      </label>
+      <span class="bookmark-content-title-shell bookmark-content-title-shell-editing">
+        ${parentBreadcrumb?.length ? `<span class="bookmark-content-title-prefix">${renderContentTitlePrefix(parentBreadcrumb)}</span>` : ""}
+        <label class="bookmark-content-title-input-shell">
+          <input
+            class="bookmark-content-title-input"
+            type="text"
+            value="${escapeHtml(appState.contentTitleDraft).replace(/"/g, "&quot;")}"
+            data-role="bookmark-content-title-input"
+            aria-label="Rename page title"
+          />
+        </label>
+      </span>
     `
     : isEditable
       ? `
         <button class="bookmark-content-title-button" type="button" data-action="start-content-title-edit" aria-label="Edit ${escapeHtml(activeCategoryLabel)} title">
           <span class="bookmark-content-title-shell">
-            <span class="bookmark-content-title">${escapeHtml(activeCategoryLabel)}</span>
+            ${renderContentTitleText(activeCategoryLabel, breadcrumb)}
             <span class="bookmark-content-title-edit-indicator">
               <img src="${CONTENT_HEADING_EDIT_ICON}" alt="" width="12" height="12" />
             </span>
           </span>
         </button>
       `
-      : `<h2 class="bookmark-content-title">${escapeHtml(activeCategoryLabel)}</h2>`;
+      : renderContentTitleHeading(activeCategoryLabel, breadcrumb);
 
   return `
     <section class="bookmark-content-header">
