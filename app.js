@@ -1783,8 +1783,7 @@ function createInitialCategoryLinks() {
     createCategoryLink({
       id: "arts-and-culture",
       label: "Arts and Culture",
-      icon: BOOKMARK_FOLDER_ICON,
-      lockedByDefault: true
+      icon: BOOKMARK_FOLDER_ICON
     }),
     createCategoryLink({ id: "sports", label: "Sports", icon: BOOKMARK_FOLDER_ICON }),
     createCategoryLink({ id: "design-resources", label: "Design Resources", icon: BOOKMARK_FOLDER_ICON })
