@@ -1044,6 +1044,8 @@ const appState = {
   moveBookmarkTargetCategory: "",
   deleteBookmarkModalOpen: false,
   pendingDeleteBookmarkId: null,
+  deleteCategoryModalOpen: false,
+  pendingDeleteCategoryId: null,
   previewBookmarkId: null,
   bookmarkDisplayMode: "grid",
   bookmarkZoomLevel: 1,
@@ -3361,10 +3363,16 @@ function closeDeleteBookmarkModal() {
   appState.pendingDeleteBookmarkId = null;
 }
 
+function closeDeleteCategoryModal() {
+  appState.deleteCategoryModalOpen = false;
+  appState.pendingDeleteCategoryId = null;
+}
+
 function moveBookmarkToDeletedItems(bookmarkId) {
   const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
   if (!bookmark) {
     closeDeleteBookmarkModal();
+    closeDeleteCategoryModal();
     return;
   }
 
@@ -3388,6 +3396,81 @@ function moveBookmarkToDeletedItems(bookmarkId) {
   updateRelatedInspectorModifiedDates(bookmark.category, now);
 }
 
+function deleteCategoryToDeletedItems(categoryId) {
+  const categoryLink = findCategoryLinkById(categoryId);
+  if (!categoryLink) {
+    closeDeleteCategoryModal();
+    return;
+  }
+
+  const categoryName = categoryLink.label;
+  const bookmarksToDelete = getBookmarksForCategory(categoryName);
+  const now = new Date();
+  const formattedDate = formatBookmarkDate(now);
+
+  bookmarksToDelete.forEach((bookmark) => {
+    bookmark.isDeleted = true;
+    bookmark.deletedAt = formattedDate;
+    bookmark.deletedFromCategory = bookmark.deletedFromCategory || categoryName;
+    bookmark.modifiedDate = formattedDate;
+  });
+
+  const removalResult = removeCategoryLinkById(appState.categoryLinks, categoryId);
+  if (removalResult.removedLink) {
+    appState.categoryLinks = removalResult.links;
+  }
+
+  const removedLabels = [];
+  const removedIds = [];
+  const collectRemovedCategoryState = (link) => {
+    if (!link) {
+      return;
+    }
+
+    removedLabels.push(link.label);
+    removedIds.push(link.id);
+    (link.children || []).forEach(collectRemovedCategoryState);
+  };
+
+  collectRemovedCategoryState(removalResult.removedLink || categoryLink);
+  removedLabels.forEach((label) => {
+    delete appState.categoryInspectorStates[label];
+    delete appState.categoryAccessStates[label];
+  });
+  appState.unlockedCategoryNames = appState.unlockedCategoryNames.filter((item) => !removedLabels.includes(item));
+  appState.expandedCategoryIds = appState.expandedCategoryIds.filter((id) => !removedIds.includes(id));
+  appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((bookmarkId) => {
+    const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
+    return bookmark && !bookmark.isDeleted;
+  });
+
+  if (appState.previewBookmarkId) {
+    const previewBookmark = appState.bookmarks.find((bookmark) => bookmark.id === appState.previewBookmarkId);
+    if (previewBookmark?.isDeleted) {
+      appState.previewBookmarkId = null;
+      appState.activeContentView = "cards";
+    }
+  }
+
+  if (appState.activeInspectorBookmarkId) {
+    const inspectorBookmark = appState.bookmarks.find((bookmark) => bookmark.id === appState.activeInspectorBookmarkId);
+    if (inspectorBookmark?.isDeleted) {
+      appState.activeInspectorBookmarkId = null;
+    }
+  }
+
+  closeDeleteCategoryModal();
+  closeBookmarkMoveMenu();
+  appState.activeSidebarCategory = "Deleted Items";
+  ensureCategoryAccessState("Deleted Items");
+  if (isCategoryAccessLocked("Deleted Items")) {
+    resetCategoryAccessState("Deleted Items");
+  }
+  appState.lockedInspectorCategory = isCategoryAccessLocked("Deleted Items") ? "Deleted Items" : null;
+  appState.activeContentView = "cards";
+  updateRelatedInspectorModifiedDates(categoryName, now);
+}
+
 function renderDeleteBookmarkModal() {
   if (!appState.deleteBookmarkModalOpen || !appState.pendingDeleteBookmarkId) {
     return "";
@@ -3405,6 +3488,37 @@ function renderDeleteBookmarkModal() {
           <span>Yes, delete it</span>
         </button>
         <button class="bookmark-delete-modal-button bookmark-delete-modal-button-cancel" type="button" data-action="cancel-delete-bookmark">
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderDeleteCategoryModal() {
+  if (!appState.deleteCategoryModalOpen || !appState.pendingDeleteCategoryId) {
+    return "";
+  }
+
+  const categoryLink = findCategoryLinkById(appState.pendingDeleteCategoryId);
+  if (!categoryLink) {
+    return "";
+  }
+
+  const categoryLabel = categoryLink.displayLabel || categoryLink.label;
+
+  return `
+    <div class="category-delete-modal" role="dialog" aria-modal="true" aria-labelledby="category-delete-modal-title">
+      <div class="category-delete-modal-title" id="category-delete-modal-title">Are you sure you want to delete the ${escapeHtml(categoryLabel)} category?</div>
+      <div class="category-delete-modal-copy">
+        Deleting a category is irreversible. You can still recover the bookmarks from
+        <button class="category-delete-modal-link" type="button" data-action="go-to-deleted-items">Deleted Items</button>
+      </div>
+      <div class="category-delete-modal-actions">
+        <button class="category-delete-modal-button category-delete-modal-button-confirm" type="button" data-action="confirm-delete-category">
+          <span>Yes, delete it</span>
+        </button>
+        <button class="category-delete-modal-button category-delete-modal-button-cancel" type="button" data-action="cancel-delete-category">
           <span>Cancel</span>
         </button>
       </div>
@@ -4711,12 +4825,14 @@ function renderInspectorPanel() {
           </div>
         </div>
 
-        <button class="inspector-panel-delete-button" type="button">
+        <button class="inspector-panel-delete-button" type="button" data-action="open-delete-category-modal" data-category-id="${escapeHtml(findCategoryLinkByLabel(activeInspectorCategory)?.id || "")}">
           <span class="inspector-panel-delete-icon">
             <img src="${INSPECTOR_TRASH_ICON}" alt="" width="16" height="16" />
           </span>
           <span class="inspector-panel-delete-label">Delete Category</span>
         </button>
+
+        ${renderDeleteCategoryModal()}
 
         ${lockedOverlayMarkup}
       </div>
@@ -5036,6 +5152,12 @@ function handleAppClick(event) {
 
     if (appState.deleteBookmarkModalOpen && !event.target.closest(".bookmark-delete-modal, [data-action='open-delete-bookmark-modal']")) {
       closeDeleteBookmarkModal();
+      closeDeleteCategoryModal();
+      syncInspectorPanel();
+    }
+
+    if (appState.deleteCategoryModalOpen && !event.target.closest(".category-delete-modal, [data-action='open-delete-category-modal']")) {
+      closeDeleteCategoryModal();
       syncInspectorPanel();
     }
 
@@ -5150,6 +5272,7 @@ function handleAppClick(event) {
       appState.activeInspectorBookmarkId = null;
       ensureCategoryAccessState(categoryName);
       closeDeleteBookmarkModal();
+      closeDeleteCategoryModal();
       appState.activeSidebarCategory = categoryName;
       if (isCategoryAccessLocked(categoryName)) {
         resetCategoryAccessState(categoryName);
@@ -5255,6 +5378,7 @@ function handleAppClick(event) {
     closeExportFormatsMenu();
     closeBookmarkMoveMenu();
     closeDeleteBookmarkModal();
+    closeDeleteCategoryModal();
     syncInspectorPanel();
     return;
   }
@@ -5305,8 +5429,31 @@ function handleAppClick(event) {
     return;
   }
 
+  if (action === "open-delete-category-modal") {
+    const categoryId = actionTarget.getAttribute("data-category-id");
+    if (categoryId) {
+      appState.pendingDeleteCategoryId = categoryId;
+      appState.deleteCategoryModalOpen = true;
+      syncInspectorPanel();
+    }
+    return;
+  }
+
+  if (action === "cancel-delete-category") {
+    closeDeleteCategoryModal();
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "confirm-delete-category") {
+    deleteCategoryToDeletedItems(appState.pendingDeleteCategoryId);
+    renderShell();
+    return;
+  }
+
   if (action === "cancel-delete-bookmark") {
     closeDeleteBookmarkModal();
+    closeDeleteCategoryModal();
     syncInspectorPanel();
     return;
   }
@@ -5321,6 +5468,7 @@ function handleAppClick(event) {
 
   if (action === "go-to-deleted-items") {
     closeDeleteBookmarkModal();
+    closeDeleteCategoryModal();
     const previousCategory = appState.activeSidebarCategory;
     if (previousCategory !== "Deleted Items") {
       lockCategoryAfterLeaving(previousCategory);
@@ -5345,6 +5493,7 @@ function handleAppClick(event) {
 
   if (action === "close-preview") {
     closeDeleteBookmarkModal();
+    closeDeleteCategoryModal();
     appState.activeContentView = "cards";
     appState.previewBookmarkId = null;
     renderShell();
