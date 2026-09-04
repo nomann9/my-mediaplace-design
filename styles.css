@@ -1838,6 +1838,14 @@ input {
   top: 441px;
 }
 
+.inspector-panel-category.inspector-panel-category-show-all-bookmarks.inspector-panel-category-password-open .inspector-panel-divider-category-bottom {
+  top: 433px;
+}
+
+.inspector-panel-category.inspector-panel-category-show-all-bookmarks.inspector-panel-category-password-delete-open .inspector-panel-divider-category-bottom {
+  top: 477px;
+}
+
 .inspector-panel-divider-bookmark-top {
   top: 172px;
 }
@@ -1888,6 +1896,14 @@ input {
   top: 461px;
 }
 
+.inspector-panel-category.inspector-panel-category-show-all-bookmarks.inspector-panel-category-password-open .inspector-panel-fields-category {
+  top: 453px;
+}
+
+.inspector-panel-category.inspector-panel-category-show-all-bookmarks.inspector-panel-category-password-delete-open .inspector-panel-fields-category {
+  top: 497px;
+}
+
 .inspector-panel-fields-bookmark {
   top: 280px;
 }
@@ -1909,6 +1925,10 @@ input {
   flex-direction: column;
   gap: 12px;
   width: 268px;
+}
+
+.inspector-password-all-bookmarks-toggle {
+  margin-top: 8px;
 }
 
 .inspector-password-field-group {
@@ -2205,6 +2225,7 @@ input {
 }
 
 .inspector-password-delete-shell {
+  margin-top: -8px;
   width: 268px;
 }
 

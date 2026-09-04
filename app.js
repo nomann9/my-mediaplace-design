@@ -1034,6 +1034,7 @@ const appState = {
   uncategorizedIsFavourite: false,
   uncategorizedSavePermanentCopy: false,
   uncategorizedPasswordProtected: false,
+  uncategorizedShowInAllBookmarks: false,
   uncategorizedTags: [],
   uncategorizedTagDraft: "",
   uncategorizedNote: "",
@@ -1225,6 +1226,7 @@ const INSPECTOR_STATE_PATHS = {
     isFavourite: "uncategorizedIsFavourite",
     savePermanentCopy: "uncategorizedSavePermanentCopy",
     passwordProtected: "uncategorizedPasswordProtected",
+    showInAllBookmarks: "uncategorizedShowInAllBookmarks",
     tags: "uncategorizedTags",
     tagDraft: "uncategorizedTagDraft",
     note: "uncategorizedNote"
@@ -1914,6 +1916,55 @@ function getContentTitleBreadcrumb(categoryName = appState.activeSidebarCategory
   }));
 }
 
+function collectMatchingCategoryLabelsForBookmark(bookmark, links = appState.categoryLinks, matches = new Set()) {
+  const normalizedCategory = normalizeBookmarkCategory(bookmark.category);
+
+  links.forEach((link) => {
+    const matchesLink = link.bookmarkFilter?.type === "subcategory"
+      ? normalizedCategory === link.bookmarkFilter.parentCategory && bookmark.subcategory === link.bookmarkFilter.value
+      : (link.bookmarkCategory || normalizeBookmarkCategory(link.label)) === normalizedCategory;
+
+    if (matchesLink) {
+      matches.add(link.label);
+    }
+
+    if (link.children?.length) {
+      collectMatchingCategoryLabelsForBookmark(bookmark, link.children, matches);
+    }
+  });
+
+  return matches;
+}
+
+function getProtectedCategoryLabelsForBookmark(bookmark) {
+  const matches = collectMatchingCategoryLabelsForBookmark(bookmark);
+  const primaryLink = appState.primaryLinks.find(
+    (link) => link.bookmarkCategory === normalizeBookmarkCategory(bookmark.category)
+  );
+
+  if (primaryLink) {
+    matches.add(primaryLink.label);
+  }
+
+  return Array.from(matches);
+}
+
+function shouldHideCategoryFromAllBookmarks(categoryName) {
+  if (!categoryName || categoryName === "All Bookmarks" || categoryName === "Deleted Items") {
+    return false;
+  }
+
+  return Boolean(
+    getInspectorStateValue("passwordProtected", categoryName) &&
+    String(getInspectorStateValue("accessPassword", categoryName) || "").trim() &&
+    !getInspectorStateValue("showInAllBookmarks", categoryName)
+  );
+}
+
+function shouldHideBookmarkFromAllBookmarks(bookmark) {
+  return getProtectedCategoryLabelsForBookmark(bookmark).some((categoryName) => shouldHideCategoryFromAllBookmarks(categoryName));
+}
+
 function getDisplayLabelForBookmarkCategory(bookmarkCategory) {
   const primaryLink = appState.primaryLinks.find((link) => link.bookmarkCategory === bookmarkCategory);
   if (primaryLink) {
@@ -2043,7 +2094,7 @@ function getBookmarkStatusIcon(bookmark) {
 function getBookmarksForCategory(categoryName) {
   const primaryLink = findPrimaryLinkByLabel(categoryName);
   if (primaryLink?.id === "all-bookmarks") {
-    return appState.bookmarks.filter((bookmark) => !bookmark.isDeleted);
+    return appState.bookmarks.filter((bookmark) => !bookmark.isDeleted && !shouldHideBookmarkFromAllBookmarks(bookmark));
   }
 
   if (primaryLink?.id === "deleted-items") {
@@ -2585,6 +2636,7 @@ function createCategoryInspectorState(categoryName) {
     isFavourite: false,
     savePermanentCopy: false,
     passwordProtected: Boolean(categoryLink?.lockedByDefault),
+    showInAllBookmarks: false,
     accessPassword: "",
     accessPasswordDraft: "",
     accessPasswordVisible: false,
@@ -2835,6 +2887,17 @@ function shouldShowInspectorDeletePassword(categoryName = appState.activeSidebar
   );
 }
 
+function shouldShowInspectorAllBookmarksVisibilityToggle(categoryName = appState.activeSidebarCategory) {
+  if (categoryName === "All Bookmarks" || categoryName === "Deleted Items") {
+    return false;
+  }
+
+  return Boolean(
+    getInspectorStateValue("passwordProtected", categoryName) &&
+    String(getInspectorStateValue("accessPassword", categoryName) || "").trim()
+  );
+}
+
 function renderInspectorPasswordShowHideToggle(isExpanded) {
   const shouldShowHideState = isExpanded;
 
@@ -2928,6 +2991,15 @@ function renderInspectorPasswordField(categoryName = appState.activeSidebarCateg
   `;
 }
 
+function renderInspectorShowInAllBookmarksToggle(categoryName = appState.activeSidebarCategory) {
+  return `
+    <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category inspector-panel-toggle-row-checkbox inspector-password-all-bookmarks-toggle" type="button" data-action="toggle-inspector-show-in-all-bookmarks" aria-pressed="${Boolean(getInspectorStateValue("showInAllBookmarks", categoryName))}">
+      ${renderInspectorPermanentCopyCheckbox()}
+      <span class="inspector-panel-toggle-label">Show in All Bookmarks</span>
+    </button>
+  `;
+}
+
 function renderInspectorSavePasswordButton(categoryName = appState.activeSidebarCategory) {
   const state = getInspectorSavePasswordState(categoryName);
   const isDeleteExpanded = Boolean(getInspectorStateValue("accessPasswordDeleteExpanded", categoryName));
@@ -2977,6 +3049,9 @@ function renderInspectorDeletePasswordButton(categoryName = appState.activeSideb
 
 function renderInspectorPasswordSetup(categoryName = appState.activeSidebarCategory) {
   const helperText = "Password must be at least 8 characters";
+  const showInAllBookmarksMarkup = shouldShowInspectorAllBookmarksVisibilityToggle(categoryName)
+    ? renderInspectorShowInAllBookmarksToggle(categoryName)
+    : "";
   const deleteMarkup = shouldShowInspectorDeletePassword(categoryName)
     ? `<div class="inspector-password-delete-shell">${renderInspectorDeletePasswordButton(categoryName)}</div>`
     : "";
@@ -2991,6 +3066,7 @@ function renderInspectorPasswordSetup(categoryName = appState.activeSidebarCateg
       </div>
       ${renderInspectorSavePasswordButton(categoryName)}
       ${deleteMarkup}
+      ${showInAllBookmarksMarkup}
     </div>
   `;
 }
@@ -3094,6 +3170,7 @@ function saveInspectorCategoryPassword(categoryName = appState.activeSidebarCate
 
 function deleteInspectorCategoryPassword(categoryName = appState.activeSidebarCategory) {
   setInspectorStateValue("passwordProtected", false, categoryName);
+  setInspectorStateValue("showInAllBookmarks", false, categoryName);
   setInspectorStateValue("accessPassword", "", categoryName);
   setInspectorStateValue("accessPasswordDraft", "", categoryName);
   setInspectorStateValue("accessPasswordVisible", false, categoryName);
@@ -4512,7 +4589,8 @@ function renderInspectorPanel() {
     const canMoveSelectedBookmark = Boolean(selectedMoveBookmark);
     const lockedOverlayMarkup = shouldRenderLockedCategoryOverlay(activeInspectorCategory) ? renderLockedCategoryOverlay() : "";
     const passwordPanelMarkup = showPasswordSetup ? renderInspectorPasswordSetup(activeInspectorCategory) : "";
-    const categoryPanelClass = `${showPasswordSetup ? " inspector-panel-category-password-open" : ""}${showDeletePassword ? " inspector-panel-category-password-delete-open" : ""}`;
+    const showAllBookmarksVisibilityToggle = shouldShowInspectorAllBookmarksVisibilityToggle(activeInspectorCategory);
+    const categoryPanelClass = `${showPasswordSetup ? " inspector-panel-category-password-open" : ""}${showDeletePassword ? " inspector-panel-category-password-delete-open" : ""}${showAllBookmarksVisibilityToggle ? " inspector-panel-category-show-all-bookmarks" : ""}`;
     const isPasswordSetupExpanded = Boolean(getInspectorStateValue("accessPasswordSetupExpanded", activeInspectorCategory));
 
     return `
@@ -5345,6 +5423,7 @@ function handleAppClick(event) {
 
     setInspectorStateValue("passwordProtected", !passwordProtected, categoryName);
     if (passwordProtected) {
+      setInspectorStateValue("showInAllBookmarks", false, categoryName);
       setInspectorStateValue("accessPassword", "", categoryName);
       setInspectorStateValue("accessPasswordDraft", "", categoryName);
       setInspectorStateValue("accessPasswordVisible", false, categoryName);
@@ -5397,6 +5476,23 @@ function handleAppClick(event) {
 
     const isExpanded = Boolean(getInspectorStateValue("accessPasswordDeleteExpanded", categoryName));
     setInspectorStateValue("accessPasswordDeleteExpanded", !isExpanded, categoryName);
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "toggle-inspector-show-in-all-bookmarks") {
+    const categoryName = getSupportedInspectorCategory();
+    if (!categoryName || categoryName === "All Bookmarks" || categoryName === "Deleted Items") {
+      return;
+    }
+
+    if (!shouldShowInspectorAllBookmarksVisibilityToggle(categoryName)) {
+      return;
+    }
+
+    setInspectorStateValue("showInAllBookmarks", !Boolean(getInspectorStateValue("showInAllBookmarks", categoryName)), categoryName);
+    syncSidebarCategoryUi();
+    syncBookmarkContentForActiveCategory();
     syncInspectorPanel();
     return;
   }
