@@ -1726,23 +1726,45 @@ function closeBookmarkMoveMenu() {
   appState.moveBookmarkTargetCategory = "";
 }
 
-function moveBookmarkToCategory(bookmarkId, nextCategory) {
-  const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
-  if (!bookmark || !nextCategory) {
+function moveBookmarksToCategory(bookmarkIds, nextCategory) {
+  const uniqueBookmarkIds = Array.from(new Set(Array.isArray(bookmarkIds) ? bookmarkIds : [bookmarkIds])).filter(Boolean);
+  if (!uniqueBookmarkIds.length || !nextCategory) {
     return false;
   }
 
-  const previousCategory = bookmark.category;
-  bookmark.category = nextCategory;
-  if (nextCategory !== WP_RESOURCES_PARENT_CATEGORY) {
-    bookmark.subcategory = "";
+  const now = new Date();
+  const previousCategories = new Set();
+  let movedAnyBookmark = false;
+
+  uniqueBookmarkIds.forEach((bookmarkId) => {
+    const bookmark = appState.bookmarks.find((item) => item.id === bookmarkId);
+    if (!bookmark) {
+      return;
+    }
+
+    const previousCategory = bookmark.category;
+    bookmark.category = nextCategory;
+    if (nextCategory !== WP_RESOURCES_PARENT_CATEGORY) {
+      bookmark.subcategory = "";
+    }
+    bookmark.modifiedDate = formatBookmarkDate(now);
+    previousCategories.add(previousCategory);
+    movedAnyBookmark = true;
+  });
+
+  if (!movedAnyBookmark) {
+    return false;
   }
-  bookmark.modifiedDate = formatBookmarkDate(new Date());
-  updateRelatedInspectorModifiedDates(previousCategory);
-  updateRelatedInspectorModifiedDates(nextCategory);
-  appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => id !== bookmark.id);
+
+  previousCategories.forEach((previousCategory) => updateRelatedInspectorModifiedDates(previousCategory, now));
+  updateRelatedInspectorModifiedDates(nextCategory, now);
+  appState.selectedBookmarkIds = appState.selectedBookmarkIds.filter((id) => !uniqueBookmarkIds.includes(id));
   closeBookmarkMoveMenu();
   return true;
+}
+
+function moveBookmarkToCategory(bookmarkId, nextCategory) {
+  return moveBookmarksToCategory(bookmarkId, nextCategory);
 }
 
 function isSidebarCategoryActive(categoryName) {
@@ -3303,13 +3325,17 @@ function getActiveInspectorBookmark() {
   return appState.bookmarks.find((bookmark) => bookmark.id === appState.activeInspectorBookmarkId) || null;
 }
 
+function getSelectedVisibleBookmarks() {
+  return getVisibleBookmarks().filter((bookmark) => appState.selectedBookmarkIds.includes(bookmark.id));
+}
+
 function getSingleSelectedVisibleBookmark() {
-  const selectedVisibleBookmarks = getVisibleBookmarks().filter((bookmark) => appState.selectedBookmarkIds.includes(bookmark.id));
+  const selectedVisibleBookmarks = getSelectedVisibleBookmarks();
   return selectedVisibleBookmarks.length === 1 ? selectedVisibleBookmarks[0] : null;
 }
 
 function getActiveMoveBookmark() {
-  return getActiveInspectorBookmark() || getSingleSelectedVisibleBookmark();
+  return getActiveInspectorBookmark() || getSelectedVisibleBookmarks()[0] || null;
 }
 
 function isContentTitleEditable(categoryName = appState.activeSidebarCategory) {
@@ -4657,8 +4683,9 @@ function renderInspectorPanel() {
     const passwordProtected = Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory));
     const showPasswordSetup = shouldShowInspectorPasswordSetup(activeInspectorCategory);
     const showDeletePassword = shouldShowInspectorDeletePassword(activeInspectorCategory);
-    const canMoveSelectedBookmark = Boolean(getSingleSelectedVisibleBookmark());
-    const selectedMoveBookmark = getSingleSelectedVisibleBookmark();
+    const selectedMoveBookmarks = getSelectedVisibleBookmarks();
+    const canMoveSelectedBookmark = selectedMoveBookmarks.length > 0;
+    const selectedMoveBookmark = selectedMoveBookmarks[0] || null;
     const deletedItemsPanelClass = `${showPasswordSetup ? " inspector-panel-category-password-open" : ""}${showDeletePassword ? " inspector-panel-category-password-delete-open" : ""}`;
 
     return `
@@ -4741,8 +4768,9 @@ function renderInspectorPanel() {
     const passwordProtected = Boolean(getInspectorStateValue("passwordProtected", activeInspectorCategory));
     const showPasswordSetup = shouldShowInspectorPasswordSetup(activeInspectorCategory);
     const showDeletePassword = shouldShowInspectorDeletePassword(activeInspectorCategory);
-    const selectedMoveBookmark = getSingleSelectedVisibleBookmark();
-    const canMoveSelectedBookmark = Boolean(selectedMoveBookmark);
+    const selectedMoveBookmarks = getSelectedVisibleBookmarks();
+    const canMoveSelectedBookmark = selectedMoveBookmarks.length > 0;
+    const selectedMoveBookmark = selectedMoveBookmarks[0] || null;
     const lockedOverlayMarkup = shouldRenderLockedCategoryOverlay(activeInspectorCategory) ? renderLockedCategoryOverlay() : "";
     const passwordPanelMarkup = showPasswordSetup ? renderInspectorPasswordSetup(activeInspectorCategory) : "";
     const showAllBookmarksVisibilityToggle = shouldShowInspectorAllBookmarksVisibilityToggle(activeInspectorCategory);
@@ -5427,8 +5455,14 @@ function handleAppClick(event) {
   }
 
   if (action === "confirm-bookmark-move") {
-    const activeBookmark = getActiveMoveBookmark();
-    if (activeBookmark && moveBookmarkToCategory(activeBookmark.id, appState.moveBookmarkTargetCategory)) {
+    const selectedBookmarks = getSelectedVisibleBookmarks();
+    const bookmarkIds = selectedBookmarks.length
+      ? selectedBookmarks.map((bookmark) => bookmark.id)
+      : getActiveMoveBookmark()
+        ? [getActiveMoveBookmark().id]
+        : [];
+
+    if (bookmarkIds.length && moveBookmarksToCategory(bookmarkIds, appState.moveBookmarkTargetCategory)) {
       syncSidebarCategoryUi();
       syncBookmarkContentForActiveCategory();
       syncInspectorPanel();
