@@ -2992,10 +2992,11 @@ function renderInspectorPasswordField(categoryName = appState.activeSidebarCateg
 }
 
 function renderInspectorShowInAllBookmarksToggle(categoryName = appState.activeSidebarCategory) {
+  const allBookmarksLabel = getSidebarDisplayLabel("All Bookmarks");
   return `
     <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category inspector-panel-toggle-row-checkbox inspector-password-all-bookmarks-toggle" type="button" data-action="toggle-inspector-show-in-all-bookmarks" aria-pressed="${Boolean(getInspectorStateValue("showInAllBookmarks", categoryName))}">
       ${renderInspectorPermanentCopyCheckbox()}
-      <span class="inspector-panel-toggle-label">Show in All Bookmarks</span>
+      <span class="inspector-panel-toggle-label">Show in ${escapeHtml(allBookmarksLabel)}</span>
     </button>
   `;
 }
