@@ -2282,11 +2282,14 @@ function syncBookmarkSelectionUi() {
   app.querySelectorAll(".bookmark-card[data-bookmark-id], .bookmark-list-card[data-bookmark-id]").forEach((card) => {
     const bookmarkId = card.getAttribute("data-bookmark-id");
     const isSelected = appState.selectedBookmarkIds.includes(bookmarkId);
+    const isEditing = appState.activeInspectorBookmarkId === bookmarkId;
     const checkbox = card.querySelector(".bookmark-card-checkbox");
     const checkboxImage = checkbox?.querySelector("img");
     const actions = card.querySelector(".bookmark-card-actions, .bookmark-list-card-actions");
+    const editButton = actions?.querySelector("[data-action='edit-bookmark']");
 
     card.classList.toggle("is-selected", isSelected);
+    card.classList.toggle("is-editing", isEditing);
 
     if (checkbox) {
       checkbox.classList.toggle("is-selected", isSelected);
@@ -2298,7 +2301,11 @@ function syncBookmarkSelectionUi() {
     }
 
     if (actions) {
-      actions.setAttribute("aria-hidden", String(isSelected));
+      actions.setAttribute("aria-hidden", String(isEditing ? false : isSelected));
+    }
+
+    if (editButton) {
+      editButton.classList.toggle("is-active", isEditing);
     }
   });
 
@@ -3877,7 +3884,9 @@ function buildPreviewArticle(bookmarkTitle, bookmarkUrl) {
 
 function renderBookmarkCard(bookmark) {
   const isSelected = appState.selectedBookmarkIds.includes(bookmark.id);
+  const isEditing = appState.activeInspectorBookmarkId === bookmark.id;
   const selectedClass = isSelected ? " is-selected" : "";
+  const editingClass = isEditing ? " is-editing" : "";
   const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
   const statusIcon = bookmark.statusIcon || BOOKMARK_CARD_STATUS_ICON;
   const categoryLabel = getDisplayLabelForBookmarkCategory(normalizeBookmarkCategory(bookmark.category));
@@ -3894,7 +3903,7 @@ function renderBookmarkCard(bookmark) {
     : `<img class="bookmark-card-image" src="${bookmark.image}" alt="" />`;
 
   return `
-    <article class="bookmark-card${selectedClass}" data-bookmark-id="${bookmark.id}">
+    <article class="bookmark-card${selectedClass}${editingClass}" data-bookmark-id="${bookmark.id}">
       <div class="bookmark-card-image-shell">
         ${imageContent}
         ${permanentCopyBanner}
@@ -3905,7 +3914,7 @@ function renderBookmarkCard(bookmark) {
             <img src="${checkboxIcon}" alt="" width="20" height="20" />
           </button>
 
-          <div class="bookmark-card-actions" aria-hidden="${isSelected}">
+          <div class="bookmark-card-actions" aria-hidden="${isEditing ? "false" : isSelected}">
             ${renderUtilityButton({
               action: "preview-bookmark",
               label: "Preview",
@@ -3919,7 +3928,8 @@ function renderBookmarkCard(bookmark) {
               icon: BOOKMARK_CARD_EDIT_ICON,
               width: 66,
               className: "bookmark-card-action",
-              iconClassName: "utility-button-icon-edit"
+              iconClassName: "utility-button-icon-edit",
+              state: isEditing ? "active" : "default"
             })}
           </div>
         </div>
@@ -3948,7 +3958,9 @@ function renderBookmarkCard(bookmark) {
 
 function renderBookmarkListCard(bookmark) {
   const isSelected = appState.selectedBookmarkIds.includes(bookmark.id);
+  const isEditing = appState.activeInspectorBookmarkId === bookmark.id;
   const selectedClass = isSelected ? " is-selected" : "";
+  const editingClass = isEditing ? " is-editing" : "";
   const checkboxIcon = isSelected ? BOOKMARK_CARD_CHECKBOX_ACTIVE_ICON : BOOKMARK_CARD_CHECKBOX_DEFAULT_ICON;
   const statusIcon = bookmark.statusIcon || BOOKMARK_CARD_STATUS_ICON;
   const categoryLabel = getDisplayLabelForBookmarkCategory(normalizeBookmarkCategory(bookmark.category));
@@ -3962,7 +3974,7 @@ function renderBookmarkListCard(bookmark) {
     : `<img class="bookmark-list-card-image" src="${bookmark.image}" alt="" />`;
 
   return `
-    <article class="bookmark-list-card${selectedClass}" data-bookmark-id="${bookmark.id}">
+    <article class="bookmark-list-card${selectedClass}${editingClass}" data-bookmark-id="${bookmark.id}">
       <div class="bookmark-list-card-main">
         <div class="bookmark-list-card-media-group">
           <button class="bookmark-card-checkbox${isSelected ? " is-selected" : ""}" type="button" data-action="toggle-bookmark-selection" data-bookmark-id="${bookmark.id}" aria-label="Select bookmark" aria-pressed="${isSelected}">
@@ -3995,7 +4007,7 @@ function renderBookmarkListCard(bookmark) {
         </div>
       </div>
 
-      <div class="bookmark-list-card-actions" aria-hidden="${isSelected}">
+      <div class="bookmark-list-card-actions" aria-hidden="${isEditing ? "false" : isSelected}">
         ${renderUtilityButton({
           action: "preview-bookmark",
           label: "Preview",
@@ -4009,7 +4021,8 @@ function renderBookmarkListCard(bookmark) {
           icon: BOOKMARK_CARD_EDIT_ICON,
           width: 66,
           className: "bookmark-card-action",
-          iconClassName: "utility-button-icon-edit"
+          iconClassName: "utility-button-icon-edit",
+          state: isEditing ? "active" : "default"
         })}
       </div>
     </article>
@@ -5364,22 +5377,26 @@ function handleAppClick(event) {
     if (bookmarkId) {
       appState.lockedInspectorCategory = null;
       appState.activeInspectorBookmarkId = bookmarkId;
+      appState.selectedBookmarkIds = [bookmarkId];
       closeExportFormatsMenu();
       closeBookmarkMoveMenu();
       closeDeleteBookmarkModal();
       syncInspectorPanel();
+      syncBookmarkSelectionUi();
     }
     return;
   }
 
   if (action === "close-bookmark-inspector") {
     appState.activeInspectorBookmarkId = null;
+    appState.selectedBookmarkIds = [];
     appState.lockedInspectorCategory = null;
     closeExportFormatsMenu();
     closeBookmarkMoveMenu();
     closeDeleteBookmarkModal();
     closeDeleteCategoryModal();
     syncInspectorPanel();
+    syncBookmarkSelectionUi();
     return;
   }
 

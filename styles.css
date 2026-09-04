@@ -2780,12 +2780,16 @@ input {
 }
 
 .inspector-panel-bookmark-priority-radio {
+  aspect-ratio: 1 / 1;
   border: 1.5px solid #7b7b8c;
+  box-sizing: border-box;
   border-radius: 50%;
-  display: block;
-  flex: 0 0 12.8px;
-  height: 12.8px;
-  width: 12.8px;
+  display: inline-block;
+  flex: 0 0 13px;
+  height: 13px;
+  min-height: 13px;
+  min-width: 13px;
+  width: 13px;
 }
 
 .inspector-panel-bookmark-priority-option.is-selected .inspector-panel-bookmark-priority-radio {
@@ -4592,6 +4596,12 @@ input {
   pointer-events: none;
 }
 
+.bookmark-card.is-editing .bookmark-card-actions,
+.bookmark-card.is-editing:hover .bookmark-card-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .bookmark-list-card {
   background: transparent;
   border: 1px solid rgba(51, 51, 51, 0.3);
@@ -4602,6 +4612,12 @@ input {
   position: relative;
   transition: border-color 200ms ease;
   width: 1120px;
+}
+
+.bookmark-list-card.is-editing .bookmark-list-card-actions,
+.bookmark-list-card.is-editing:hover .bookmark-list-card-actions {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .bookmark-list-card-main {
