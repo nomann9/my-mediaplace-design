@@ -1035,6 +1035,7 @@ const appState = {
   uncategorizedSavePermanentCopy: false,
   uncategorizedPasswordProtected: false,
   uncategorizedShowInAllBookmarks: false,
+  uncategorizedKeepOpenForSession: false,
   uncategorizedTags: [],
   uncategorizedTagDraft: "",
   uncategorizedNote: "",
@@ -1227,6 +1228,7 @@ const INSPECTOR_STATE_PATHS = {
     savePermanentCopy: "uncategorizedSavePermanentCopy",
     passwordProtected: "uncategorizedPasswordProtected",
     showInAllBookmarks: "uncategorizedShowInAllBookmarks",
+    keepOpenForSession: "uncategorizedKeepOpenForSession",
     tags: "uncategorizedTags",
     tagDraft: "uncategorizedTagDraft",
     note: "uncategorizedNote"
@@ -2636,6 +2638,7 @@ function createCategoryInspectorState(categoryName) {
     savePermanentCopy: false,
     passwordProtected: Boolean(categoryLink?.lockedByDefault),
     showInAllBookmarks: false,
+    keepOpenForSession: false,
     accessPassword: "",
     accessPasswordDraft: "",
     accessPasswordVisible: false,
@@ -2897,6 +2900,17 @@ function shouldShowInspectorAllBookmarksVisibilityToggle(categoryName = appState
   );
 }
 
+function shouldShowInspectorKeepOpenForSessionToggle(categoryName = appState.activeSidebarCategory) {
+  if (categoryName === "All Bookmarks" || categoryName === "Deleted Items") {
+    return false;
+  }
+
+  return Boolean(
+    getInspectorStateValue("passwordProtected", categoryName) &&
+    String(getInspectorStateValue("accessPassword", categoryName) || "").trim()
+  );
+}
+
 function renderInspectorPasswordShowHideToggle(isExpanded) {
   const shouldShowHideState = isExpanded;
 
@@ -3000,6 +3014,15 @@ function renderInspectorShowInAllBookmarksToggle(categoryName = appState.activeS
   `;
 }
 
+function renderInspectorKeepOpenForSessionToggle(categoryName = appState.activeSidebarCategory) {
+  return `
+    <button class="inspector-panel-toggle-row inspector-panel-toggle-row-category inspector-panel-toggle-row-checkbox inspector-password-keep-open-toggle" type="button" data-action="toggle-inspector-keep-open-session" aria-pressed="${Boolean(getInspectorStateValue("keepOpenForSession", categoryName))}">
+      ${renderInspectorPermanentCopyCheckbox()}
+      <span class="inspector-panel-toggle-label">Keep open for current session</span>
+    </button>
+  `;
+}
+
 function renderInspectorSavePasswordButton(categoryName = appState.activeSidebarCategory) {
   const state = getInspectorSavePasswordState(categoryName);
   const isDeleteExpanded = Boolean(getInspectorStateValue("accessPasswordDeleteExpanded", categoryName));
@@ -3052,6 +3075,9 @@ function renderInspectorPasswordSetup(categoryName = appState.activeSidebarCateg
   const showInAllBookmarksMarkup = shouldShowInspectorAllBookmarksVisibilityToggle(categoryName)
     ? renderInspectorShowInAllBookmarksToggle(categoryName)
     : "";
+  const keepOpenForSessionMarkup = shouldShowInspectorKeepOpenForSessionToggle(categoryName)
+    ? renderInspectorKeepOpenForSessionToggle(categoryName)
+    : "";
   const deleteMarkup = shouldShowInspectorDeletePassword(categoryName)
     ? `<div class="inspector-password-delete-shell">${renderInspectorDeletePasswordButton(categoryName)}</div>`
     : "";
@@ -3067,6 +3093,7 @@ function renderInspectorPasswordSetup(categoryName = appState.activeSidebarCateg
       ${renderInspectorSavePasswordButton(categoryName)}
       ${deleteMarkup}
       ${showInAllBookmarksMarkup}
+      ${keepOpenForSessionMarkup}
     </div>
   `;
 }
@@ -3103,7 +3130,8 @@ function lockCategoryAfterLeaving(categoryName) {
 
   const hasSavedPassword = Boolean(String(getInspectorStateValue("accessPassword", categoryName) || "").trim());
   const isProtected = Boolean(getInspectorStateValue("passwordProtected", categoryName));
-  if (!isProtected || !hasSavedPassword) {
+  const keepOpenForSession = Boolean(getInspectorStateValue("keepOpenForSession", categoryName));
+  if (!isProtected || !hasSavedPassword || keepOpenForSession) {
     return;
   }
 
@@ -3171,6 +3199,7 @@ function saveInspectorCategoryPassword(categoryName = appState.activeSidebarCate
 function deleteInspectorCategoryPassword(categoryName = appState.activeSidebarCategory) {
   setInspectorStateValue("passwordProtected", false, categoryName);
   setInspectorStateValue("showInAllBookmarks", false, categoryName);
+  setInspectorStateValue("keepOpenForSession", false, categoryName);
   setInspectorStateValue("accessPassword", "", categoryName);
   setInspectorStateValue("accessPasswordDraft", "", categoryName);
   setInspectorStateValue("accessPasswordVisible", false, categoryName);
@@ -5424,6 +5453,7 @@ function handleAppClick(event) {
     setInspectorStateValue("passwordProtected", !passwordProtected, categoryName);
     if (passwordProtected) {
       setInspectorStateValue("showInAllBookmarks", false, categoryName);
+      setInspectorStateValue("keepOpenForSession", false, categoryName);
       setInspectorStateValue("accessPassword", "", categoryName);
       setInspectorStateValue("accessPasswordDraft", "", categoryName);
       setInspectorStateValue("accessPasswordVisible", false, categoryName);
@@ -5491,6 +5521,28 @@ function handleAppClick(event) {
     }
 
     setInspectorStateValue("showInAllBookmarks", !Boolean(getInspectorStateValue("showInAllBookmarks", categoryName)), categoryName);
+    syncSidebarCategoryUi();
+    syncBookmarkContentForActiveCategory();
+    syncInspectorPanel();
+    return;
+  }
+
+  if (action === "toggle-inspector-keep-open-session") {
+    const categoryName = getSupportedInspectorCategory();
+    if (!categoryName || categoryName === "All Bookmarks" || categoryName === "Deleted Items") {
+      return;
+    }
+
+    if (!shouldShowInspectorKeepOpenForSessionToggle(categoryName)) {
+      return;
+    }
+
+    const nextKeepOpenState = !Boolean(getInspectorStateValue("keepOpenForSession", categoryName));
+    setInspectorStateValue("keepOpenForSession", nextKeepOpenState, categoryName);
+    if (nextKeepOpenState) {
+      setCategoryUnlocked(categoryName, true);
+      appState.lockedInspectorCategory = null;
+    }
     syncSidebarCategoryUi();
     syncBookmarkContentForActiveCategory();
     syncInspectorPanel();

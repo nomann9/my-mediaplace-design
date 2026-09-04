@@ -1839,11 +1839,11 @@ input {
 }
 
 .inspector-panel-category.inspector-panel-category-show-all-bookmarks.inspector-panel-category-password-open .inspector-panel-divider-category-bottom {
-  top: 433px;
+  top: 461px;
 }
 
 .inspector-panel-category.inspector-panel-category-show-all-bookmarks.inspector-panel-category-password-delete-open .inspector-panel-divider-category-bottom {
-  top: 477px;
+  top: 505px;
 }
 
 .inspector-panel-divider-bookmark-top {
@@ -1897,11 +1897,11 @@ input {
 }
 
 .inspector-panel-category.inspector-panel-category-show-all-bookmarks.inspector-panel-category-password-open .inspector-panel-fields-category {
-  top: 453px;
+  top: 481px;
 }
 
 .inspector-panel-category.inspector-panel-category-show-all-bookmarks.inspector-panel-category-password-delete-open .inspector-panel-fields-category {
-  top: 497px;
+  top: 525px;
 }
 
 .inspector-panel-fields-bookmark {
@@ -1929,6 +1929,10 @@ input {
 
 .inspector-password-all-bookmarks-toggle {
   margin-top: 8px;
+}
+
+.inspector-password-keep-open-toggle {
+  margin-top: 0;
 }
 
 .inspector-password-field-group {
